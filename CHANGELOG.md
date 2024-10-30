@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/music-assistant/models/compare/v1.0.1...v1.0.2) (2024-10-30)
+
+
+### Features
+
+* Cleanup and restructure ([064ea7b](https://github.com/music-assistant/models/commit/064ea7b612106744065b26cafadc1abccab0279a))
+
 ## [1.0.1](https://github.com/music-assistant/models/compare/v1.0.0...v1.0.1) (2024-10-30)
 
 
