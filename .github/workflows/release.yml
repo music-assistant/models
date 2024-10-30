@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-artifact:
-    name: Builds python artifact uploads to Github Artifact store
+    name: Builds python artifact uploads to Github Artifact store and PyPi
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.vars.outputs.tag }}
@@ -62,21 +62,14 @@ jobs:
         with:
           name: release-dists
           path: dist/
-
-  pypi-publish:
-    name: Publish release to PyPI (stable releases only)
-    runs-on: ubuntu-latest
-    needs: build-artifact
-    steps:
-      - name: Retrieve release distributions
-        if: ${{ github.event.release.prerelease == false }}
-        uses: actions/download-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
       - name: Publish release to PyPI
-        if: ${{ github.event.release.prerelease == false }}
         uses: pypa/gh-action-pypi-publish@v1.10.3
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
+
+    # - name: Create Server + Client repo PR (TODO!)
+    #   uses: music-assistant/frontend-release-pr-action@main
+    #   with:
+    #     github_token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+    #     new_release_version: ${{ env.version }}
