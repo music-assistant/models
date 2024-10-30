@@ -22,7 +22,7 @@ def valid_id(provider: str, item_id: str) -> bool:
     return True
 
 
-async def parse_uri(uri: str, validate_id: bool = False) -> tuple[MediaType, str, str]:  # noqa: FBT001, FBT002
+async def parse_uri(uri: str, validate_id: bool = False) -> tuple[MediaType, str, str]:
     """Try to parse URI to Mass identifiers.
 
     Returns Tuple: MediaType, provider_instance_id_or_domain, item_id

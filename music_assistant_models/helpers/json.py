@@ -14,7 +14,7 @@ JSON_DECODE_EXCEPTIONS = (orjson.JSONDecodeError,)
 DO_NOT_SERIALIZE_TYPES = (MethodType, asyncio.Task)
 
 
-def get_serializable_value(obj: Any, raise_unhandled: bool = False) -> Any:  # noqa: FBT001, FBT002
+def get_serializable_value(obj: Any, raise_unhandled: bool = False) -> Any:
     """Parse the value to its serializable equivalent."""
     if getattr(obj, "do_not_serialize", None):
         return None
@@ -43,7 +43,7 @@ def serialize_to_json(obj: Any) -> Any:
     return json_dumps(get_serializable_value(obj))
 
 
-def json_dumps(data: Any, indent: bool = False) -> str:  # noqa: FBT001, FBT002
+def json_dumps(data: Any, indent: bool = False) -> str:
     """Dump json string."""
     # we use the passthrough dataclass option because we use mashumaro for that
     option = orjson.OPT_OMIT_MICROSECONDS | orjson.OPT_PASSTHROUGH_DATACLASS

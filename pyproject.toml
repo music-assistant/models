@@ -9,7 +9,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
 ]
-dependencies = ["orjson", "mashumaro"]
+dependencies = ["orjson>=3.10", "mashumaro>=3.14"]
 description = "Music Assistant Base Models"
 license = {text = "Apache-2.0"}
 readme = "README.md"
@@ -114,6 +114,8 @@ ignore = [
   "TRY400", # Just annoying, not really useful
   "COM812", # Conflicts with the Ruff formatter
   "N818", # Just annoying, not really useful
+  "FBT001", # Just annoying, not really useful
+  "FBT002", # Just annoying, not really useful
 ]
 
 select = ["ALL"]

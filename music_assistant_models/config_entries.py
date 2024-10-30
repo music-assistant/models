@@ -129,7 +129,7 @@ class ConfigEntry(DataClassDictMixin):
     def parse_value(
         self,
         value: ConfigValueType,
-        allow_none: bool = True,  # noqa: FBT001, FBT002
+        allow_none: bool = True,
     ) -> ConfigValueType:
         """Parse value from the config entry details and plain value."""
         expected_type = list if self.multi_value else ConfigEntryTypeMap.get(self.type, NoneType)
@@ -638,7 +638,7 @@ def create_sample_rates_config_entry(
     max_bit_depth: int,
     safe_max_sample_rate: int = 48000,
     safe_max_bit_depth: int = 16,
-    hidden: bool = False,  # noqa: FBT001, FBT002
+    hidden: bool = False,
 ) -> ConfigEntry:
     """Create sample rates config entry based on player specific helpers."""
     assert CONF_ENTRY_SAMPLE_RATES.options

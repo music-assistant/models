@@ -12,7 +12,7 @@ from uuid import UUID
 DO_NOT_SERIALIZE_TYPES = (MethodType, Task)
 
 
-def get_serializable_value(obj: Any, raise_unhandled: bool = False) -> Any:  # noqa: FBT001, FBT002
+def get_serializable_value(obj: Any, raise_unhandled: bool = False) -> Any:
     """Parse the value to its serializable equivalent."""
     if getattr(obj, "do_not_serialize", None):
         return None
@@ -53,7 +53,7 @@ def is_valid_uuid(uuid_to_test: str) -> bool:
 def merge_dict(
     base_dict: dict[Any, Any],
     new_dict: dict[Any, Any],
-    allow_overwite: bool = False,  # noqa: FBT001, FBT002
+    allow_overwite: bool = False,
 ) -> dict[Any, Any]:
     """Merge dict without overwriting existing values."""
     final_dict = base_dict.copy()

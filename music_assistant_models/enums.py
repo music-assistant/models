@@ -207,7 +207,7 @@ class ContentType(StrEnum):
         )
 
     @classmethod
-    def from_bit_depth(cls, bit_depth: int, floating_point: bool = False) -> ContentType:  # noqa: FBT001, FBT002
+    def from_bit_depth(cls, bit_depth: int, floating_point: bool = False) -> ContentType:
         """Return (PCM) Contenttype from PCM bit depth."""
         if floating_point and bit_depth > 32:
             return cls.PCM_F64LE
