@@ -35,7 +35,7 @@ skip = "*.js"
 
 [tool.setuptools]
 include-package-data = true
-packages = ["music_assistant_models", "music_assistant_models.helpers"]
+packages = ["music_assistant_models"]
 platforms = ["any"]
 zip-safe = false
 
