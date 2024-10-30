@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/music-assistant/models/compare/v1.0.2...v1.0.3) (2024-10-30)
+
+
+### Bug Fixes
+
+* add missing media_items sublevel package ([207a880](https://github.com/music-assistant/models/commit/207a8806e5cf9ae3a28132000d84757e33668776))
+
 ## [1.0.2](https://github.com/music-assistant/models/compare/v1.0.1...v1.0.2) (2024-10-30)
 
 
