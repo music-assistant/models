@@ -9,7 +9,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
 ]
-dependencies = ["orjson>=3.10", "mashumaro>=3.14"]
+dependencies = ["orjson>=3.9", "mashumaro>=3.14"]
 description = "Music Assistant Base Models"
 license = {text = "Apache-2.0"}
 readme = "README.md"
@@ -35,7 +35,7 @@ skip = "*.js"
 
 [tool.setuptools]
 include-package-data = true
-packages = ["music_assistant_models"]
+packages = ["music_assistant_models", "music_assistant_models.media_items"]
 platforms = ["any"]
 zip-safe = false
 
