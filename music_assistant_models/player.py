@@ -153,19 +153,3 @@ class Player(DataClassDictMixin):
     def current_item_id(self, uri: str) -> None:
         """Set current_item_id (for backwards compatibility)."""
         self.current_media = PlayerMedia(uri)
-
-    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
-        """Execute action(s) on serialization."""
-        # TEMP: convert values to prevent api breakage
-        # this may be removed after 2.3 has been launched to stable
-        if self.elapsed_time is None:
-            d["elapsed_time"] = 0
-        if self.elapsed_time_last_updated is None:
-            d["elapsed_time_last_updated"] = 0
-        if self.volume_level is None:
-            d["volume_level"] = 0
-        if self.volume_muted is None:
-            d["volume_muted"] = False
-        if self.state is None:
-            d["state"] = PlayerState.IDLE
-        return d

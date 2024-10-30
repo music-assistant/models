@@ -1,15 +1,42 @@
-"""Utility functions for the music assistant models."""
+"""Generic Utility functions/helpers for the Music Assistant project."""
 
 from __future__ import annotations
 
+import asyncio
 import base64
+import re
 from _collections_abc import dict_keys, dict_values
 from asyncio import Task
 from types import MethodType
 from typing import Any
 from uuid import UUID
 
+from music_assistant_models.enums import MediaType
+
 DO_NOT_SERIALIZE_TYPES = (MethodType, Task)
+
+
+# global cache - we use this on a few places (as limited as possible)
+# where we have no other options
+_global_cache_lock = asyncio.Lock()
+_global_cache: dict[str, Any] = {}
+
+
+def get_global_cache_value(key: str, default: Any = None) -> Any:
+    """Get a value from the global cache."""
+    return _global_cache.get(key, default)
+
+
+async def set_global_cache_values(values: dict[str, Any]) -> Any:
+    """Set a value in the global cache (without locking)."""
+    async with _global_cache_lock:
+        for key, value in values.items():
+            _set_global_cache_value(key, value)
+
+
+def _set_global_cache_value(key: str, value: Any) -> Any:
+    """Set a value in the global cache (without locking)."""
+    _global_cache[key] = value
 
 
 def get_serializable_value(obj: Any, raise_unhandled: bool = False) -> Any:
@@ -37,7 +64,8 @@ def create_sort_name(input_str: str) -> str:
     input_str = input_str.lower().strip()
     for item in ["the ", "de ", "les ", "dj ", "las ", "los ", "le ", "la ", "el ", "a ", "an "]:
         if input_str.startswith(item):
-            input_str = input_str.replace(item, "") + f", {item}"
+            input_str = input_str.replace(item, "", 1) + f", {item}"
+            break
     return input_str.strip()
 
 
@@ -50,28 +78,24 @@ def is_valid_uuid(uuid_to_test: str) -> bool:
     return str(uuid_obj) == uuid_to_test
 
 
-def merge_dict(
-    base_dict: dict[Any, Any],
-    new_dict: dict[Any, Any],
-    allow_overwite: bool = False,
-) -> dict[Any, Any]:
-    """Merge dict without overwriting existing values."""
-    final_dict = base_dict.copy()
-    for key, value in new_dict.items():
-        if final_dict.get(key) and isinstance(value, dict):
-            final_dict[key] = merge_dict(final_dict[key], value)
-        if final_dict.get(key) and isinstance(value, tuple):
-            final_dict[key] = merge_tuples(final_dict[key], value)
-        if final_dict.get(key) and isinstance(value, list):
-            final_dict[key] = merge_lists(final_dict[key], value)
-        elif not final_dict.get(key) or allow_overwite:
-            final_dict[key] = value
-    return final_dict
+base62_length22_id_pattern = re.compile(r"^[a-zA-Z0-9]{22}$")
 
 
-def merge_tuples(base: tuple[Any, ...], new: tuple[Any, ...]) -> tuple[Any, ...]:
-    """Merge 2 tuples."""
-    return tuple(x for x in base if x not in new) + tuple(new)
+def valid_base62_length22(item_id: str) -> bool:
+    """Validate Spotify style ID."""
+    return bool(base62_length22_id_pattern.match(item_id))
+
+
+def valid_id(provider: str, item_id: str) -> bool:
+    """Validate Provider ID."""
+    if provider == "spotify":
+        return valid_base62_length22(item_id)
+    return True
+
+
+def create_uri(media_type: MediaType, provider_instance_id_or_domain: str, item_id: str) -> str:
+    """Create Music Assistant URI from MediaItem values."""
+    return f"{provider_instance_id_or_domain}://{media_type.value}/{item_id}"
 
 
 def merge_lists(base: list[Any], new: list[Any]) -> list[Any]:

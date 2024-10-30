@@ -6,7 +6,7 @@ from typing import Any
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from .enums import EventType
-from .helpers.util import get_serializable_value
+from .helpers import get_serializable_value
 
 
 @dataclass

@@ -8,7 +8,7 @@ from typing import Any
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from .event import MassEvent
-from .helpers.util import get_serializable_value
+from .helpers import get_serializable_value
 
 
 @dataclass
