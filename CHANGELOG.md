@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.0](https://github.com/music-assistant/models/compare/v1.0.3...v1.1.0) (2024-11-20)
+
+
+### Features
+
+* Add source to player model ([1a65408](https://github.com/music-assistant/models/commit/1a654088a8717bca368063cdca2108b3f8998487))
+* Adjust group_childs to UniqueList ([546abd7](https://github.com/music-assistant/models/commit/546abd7b93e98653d905f9f62ca5f74ec97d5ad5))
+* Adjust supported_features to set ([126ca73](https://github.com/music-assistant/models/commit/126ca73ef88f1647110a3f856e4253216e60f584))
+* Extend DeviceInfo ([cbddff3](https://github.com/music-assistant/models/commit/cbddff350c470d332d86034c4d7d451b9b9c9135))
+
 ## [1.0.3](https://github.com/music-assistant/models/compare/v1.0.2...v1.0.3) (2024-10-30)
 
 
