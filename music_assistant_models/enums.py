@@ -275,10 +275,10 @@ class PlayerType(StrEnum):
 class PlayerFeature(StrEnum):
     """Enum with possible Player features.
 
-    power: The player has a dedicated power control.
+    power: The player has a native/dedicated power control.
     volume: The player supports adjusting the volume.
     mute: The player supports muting the volume.
-    sync: The player supports syncing with other players (of the same platform).
+    set_members: The player supports grouping with other players.
     accurate_time: The player provides millisecond accurate timing information.
     seek: The player supports seeking to a specific.
     enqueue: The player supports (en)queuing of media items natively.
@@ -288,7 +288,7 @@ class PlayerFeature(StrEnum):
     VOLUME_SET = "volume_set"
     VOLUME_MUTE = "volume_mute"
     PAUSE = "pause"
-    SYNC = "sync"
+    SET_MEMBERS = "set_members"
     SEEK = "seek"
     NEXT_PREVIOUS = "next_previous"
     PLAY_ANNOUNCEMENT = "play_announcement"
@@ -296,8 +296,11 @@ class PlayerFeature(StrEnum):
     UNKNOWN = "unknown"
 
     @classmethod
-    def _missing_(cls, value: object) -> PlayerFeature:  # noqa: ARG003
+    def _missing_(cls, value: object) -> PlayerFeature:
         """Set default enum member if an unknown value is provided."""
+        if value == "sync":
+            # sync is deprecated, use set_members instead
+            return cls.SET_MEMBERS
         return cls.UNKNOWN
 
 
