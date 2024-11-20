@@ -48,6 +48,18 @@ class PlayerMedia(DataClassDictMixin):
     custom_data: dict[str, Any] | None = None  # optional
 
 
+@dataclass(frozen=True)
+class PlayerSource(DataClassDictMixin):
+    """Model for a player source."""
+
+    id: str
+    name: str
+    # is_mass: this source represents a Music Assistant Queue
+    is_mass: bool = False
+    # passive: this source can not be selected/activated (from MA)
+    passive: bool = False
+
+
 @dataclass
 class Player(DataClassDictMixin):
     """Representation of a Player within Music Assistant."""
@@ -75,9 +87,11 @@ class Player(DataClassDictMixin):
     #   and this may include the player's own id.
     group_childs: UniqueList[str] = field(default_factory=UniqueList)
 
-    # active_source: return active source for this player
-    # can be set to a MA queue id or some player specific source
+    # active_source: return active source id for this player
     active_source: str | None = None
+
+    # source_list: return list of available sources for this player
+    source_list: UniqueList[PlayerSource] = field(default_factory=UniqueList)
 
     # active_source: return player_id of the active group for this player (if any)
     # if the player is grouped and a group is active,
