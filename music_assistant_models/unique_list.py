@@ -30,3 +30,8 @@ class UniqueList(list[_T]):
         """Extend list."""
         other = [x for x in other if x not in self]
         super().extend(other)
+
+    def set(self, items: Iterable[_T]) -> None:
+        """Set items in the list."""
+        self.clear()
+        self.extend(items)
