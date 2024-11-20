@@ -84,8 +84,16 @@ class Player(DataClassDictMixin):
     #   returns all child id's of the players in the group.
     # - If this is a syncgroup of players from the same platform (e.g. sonos),
     #   this will return the id's of players synced to this player,
-    #   and this may include the player's own id.
+    #   and this will include the player's own id (as first item in the list).
     group_childs: UniqueList[str] = field(default_factory=UniqueList)
+
+    # can_sync_with: return set of player_id's this player can sync with
+    # can also be instance id of an entire provider if all players can sync with each other
+    can_sync_with: set[str] = field(default_factory=set)
+
+    # synced_to: player_id of the player this player is currently synced to
+    # also referred to as "sync leader"
+    synced_to: str | None = None
 
     # active_source: return active source id for this player
     active_source: str | None = None
@@ -102,10 +110,6 @@ class Player(DataClassDictMixin):
     # this may be a MA queue item, url, uri or some provider specific string
     # includes metadata if supported by the provider/player
     current_media: PlayerMedia | None = None
-
-    # synced_to: player_id of the player this player is currently synced to
-    # also referred to as "sync master"
-    synced_to: str | None = None
 
     # enabled_by_default: if the player is enabled by default
     # can be used by a player provider to exclude some sort of players
