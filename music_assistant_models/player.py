@@ -9,6 +9,7 @@ from typing import Any
 from mashumaro import DataClassDictMixin
 
 from .enums import MediaType, PlayerFeature, PlayerState, PlayerType
+from .unique_list import UniqueList
 
 
 @dataclass(frozen=True)
@@ -72,7 +73,7 @@ class Player(DataClassDictMixin):
     # - If this is a syncgroup of players from the same platform (e.g. sonos),
     #   this will return the id's of players synced to this player,
     #   and this may include the player's own id.
-    group_childs: set[str] = field(default_factory=set)
+    group_childs: UniqueList[str] = field(default_factory=UniqueList)
 
     # active_source: return active source for this player
     # can be set to a MA queue id or some player specific source

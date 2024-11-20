@@ -8,8 +8,7 @@ from mashumaro import DataClassDictMixin
 
 from music_assistant_models.enums import ImageType, LinkType
 from music_assistant_models.helpers import merge_lists
-
-from .unique_list import UniqueList
+from music_assistant_models.unique_list import UniqueList
 
 
 @dataclass(frozen=True, kw_only=True)

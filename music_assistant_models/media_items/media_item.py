@@ -15,10 +15,10 @@ from music_assistant_models.helpers import (
     get_global_cache_value,
     is_valid_uuid,
 )
+from music_assistant_models.unique_list import UniqueList
 
 from .metadata import MediaItemImage, MediaItemMetadata
 from .provider_mapping import ProviderMapping
-from .unique_list import UniqueList
 
 
 @dataclass(kw_only=True)
