@@ -16,23 +16,30 @@ from .audio_format import AudioFormat
 from .media_item import (
     Album,
     Artist,
+    Audiobook,
     BrowseFolder,
+    Chapter,
+    Episode,
     ItemMapping,
     MediaItem,
     Playlist,
     PlaylistTrack,
+    Podcast,
     Radio,
     Track,
 )
-from .metadata import MediaItemChapter, MediaItemImage, MediaItemLink, MediaItemMetadata
+from .metadata import MediaItemImage, MediaItemLink, MediaItemMetadata
 from .provider_mapping import ProviderMapping
 
 __all__ = [
     "Album",
+    "Audiobook",
     "Artist",
     "AudioFormat",
     "BrowseFolder",
+    "Chapter",
     "ItemMapping",
+    "Episode",
     "MediaItem",
     "MediaItemMetadata",
     "ProviderMapping",
@@ -42,16 +49,28 @@ __all__ = [
     "MetadataProviderStatus",
     "MediaItemLink",
     "MediaItemImage",
-    "MediaItemChapter",
     "MediaItemMetadata",
     "Playlist",
     "PlaylistTrack",
+    "Podcast",
     "Track",
     "Radio",
     "UniqueList",
 ]
 
-MediaItemType = Artist | Album | PlaylistTrack | Track | Radio | Playlist | BrowseFolder
+MediaItemType = (
+    Artist
+    | Album
+    | PlaylistTrack
+    | Track
+    | Radio
+    | Playlist
+    | Audiobook
+    | Chapter
+    | Podcast
+    | Episode
+    | BrowseFolder
+)
 
 
 @dataclass(kw_only=True)
@@ -63,6 +82,8 @@ class SearchResults(DataClassDictMixin):
     tracks: Sequence[Track | ItemMapping] = field(default_factory=list)
     playlists: Sequence[Playlist | ItemMapping] = field(default_factory=list)
     radio: Sequence[Radio | ItemMapping] = field(default_factory=list)
+    audiobooks: Sequence[Audiobook | ItemMapping] = field(default_factory=list)
+    podcasts: Sequence[Podcast | ItemMapping] = field(default_factory=list)
 
 
 def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
@@ -79,6 +100,14 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return Playlist.from_dict(media_item)
     if media_item["media_type"] == "radio":
         return Radio.from_dict(media_item)
+    if media_item["media_type"] == "audiobook":
+        return Audiobook.from_dict(media_item)
+    if media_item["media_type"] == "chapter":
+        return Chapter.from_dict(media_item)
+    if media_item["media_type"] == "podcast":
+        return Podcast.from_dict(media_item)
+    if media_item["media_type"] == "episode":
+        return Episode.from_dict(media_item)
     raise InvalidDataError("Unknown media type")
 
 

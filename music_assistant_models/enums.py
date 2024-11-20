@@ -18,6 +18,8 @@ class MediaTypeMeta(EnumType):
             MediaType.TRACK,
             MediaType.PLAYLIST,
             MediaType.RADIO,
+            MediaType.AUDIOBOOK,
+            MediaType.PODCAST,
         ]
 
 
@@ -29,6 +31,10 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     TRACK = "track"
     PLAYLIST = "playlist"
     RADIO = "radio"
+    AUDIOBOOK = "audiobook"
+    CHAPTER = "chapter"
+    PODCAST = "podcast"
+    EPISODE = "episode"
     FOLDER = "folder"
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
@@ -132,8 +138,6 @@ class AlbumType(StrEnum):
     SINGLE = "single"
     COMPILATION = "compilation"
     EP = "ep"
-    PODCAST = "podcast"
-    AUDIOBOOK = "audiobook"
     UNKNOWN = "unknown"
 
 

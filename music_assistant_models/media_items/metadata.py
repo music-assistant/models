@@ -49,26 +49,6 @@ class MediaItemImage(DataClassDictMixin):
         return self.__hash__() == other.__hash__()
 
 
-@dataclass(frozen=True, kw_only=True)
-class MediaItemChapter(DataClassDictMixin):
-    """Model for a chapter."""
-
-    chapter_id: int
-    position_start: float
-    position_end: float | None = None
-    title: str | None = None
-
-    def __hash__(self) -> int:
-        """Return custom hash."""
-        return hash(self.chapter_id)
-
-    def __eq__(self, other: object) -> bool:
-        """Check equality of two items."""
-        if not isinstance(other, MediaItemChapter):
-            return False
-        return self.chapter_id == other.chapter_id
-
-
 @dataclass(kw_only=True)
 class MediaItemMetadata(DataClassDictMixin):
     """Model for a MediaItem's metadata."""
@@ -85,10 +65,11 @@ class MediaItemMetadata(DataClassDictMixin):
     lyrics: str | None = None  # tracks only
     label: str | None = None
     links: set[MediaItemLink] | None = None
-    chapters: UniqueList[MediaItemChapter] | None = None
     performers: set[str] | None = None
     preview: str | None = None
     popularity: int | None = None
+    release_date: str | None = None
+    languages: UniqueList[str] | None = None
     # last_refresh: timestamp the (full) metadata was last collected
     last_refresh: int | None = None
 

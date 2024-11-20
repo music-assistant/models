@@ -208,20 +208,6 @@ class Track(MediaItem):
     track_number: int = 0  # required for album tracks
 
     @property
-    def has_chapters(self) -> bool:
-        """
-        Return boolean if this Track has chapters.
-
-        This is often an indicator that this track is an episode from a
-        Podcast or AudioBook.
-        """
-        if not self.metadata:
-            return False
-        if not self.metadata.chapters:
-            return False
-        return len(self.metadata.chapters) > 1
-
-    @property
     def image(self) -> MediaItemImage | None:
         """Return (first) image from metadata (prefer album)."""
         if isinstance(self.album, Album) and self.album.image:
@@ -273,6 +259,66 @@ class Radio(MediaItem):
 
     media_type: MediaType = MediaType.RADIO
     duration: int = 172800
+
+
+@dataclass(kw_only=True)
+class Audiobook(MediaItem):
+    """Model for an Audiobook."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    publisher: str
+    total_chapters: int
+    authors: UniqueList[str] = field(default_factory=UniqueList)
+    narrators: UniqueList[str] = field(default_factory=UniqueList)
+    media_type: MediaType = MediaType.AUDIOBOOK
+
+
+@dataclass(kw_only=True)
+class Chapter(MediaItem):
+    """Model for an Audiobook Chapter."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    position: int  # sort position / chapter number
+    audiobook: Audiobook | ItemMapping
+    duration: int = 0
+    # resume point info
+    fully_played: bool = False
+    resume_position_ms: int = 0
+    media_type: MediaType = MediaType.CHAPTER
+
+
+@dataclass(kw_only=True)
+class Podcast(MediaItem):
+    """Model for a Podcast."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    publisher: str
+    total_episodes: int
+    media_type: MediaType = MediaType.PODCAST
+
+
+@dataclass(kw_only=True)
+class Episode(MediaItem):
+    """Model for a Podcast Episode."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    position: int  # sort position / episode number
+    name: str
+    podcast: Podcast | ItemMapping
+    duration: int = 0
+
+    fully_played: bool = False
+    resume_position_ms: int = 0
+
+    media_type: MediaType = MediaType.EPISODE
 
 
 @dataclass(kw_only=True)
