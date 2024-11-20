@@ -87,9 +87,9 @@ class Player(DataClassDictMixin):
     #   and this will include the player's own id (as first item in the list).
     group_childs: UniqueList[str] = field(default_factory=UniqueList)
 
-    # can_sync_with: return set of player_id's this player can sync with
-    # can also be instance id of an entire provider if all players can sync with each other
-    can_sync_with: set[str] = field(default_factory=set)
+    # can_group_with: return set of player_id's this player can group/sync with
+    # can also be instance id of an entire provider if all players can group with each other
+    can_group_with: set[str] = field(default_factory=set)
 
     # synced_to: player_id of the player this player is currently synced to
     # also referred to as "sync leader"
@@ -101,7 +101,7 @@ class Player(DataClassDictMixin):
     # source_list: return list of available sources for this player
     source_list: UniqueList[PlayerSource] = field(default_factory=UniqueList)
 
-    # active_source: return player_id of the active group for this player (if any)
+    # active_group: return player_id of the active group for this player (if any)
     # if the player is grouped and a group is active,
     # this should be set to the group's player_id by the group player implementation.
     active_group: str | None = None
