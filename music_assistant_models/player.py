@@ -58,7 +58,7 @@ class Player(DataClassDictMixin):
     available: bool
     powered: bool
     device_info: DeviceInfo
-    supported_features: tuple[PlayerFeature, ...] = field(default=())
+    supported_features: set[PlayerFeature] = field(default_factory=set)
 
     state: PlayerState | None = None
     elapsed_time: float | None = None
