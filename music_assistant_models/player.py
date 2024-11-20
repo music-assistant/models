@@ -16,8 +16,19 @@ class DeviceInfo(DataClassDictMixin):
     """Model for a player's deviceinfo."""
 
     model: str = "Unknown model"
-    address: str = ""
     manufacturer: str = "Unknown Manufacturer"
+    software_version: str | None = None
+    model_id: str | None = None
+    manufacturer_id: str | None = None
+    ip_address: str | None = None
+    mac_address: str | None = None
+
+    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
+        """Execute action(s) on serialization."""
+        # TEMP 2024-11-20: add alias to 'address' for ip_address for backwards compatibility
+        # Remove this in a future release
+        d["address"] = d.get("ip_address") or ""
+        return d
 
 
 @dataclass
