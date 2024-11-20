@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/music-assistant/models/compare/v1.1.0...v1.1.1) (2024-11-20)
+
+
+### Features
+
+* (re)introduce can_sync_with ([cf3b2c7](https://github.com/music-assistant/models/commit/cf3b2c7cb469cba805c640e9c2059b36c9d28b11))
+* add set to UniqueList ([f49a8ab](https://github.com/music-assistant/models/commit/f49a8ab81b8441465f570ef3515b4432f10fd314))
+* Rename sync player feature to set members ([3ad6717](https://github.com/music-assistant/models/commit/3ad671789a651ceb45f3d13a9066c52f6068ebb5))
+
 ## [1.1.0](https://github.com/music-assistant/models/compare/v1.0.3...v1.1.0) (2024-11-20)
 
 
