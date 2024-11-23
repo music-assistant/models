@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/music-assistant/models/compare/v1.1.2...v1.1.3) (2024-11-23)
+
+
+### Features
+
+* Add audio source support + small tweaks ([c4f75f8](https://github.com/music-assistant/models/commit/c4f75f85dcb1aadf9d0a805218203fc238f670cd))
+
 ## [1.1.2](https://github.com/music-assistant/models/compare/v1.1.1...v1.1.2) (2024-11-20)
 
 
