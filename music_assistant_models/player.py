@@ -54,10 +54,10 @@ class PlayerSource(DataClassDictMixin):
 
     id: str
     name: str
-    # is_mass: this source represents a Music Assistant Queue
-    is_mass: bool = False
-    # passive: this source can not be selected/activated (from MA)
+    # passive: this source can not be selected/activated by MA/the user
     passive: bool = False
+    # metadata is optional and can be used to store additional source data
+    metadata: PlayerMedia | None = None
 
 
 @dataclass

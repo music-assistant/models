@@ -38,6 +38,7 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     FOLDER = "folder"
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
+    OTHER = "other"
     UNKNOWN = "unknown"
 
     @classmethod
@@ -286,6 +287,7 @@ class PlayerFeature(StrEnum):
     accurate_time: The player provides millisecond accurate timing information.
     seek: The player supports seeking to a specific.
     enqueue: The player supports (en)queuing of media items natively.
+    select_source: The player has native support for selecting a source.
     """
 
     POWER = "power"
@@ -297,6 +299,7 @@ class PlayerFeature(StrEnum):
     NEXT_PREVIOUS = "next_previous"
     PLAY_ANNOUNCEMENT = "play_announcement"
     ENQUEUE = "enqueue"
+    SELECT_SOURCE = "select_source"
     UNKNOWN = "unknown"
 
     @classmethod
@@ -354,6 +357,8 @@ class ProviderFeature(StrEnum):
     LIBRARY_TRACKS = "library_tracks"
     LIBRARY_PLAYLISTS = "library_playlists"
     LIBRARY_RADIOS = "library_radios"
+    LIBRARY_AUDIOBOOKS = "library_audiobooks"
+    LIBRARY_PODCASTS = "library_podcasts"
 
     # additional library features
     ARTIST_ALBUMS = "artist_albums"
@@ -365,6 +370,8 @@ class ProviderFeature(StrEnum):
     LIBRARY_TRACKS_EDIT = "library_tracks_edit"
     LIBRARY_PLAYLISTS_EDIT = "library_playlists_edit"
     LIBRARY_RADIOS_EDIT = "library_radios_edit"
+    LIBRARY_AUDIOBOOKS_EDIT = "library_audiobooks_edit"
+    LIBRARY_PODCASTS_EDIT = "library_podcasts_edit"
 
     # if we can grab 'similar tracks' from the music provider
     # used to generate dynamic playlists
@@ -390,6 +397,9 @@ class ProviderFeature(StrEnum):
     #
     # PLUGIN FEATURES
     #
+    AUDIO_SOURCE = "audio_source"
+
+    # fallback
     UNKNOWN = "unknown"
 
     @classmethod

@@ -311,7 +311,6 @@ class Episode(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     position: int  # sort position / episode number
-    name: str
     podcast: Podcast | ItemMapping
     duration: int = 0
 
