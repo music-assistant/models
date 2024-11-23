@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.2](https://github.com/music-assistant/models/compare/v1.1.1...v1.1.2) (2024-11-20)
+
+
+### Features
+
+* Add base models for podcasts and audiobooks ([6163961](https://github.com/music-assistant/models/commit/61639619232326081b9ef3a42953be09dc774806))
+
+
+### Bug Fixes
+
+* Rename can_sync_with to can_group_with ([e6723c4](https://github.com/music-assistant/models/commit/e6723c4a71494fb83effa8761a9edc7e5fe1273c))
+
 ## [1.1.1](https://github.com/music-assistant/models/compare/v1.1.0...v1.1.1) (2024-11-20)
 
 
