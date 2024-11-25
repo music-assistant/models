@@ -22,6 +22,9 @@ class DSPFilterBase(DataClassDictMixin):
     # Enable/disable this filter
     enabled: bool
 
+    def validate(self) -> None:
+        """Validate the DSP filter."""
+
 
 class ParametricEQBandType(StrEnum):
     """Enum for Parametric EQ band types."""
@@ -63,6 +66,17 @@ class ParametricEQFilter(DSPFilterBase):
     type: Literal[DSPFilterType.PARAMETRIC_EQ] = DSPFilterType.PARAMETRIC_EQ
     bands: list[ParametricEQBand] = field(default_factory=list)
 
+    def validate(self) -> None:
+        """Validate the Parametric EQ filter."""
+        # Validate bands
+        for band in self.bands:
+            if not 0.0 < band.frequency <= 100000.0:
+                raise ValueError("Band frequency must be in the range 0.0 to 100000.0 Hz")
+            if not 0.01 <= band.q <= 100.0:
+                raise ValueError("Band Q factor must be in the range 0.01 to 100.0")
+            if not -60.0 <= band.gain <= 60.0:
+                raise ValueError("Band gain must be in the range -60.0 to 60.0 dB")
+
 
 # Type alias for all possible DSP filters
 DSPFilter = ParametricEQFilter
@@ -83,3 +97,15 @@ class DSPConfig(DataClassDictMixin):
     # Enable/disable the default output limiter, will be applied after all other DSP effects
     # to prevent clipping
     output_limiter: bool = True
+
+    def validate(self) -> None:
+        """Validate the DSP configuration."""
+        # Validate input gain
+        if not -60.0 <= self.input_gain <= 60.0:
+            raise ValueError("Input gain must be in the range -60.0 to 60.0 dB")
+        # Validate output gain
+        if not -60.0 <= self.output_gain <= 60.0:
+            raise ValueError("Output gain must be in the range -60.0 to 60.0 dB")
+        # Validate filters
+        for f in self.filters:
+            f.validate()
