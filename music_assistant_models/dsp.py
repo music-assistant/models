@@ -14,6 +14,7 @@ class DSPFilterType(StrEnum):
     """Enum of all supported DSP Filter Types."""
 
     PARAMETRIC_EQ = "parametric_eq"
+    TONE_CONTROL = "tone_control"
 
 @dataclass
 class DSPFilterBase(DataClassDictMixin):
@@ -78,8 +79,33 @@ class ParametricEQFilter(DSPFilterBase):
                 raise ValueError("Band gain must be in the range -60.0 to 60.0 dB")
 
 
+@dataclass
+class ToneControlFilter(DSPFilterBase):
+    """Model for a Tone Control filter."""
+
+    type: Literal[DSPFilterType.TONE_CONTROL] = DSPFilterType.TONE_CONTROL
+    # Bass level in dB, can be negative or positive
+    bass_level: float = 0.0
+    # Mid level in dB, can be negative or positive
+    mid_level: float = 0.0
+    # Treble level in dB, can be negative or positive
+    treble_level: float = 0.0
+
+    def validate(self) -> None:
+        """Validate the Tone Control filter."""
+        # Validate bass level
+        if not -60.0 <= self.bass_level <= 60.0:
+            raise ValueError("Bass level must be in the range -60.0 to 60.0 dB")
+        # Validate mid level
+        if not -60.0 <= self.mid_level <= 60.0:
+            raise ValueError("Mid level must be in the range -60.0 to 60.0 dB")
+        # Validate treble level
+        if not -60.0 <= self.treble_level <= 60.0:
+            raise ValueError("Treble level must be in the range -60.0 to 60.0 dB")
+
+
 # Type alias for all possible DSP filters
-DSPFilter = ParametricEQFilter
+DSPFilter = ParametricEQFilter | ToneControlFilter
 
 
 @dataclass
