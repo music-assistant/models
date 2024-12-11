@@ -298,8 +298,8 @@ class Podcast(MediaItem):
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
-    publisher: str
-    total_episodes: int
+    publisher: str | None = None
+    total_episodes: int | None = None
     media_type: MediaType = MediaType.PODCAST
 
 
@@ -310,7 +310,7 @@ class Episode(MediaItem):
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
-    position: int  # sort position / episode number
+    position: int  # sort position / episode number (set to 0 if unknown)
     podcast: Podcast | ItemMapping
     duration: int = 0
 
