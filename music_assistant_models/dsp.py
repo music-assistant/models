@@ -10,11 +10,13 @@ from mashumaro import DataClassDictMixin
 
 # ruff: noqa: S105
 
+
 class DSPFilterType(StrEnum):
     """Enum of all supported DSP Filter Types."""
 
     PARAMETRIC_EQ = "parametric_eq"
     TONE_CONTROL = "tone_control"
+
 
 @dataclass
 class DSPFilterBase(DataClassDictMixin):
