@@ -23,7 +23,6 @@ from .media_item import (
     ItemMapping,
     MediaItem,
     Playlist,
-    PlaylistTrack,
     Podcast,
     Radio,
     Track,
@@ -61,7 +60,6 @@ __all__ = [
 MediaItemType = (
     Artist
     | Album
-    | PlaylistTrack
     | Track
     | Radio
     | Playlist
@@ -71,6 +69,9 @@ MediaItemType = (
     | Episode
     | BrowseFolder
 )
+
+# directly playable media items
+PlayableMediaItemType = Track | Radio | Chapter | Episode
 
 
 @dataclass(kw_only=True)

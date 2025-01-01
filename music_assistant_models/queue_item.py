@@ -9,7 +9,7 @@ from uuid import uuid4
 from mashumaro import DataClassDictMixin
 
 from .enums import MediaType
-from .media_items import ItemMapping, MediaItemImage, Radio, Track, UniqueList, is_track
+from .media_items import ItemMapping, MediaItemImage, PlayableMediaItemType, UniqueList, is_track
 from .streamdetails import StreamDetails
 
 
@@ -23,7 +23,7 @@ class QueueItem(DataClassDictMixin):
     duration: int | None
     sort_index: int = 0
     streamdetails: StreamDetails | None = None
-    media_item: Track | Radio | None = None
+    media_item: PlayableMediaItemType | None = None
     image: MediaItemImage | None = None
     index: int = 0
 
@@ -62,9 +62,9 @@ class QueueItem(DataClassDictMixin):
         return MediaType.UNKNOWN
 
     @classmethod
-    def from_media_item(cls, queue_id: str, media_item: Track | Radio) -> QueueItem:
+    def from_media_item(cls, queue_id: str, media_item: PlayableMediaItemType) -> QueueItem:
         """Construct QueueItem from track/radio item."""
-        if is_track(media_item):
+        if is_track(media_item) and hasattr(media_item, "artists"):
             artists = "/".join(x.name for x in media_item.artists)
             name = f"{artists} - {media_item.name}"
             if media_item.version:
@@ -97,7 +97,7 @@ class QueueItem(DataClassDictMixin):
         return cls.from_dict(d)
 
 
-def get_image(media_item: Track | Radio | None) -> MediaItemImage | None:
+def get_image(media_item: PlayableMediaItemType | None) -> MediaItemImage | None:
     """Find the Image for the MediaItem."""
     if not media_item:
         return None

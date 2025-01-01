@@ -221,20 +221,6 @@ class Track(MediaItem):
 
 
 @dataclass(kw_only=True)
-class PlaylistTrack(Track):
-    """
-    Model for a track on a playlist.
-
-    Same as regular Track but with explicit and required definition of position.
-    """
-
-    __hash__ = _MediaItemBase.__hash__
-    __eq__ = _MediaItemBase.__eq__
-
-    position: int
-
-
-@dataclass(kw_only=True)
 class Playlist(MediaItem):
     """Model for a playlist."""
 
@@ -268,8 +254,8 @@ class Audiobook(MediaItem):
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
-    publisher: str
-    total_chapters: int
+    publisher: str | None = None
+    total_chapters: int | None = None
     authors: UniqueList[str] = field(default_factory=UniqueList)
     narrators: UniqueList[str] = field(default_factory=UniqueList)
     media_type: MediaType = MediaType.AUDIOBOOK
