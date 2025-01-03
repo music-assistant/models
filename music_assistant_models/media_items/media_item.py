@@ -272,8 +272,10 @@ class Chapter(MediaItem):
     audiobook: Audiobook | ItemMapping
     duration: int = 0
     # resume point info
-    fully_played: bool = False
-    resume_position_ms: int = 0
+    # set to None if unknown/unsupported by provider
+    # which will let MA fallback to an internal resume point
+    fully_played: bool | None = None
+    resume_position_ms: int | None = None
     media_type: MediaType = MediaType.CHAPTER
 
 
@@ -300,8 +302,11 @@ class Episode(MediaItem):
     podcast: Podcast | ItemMapping
     duration: int = 0
 
-    fully_played: bool = False
-    resume_position_ms: int = 0
+    # resume point info
+    # set to None if unknown/unsupported by provider
+    # which will let MA fallback to an internal resume point
+    fully_played: bool | None = None
+    resume_position_ms: int | None = None
 
     media_type: MediaType = MediaType.EPISODE
 
