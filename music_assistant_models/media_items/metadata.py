@@ -49,6 +49,25 @@ class MediaItemImage(DataClassDictMixin):
         return self.__hash__() == other.__hash__()
 
 
+@dataclass(frozen=True, kw_only=True)
+class MediaItemChapter(DataClassDictMixin):
+    """Model for a MediaItem's chapter/bookmark."""
+
+    position: int  # sort position/number
+    name: str  # friendly name
+    start: float  # start position in seconds
+    end: float | None = None  # start position in seconds if known
+
+    @property
+    def duration(self) -> float:
+        """Return duration of chapter."""
+        return self.end - self.start if self.end else 0
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.position)
+
+
 @dataclass(kw_only=True)
 class MediaItemMetadata(DataClassDictMixin):
     """Model for a MediaItem's metadata."""
@@ -70,6 +89,9 @@ class MediaItemMetadata(DataClassDictMixin):
     popularity: int | None = None
     release_date: str | None = None
     languages: UniqueList[str] | None = None
+    # chapters is a list of available chapters, sorted by position
+    # most commonly used for audiobooks and podcast episodes
+    chapters: list[MediaItemChapter] | None = None
     # last_refresh: timestamp the (full) metadata was last collected
     last_refresh: int | None = None
 

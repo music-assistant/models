@@ -255,28 +255,16 @@ class Audiobook(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     publisher: str | None = None
-    total_chapters: int | None = None
     authors: UniqueList[str] = field(default_factory=UniqueList)
     narrators: UniqueList[str] = field(default_factory=UniqueList)
-    media_type: MediaType = MediaType.AUDIOBOOK
-
-
-@dataclass(kw_only=True)
-class Chapter(MediaItem):
-    """Model for an Audiobook Chapter."""
-
-    __hash__ = _MediaItemBase.__hash__
-    __eq__ = _MediaItemBase.__eq__
-
-    position: int  # sort position / chapter number
-    audiobook: Audiobook | ItemMapping
     duration: int = 0
     # resume point info
     # set to None if unknown/unsupported by provider
     # which will let MA fallback to an internal resume point
     fully_played: bool | None = None
     resume_position_ms: int | None = None
-    media_type: MediaType = MediaType.CHAPTER
+
+    media_type: MediaType = MediaType.AUDIOBOOK
 
 
 @dataclass(kw_only=True)
@@ -292,7 +280,7 @@ class Podcast(MediaItem):
 
 
 @dataclass(kw_only=True)
-class Episode(MediaItem):
+class PodcastEpisode(MediaItem):
     """Model for a Podcast Episode."""
 
     __hash__ = _MediaItemBase.__hash__
@@ -308,7 +296,7 @@ class Episode(MediaItem):
     fully_played: bool | None = None
     resume_position_ms: int | None = None
 
-    media_type: MediaType = MediaType.EPISODE
+    media_type: MediaType = MediaType.PODCAST_EPISODE
 
 
 @dataclass(kw_only=True)

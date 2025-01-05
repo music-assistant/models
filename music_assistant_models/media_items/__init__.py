@@ -18,16 +18,15 @@ from .media_item import (
     Artist,
     Audiobook,
     BrowseFolder,
-    Chapter,
-    Episode,
     ItemMapping,
     MediaItem,
     Playlist,
     Podcast,
+    PodcastEpisode,
     Radio,
     Track,
 )
-from .metadata import MediaItemImage, MediaItemLink, MediaItemMetadata
+from .metadata import MediaItemChapter, MediaItemImage, MediaItemLink, MediaItemMetadata
 from .provider_mapping import ProviderMapping
 
 __all__ = [
@@ -36,13 +35,11 @@ __all__ = [
     "AudioFormat",
     "Audiobook",
     "BrowseFolder",
-    "Chapter",
-    "Episode",
     "ItemMapping",
     "MediaItem",
+    "MediaItemChapter",
     "MediaItemImage",
     "MediaItemLink",
-    "MediaItemMetadata",
     "MediaItemMetadata",
     "Metadata",
     "MetadataProvider",
@@ -51,6 +48,7 @@ __all__ = [
     "Playlist",
     "PlaylistTrack",
     "Podcast",
+    "PodcastEpisode",
     "ProviderMapping",
     "Radio",
     "Track",
@@ -58,20 +56,11 @@ __all__ = [
 ]
 
 MediaItemType = (
-    Artist
-    | Album
-    | Track
-    | Radio
-    | Playlist
-    | Audiobook
-    | Chapter
-    | Podcast
-    | Episode
-    | BrowseFolder
+    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | BrowseFolder
 )
 
 # directly playable media items
-PlayableMediaItemType = Track | Radio | Chapter | Episode
+PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
 
 
 @dataclass(kw_only=True)
@@ -103,12 +92,10 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return Radio.from_dict(media_item)
     if media_item["media_type"] == "audiobook":
         return Audiobook.from_dict(media_item)
-    if media_item["media_type"] == "chapter":
-        return Chapter.from_dict(media_item)
     if media_item["media_type"] == "podcast":
         return Podcast.from_dict(media_item)
-    if media_item["media_type"] == "episode":
-        return Episode.from_dict(media_item)
+    if media_item["media_type"] == "podcast_episode":
+        return PodcastEpisode.from_dict(media_item)
     raise InvalidDataError("Unknown media type")
 
 
