@@ -105,11 +105,7 @@ def get_image(media_item: PlayableMediaItemType | None) -> MediaItemImage | None
         return media_item.image
     if media_item.media_type == MediaType.TRACK and (album := getattr(media_item, "album", None)):
         return get_image(album)
-    if media_item.media_type == MediaType.CHAPTER and (
-        audiobook := getattr(media_item, "audiobook", None)
-    ):
-        return get_image(audiobook)
-    if media_item.media_type == MediaType.EPISODE and (
+    if media_item.media_type == MediaType.PODCAST_EPISODE and (
         podcast := getattr(media_item, "podcast", None)
     ):
         return get_image(podcast)
