@@ -8,7 +8,6 @@ from typing import Any, Self
 
 from mashumaro import DataClassDictMixin
 
-from .constants import FALLBACK_DURATION
 from .enums import PlayerState, RepeatMode
 from .media_items import MediaItemType
 from .queue_item import QueueItem
@@ -19,7 +18,7 @@ class PlayLogEntry:
     """Representation of a PlayLogEntry within Music Assistant."""
 
     queue_item_id: str
-    duration: int = FALLBACK_DURATION
+    duration: int | None = None
     seconds_streamed: float | None = None
 
 
