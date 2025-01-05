@@ -60,7 +60,6 @@ class PlayerQueue(DataClassDictMixin):
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
         d.pop("flow_mode_stream_log", None)
-        d.pop("enqueued_media_items", None)
         d.pop("next_track_enqueued", None)
         return d
 
@@ -71,6 +70,8 @@ class PlayerQueue(DataClassDictMixin):
         d.pop("next_item", None)
         d.pop("index_in_buffer", None)
         d.pop("flow_mode", None)
+        d.pop("next_track_enqueued", None)
+        d.pop("flow_mode_stream_log", None)
         return d
 
     @classmethod
@@ -80,7 +81,6 @@ class PlayerQueue(DataClassDictMixin):
         d.pop("next_item", None)
         d.pop("index_in_buffer", None)
         d.pop("flow_mode", None)
-        d.pop("enqueued_media_items", None)
         d.pop("next_track_enqueued", None)
         d.pop("flow_mode_stream_log", None)
         return cls.from_dict(d)
