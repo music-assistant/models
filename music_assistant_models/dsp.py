@@ -115,7 +115,7 @@ class DSPConfig(DataClassDictMixin):
     """Model for a complete DSP configuration."""
 
     # Enable/disable the complete DSP configuration, including input/output stages
-    enabled: bool = True
+    enabled: bool = False
     # List of DSP filters that are applied in order
     filters: list[DSPFilter] = field(default_factory=list)
     # Input gain in dB, will be applied before any other DSP filters
