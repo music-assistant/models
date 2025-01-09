@@ -283,6 +283,7 @@ class PlayerFeature(StrEnum):
     volume: The player supports adjusting the volume.
     mute: The player supports muting the volume.
     set_members: The player supports grouping with other players.
+    multi_device_dsp: The player supports per-device DSP when grouped.
     accurate_time: The player provides millisecond accurate timing information.
     seek: The player supports seeking to a specific.
     enqueue: The player supports (en)queuing of media items natively.
@@ -294,6 +295,7 @@ class PlayerFeature(StrEnum):
     VOLUME_MUTE = "volume_mute"
     PAUSE = "pause"
     SET_MEMBERS = "set_members"
+    MULTI_DEVICE_DSP = "multi_device_dsp"
     SEEK = "seek"
     NEXT_PREVIOUS = "next_previous"
     PLAY_ANNOUNCEMENT = "play_announcement"
