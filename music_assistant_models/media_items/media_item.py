@@ -128,11 +128,6 @@ class MediaItem(_MediaItemBase):
                 return True
         return False
 
-    def mark_unavailable(self) -> None:
-        """Mark item as unavailabley."""
-        for x in self.provider_mappings:
-            x.available = False
-
     @property
     def image(self) -> MediaItemImage | None:
         """Return (first/random) image/thumb from metadata (if any)."""
