@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from mashumaro import DataClassDictMixin
@@ -26,20 +26,34 @@ class StreamDetails(DataClassDictMixin):
     audio_format: AudioFormat
     media_type: MediaType = MediaType.TRACK
     stream_type: StreamType = StreamType.CUSTOM
-    path: str | None = None
-    decryption_key: str | None = None
 
-    # stream_title: radio streams can optionally set this field
-    stream_title: str | None = None
+    # optional fields
+
+    # path: url or (local accessible) path to the stream (if not custom stream)
+    path: str | None = None
+
     # duration of the item to stream, copied from media_item if omitted
     duration: int | None = None
     # total size in bytes of the item, calculated at eof when omitted
     size: int | None = None
     # data: provider specific data (not exposed externally)
-    # this info is for example used to pass details to the get_audio_stream
+    # this info is for example used to pass slong details to the get_audio_stream
     data: Any = None
-    # can_seek: bool to indicate that the providers 'get_audio_stream' supports seeking of the item
+    # allow_seek: bool to indicate that the content can/may be seeked
+    # If set to False, seeking will be completely disabled.
+    # NOTE: this is automatically disabled for duration-less streams (e/g. radio)
+    allow_seek: bool = True
+    # can_seek: bool to indicate that the custom audio stream can be seeked
+    # if set to False, and allow seek is set to True, the core logic will attempt
+    # to seek in the incoming (bytes)stream, which is not a guarantee it will work.
+    # If allow_seek is also set to False, seeking will be completely disabled.
     can_seek: bool = True
+    # extra_input_args: any additional input args to pass along to ffmpeg
+    extra_input_args: list[str] = field(default_factory=list)
+    # decryption_key: decryption key for encrypted streams
+    decryption_key: str | None = None
+    # stream_title: radio streams can optionally set/use this field
+    stream_title: str | None = None
 
     # the fields below will be set/controlled by the streamcontroller
     seek_position: int = 0
