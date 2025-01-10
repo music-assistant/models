@@ -21,6 +21,7 @@ from .media_item import (
     ItemMapping,
     MediaItem,
     Playlist,
+    PluginSource,
     Podcast,
     PodcastEpisode,
     Radio,
@@ -47,6 +48,7 @@ __all__ = [
     "MetadataProviderType",
     "Playlist",
     "PlaylistTrack",
+    "PluginSource",
     "Podcast",
     "PodcastEpisode",
     "ProviderMapping",
@@ -56,11 +58,20 @@ __all__ = [
 ]
 
 MediaItemType = (
-    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | BrowseFolder
+    Artist
+    | Album
+    | Track
+    | Radio
+    | Playlist
+    | Audiobook
+    | Podcast
+    | PodcastEpisode
+    | PluginSource
+    | BrowseFolder
 )
 
 # directly playable media items
-PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
+PlayableMediaItemType = Track | Radio | Audiobook | PluginSource | PodcastEpisode
 
 
 @dataclass(kw_only=True)
