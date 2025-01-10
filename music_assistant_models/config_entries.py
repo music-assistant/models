@@ -88,8 +88,10 @@ class ConfigEntry(DataClassDictMixin):
     help_link: str | None = None
     # multi_value [optional]: allow multiple values from the list
     multi_value: bool = False
-    # depends_on [optional]: needs to be set before this setting shows up in frontend
+    # depends_on [optional]: needs to be set before this setting is enabled in the frontend
     depends_on: str | None = None
+    # depends_on_value [optional]: complementary to depends_on, only enable if this value is set
+    depends_on_value: str | None = None
     # hidden: hide from UI
     hidden: bool = False
     # category: category to group this setting into in the frontend (e.g. advanced)
