@@ -37,6 +37,7 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     FOLDER = "folder"
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
+    PLUGIN_SOURCE = "plugin_source"
     OTHER = "other"
     UNKNOWN = "unknown"
 
