@@ -137,3 +137,28 @@ class DSPConfig(DataClassDictMixin):
         # Validate filters
         for f in self.filters:
             f.validate()
+
+
+class DSPState(StrEnum):
+    """Enum of all DSP states of DSPDetails."""
+
+    ENABLED = "enabled"
+    DISABLED = "disabled"
+    DISABLED_BY_UNSUPPORTED_GROUP = "disabled_by_unsupported_group"
+
+
+@dataclass(kw_only=True)
+class DSPDetails(DataClassDictMixin):
+    """Model for information about a DSP applied to a stream.
+
+    This describes the DSP configuration as applied,
+    even when the DSP state is disabled. For example,
+    output_limiter can remain true while the DSP is disabled.
+    All filters in the list are guaranteed to be enabled.
+    """
+
+    state: DSPState = DSPState.DISABLED
+    input_gain: float = 0.0
+    filters: list[DSPFilter] = field(default_factory=list)
+    output_gain: float = 0.0
+    output_limiter: bool = True

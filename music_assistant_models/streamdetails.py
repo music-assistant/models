@@ -7,6 +7,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin
 
+from .dsp import DSPDetails
 from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
 
@@ -79,6 +80,7 @@ class StreamDetails(DataClassDictMixin):
     strip_silence_begin: bool = False
     strip_silence_end: bool = False
     stream_error: bool | None = None
+    dsp: DSPDetails | None = None
 
     def __str__(self) -> str:
         """Return pretty printable string of object."""
