@@ -11,6 +11,16 @@ from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
 
 
+@dataclass
+class LivestreamMetadata(DataClassDictMixin):
+    """Metadata of livestream."""
+
+    title: str | None = None  # optional
+    artist: str | None = None  # optional
+    album: str | None = None  # optional
+    image_url: str | None = None  # optional
+
+
 @dataclass(kw_only=True)
 class StreamDetails(DataClassDictMixin):
     """Model for streamdetails."""
@@ -52,8 +62,9 @@ class StreamDetails(DataClassDictMixin):
     extra_input_args: list[str] = field(default_factory=list)
     # decryption_key: decryption key for encrypted streams
     decryption_key: str | None = None
-    # stream_title: radio streams can optionally set/use this field
-    stream_title: str | None = None
+    # stream_metadata: radio/live streams can optionally set/use this field
+    # to set the metadata of any media during the stream
+    stream_metadata: LivestreamMetadata | None = None
 
     # the fields below will be set/controlled by the streamcontroller
     seek_position: int = 0
@@ -85,3 +96,10 @@ class StreamDetails(DataClassDictMixin):
     def uri(self) -> str:
         """Return uri representation of item."""
         return f"{self.provider}://{self.media_type.value}/{self.item_id}"
+
+    @property
+    def stream_title(self) -> str | None:
+        """Return streamtitle for backwards compatibility."""
+        if self.stream_metadata and self.stream_metadata.title:
+            return self.stream_metadata.title
+        return None
