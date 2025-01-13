@@ -123,3 +123,9 @@ class MediaItemMetadata(DataClassDictMixin):
             elif cur_val is None:
                 setattr(self, fld.name, new_val)
         return self
+
+    def add_image(self, image: MediaItemImage) -> None:
+        """Add an image to the list."""
+        if not self.images:
+            self.images = UniqueList()
+        self.images.append(image)
