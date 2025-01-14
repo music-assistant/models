@@ -80,12 +80,11 @@ class StreamDetails(DataClassDictMixin):
     strip_silence_begin: bool = False
     strip_silence_end: bool = False
     stream_error: bool | None = None
-    # In case of grouped playback, this will contain the DSP details for
-    # the leader (keep in mind that PlayerGroups has no leader!)
-    dsp: DSPDetails | None = None
-    # In case of grouped playback, this will contain the DSP details for
-    # all other players of the group (indexed by player_id)
-    dsp_grouped_childs: dict[str, DSPDetails] | None = None
+    # This contains the DSPDetails of all players in the group.
+    # In case of single player playback, dict will contain only one entry.
+    # The leader will have is_leader set to True.
+    # (keep in mind that PlayerGroups have no (explicit) leader!)
+    dsp: dict[str, DSPDetails] | None = None
 
     def __str__(self) -> str:
         """Return pretty printable string of object."""

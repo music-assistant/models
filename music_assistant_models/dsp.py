@@ -158,6 +158,7 @@ class DSPDetails(DataClassDictMixin):
     """
 
     state: DSPState = DSPState.DISABLED
+    is_leader: bool = False
     input_gain: float = 0.0
     filters: list[DSPFilter] = field(default_factory=list)
     output_gain: float = 0.0
