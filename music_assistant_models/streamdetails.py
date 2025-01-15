@@ -90,6 +90,8 @@ class StreamDetails(DataClassDictMixin):
         d.pop("seconds_streamed", None)
         d.pop("seek_position", None)
         d.pop("fade_in", None)
+        # for backwards compatibility
+        d["stream_title"] = self.stream_title
         return d
 
     @property
