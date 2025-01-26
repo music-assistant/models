@@ -8,6 +8,8 @@ from typing import Literal
 
 from mashumaro import DataClassDictMixin
 
+from .media_items.audio_format import AudioFormat
+
 # ruff: noqa: S105
 
 
@@ -155,6 +157,7 @@ class DSPDetails(DataClassDictMixin):
     even when the DSP state is disabled. For example,
     output_limiter can remain true while the DSP is disabled.
     All filters in the list are guaranteed to be enabled.
+    output_format is the format that will be sent to the output device (if known).
     """
 
     state: DSPState = DSPState.DISABLED
@@ -163,3 +166,4 @@ class DSPDetails(DataClassDictMixin):
     filters: list[DSPFilter] = field(default_factory=list)
     output_gain: float = 0.0
     output_limiter: bool = True
+    output_format: AudioFormat | None = None

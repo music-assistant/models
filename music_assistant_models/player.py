@@ -10,6 +10,7 @@ from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import PLAYER_CONTROL_NATIVE
 from .enums import MediaType, PlayerFeature, PlayerState, PlayerType
+from .media_items.audio_format import AudioFormat
 from .unique_list import UniqueList
 
 
@@ -184,6 +185,15 @@ class Player(DataClassDictMixin):
     # last_poll: when was the player last polled (used with needs_poll)
     last_poll: float = field(
         default=0.0,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
+    # The output format that is sent to the player
+    # (or to the library/application that is used to send audio to the player)
+    output_format: AudioFormat | None = field(
+        default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
