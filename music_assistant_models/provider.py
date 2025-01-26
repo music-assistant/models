@@ -46,6 +46,10 @@ class ProviderManifest(DataClassORJSONMixin):
     # if this attribute is omitted and an icon_dark.svg is found in the provider
     # folder, the file contents will be read instead.
     icon_svg_dark: str | None = None
+    # icon_svg_monochrome: optional separate monochrome svg icon (full xml string)
+    # if this attribute is omitted and an monochrome_icon.svg is found in the provider
+    # folder, the file contents will be read instead.
+    icon_svg_monochrome: str | None = None
     # mdns_discovery: list of mdns types to discover
     mdns_discovery: list[str] | None = None
 
