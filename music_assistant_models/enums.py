@@ -158,7 +158,7 @@ class ContentType(StrEnum):
     M4B = "m4b"
     DSF = "dsf"
     OPUS = "opus"
-    WAVPACK = "wv"
+    WAVPACK = "wavpack"
     PCM_S16LE = "s16le"  # PCM signed 16-bit little-endian
     PCM_S24LE = "s24le"  # PCM signed 24-bit little-endian
     PCM_S32LE = "s32le"  # PCM signed 32-bit little-endian
@@ -190,6 +190,7 @@ class ContentType(StrEnum):
         tempstr = tempstr.split(";")[0]
         tempstr = tempstr.replace("mp4", "m4a")
         tempstr = tempstr.replace("mp4a", "m4a")
+        tempstr = tempstr.replace("wv", "wavpack")
         try:
             return cls(tempstr)
         except ValueError:
