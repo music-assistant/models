@@ -8,6 +8,8 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin
 
+from music_assistant_models.constants import POWER_CONTROL_NATIVE, VOLUME_CONTROL_NATIVE
+
 from .enums import MediaType, PlayerFeature, PlayerState, PlayerType
 from .unique_list import UniqueList
 
@@ -152,8 +154,14 @@ class Player(DataClassDictMixin):
     # and pass along freely
     extra_data: dict[str, Any] = field(default_factory=dict)
 
-    # announcement_in_progress boolean to indicate there's an announcement in progress.
+    # announcement_in_progress: boolean to indicate there's an announcement in progress.
     announcement_in_progress: bool = False
+
+    # power_control: the power control attached to this player (set by config)
+    power_control: str = POWER_CONTROL_NATIVE
+
+    # volume_control: the volume control attached to this player (set by config)
+    volume_control: str = VOLUME_CONTROL_NATIVE
 
     # last_poll: when was the player last polled (used with needs_poll)
     last_poll: float = 0
