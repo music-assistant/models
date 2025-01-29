@@ -151,6 +151,7 @@ class ContentType(StrEnum):
     MPEG = "mpeg"  # MPEG-PS/MPEG-TS container
     M4A = "m4a"  # MPEG-4 Audio (AAC/ALAC)
     MP4 = "mp4"  # MPEG-4 container
+    MP4A = "mp4a"  # MPEG-4 Audio (AAC/ALAC)
     M4B = "m4b"  # MPEG-4 Audiobook
     DSF = "dsf"  # DSD Stream File
 
@@ -240,8 +241,6 @@ class ContentType(StrEnum):
         tempstr = tempstr.split("?")[0]
         tempstr = tempstr.split("&")[0]
         tempstr = tempstr.split(";")[0]
-        tempstr = tempstr.replace("mp4", "m4a")
-        tempstr = tempstr.replace("mp4a", "m4a")
         tempstr = tempstr.replace("wv", "wavpack")
         tempstr = tempstr.replace("pcm_", "")
         try:
