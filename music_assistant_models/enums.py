@@ -158,12 +158,30 @@ class ContentType(StrEnum):
     FLAC = "flac"  # FLAC lossless audio
     MP3 = "mp3"  # MPEG-1 Audio Layer III
     WMA = "wma"  # Windows Media Audio
+    WMAV2 = "wmav2"  # Windows Media Audio v2
+    WMAPRO = "wmapro"  # Windows Media Audio Professional
     WAVPACK = "wavpack"  # WavPack lossless
+    TAK = "tak"  # Tom's Lossless Audio Kompressor
+    APE = "ape"  # Monkey's Audio
+    MUSEPACK = "mpc"  # MusePack
 
     # --- Codecs ---
     AAC = "aac"  # Advanced Audio Coding
     ALAC = "alac"  # Apple Lossless Audio Codec
     OPUS = "opus"  # Opus audio codec
+    VORBIS = "vorbis"  # Ogg Vorbis compression
+    AC3 = "ac3"  # Dolby Digital (common in DVDs)
+    EAC3 = "eac3"  # Dolby Digital Plus (streaming/4K)
+    DTS = "dts"  # Digital Theater System
+    TRUEHD = "truehd"  # Dolby TrueHD (lossless)
+    DTSHD = "dtshd"  # DTS-HD Master Audio
+    DTSX = "dtsx"  # DTS:X immersive audio
+    COOK = "cook"  # RealAudio Cook Codec
+    RA_144 = "ralf"  # RealAudio Lossless
+    MP2 = "mp2"  # MPEG-1 Audio Layer II
+    MP1 = "mp1"  # MPEG-1 Audio Layer I
+    DRA = "dra"  # Chinese Digital Rise Audio
+    ATRAC3 = "atrac3"  # Sony MiniDisc format
 
     # --- PCM Codecs ---
     PCM_S16LE = "s16le"  # PCM 16-bit little-endian
@@ -171,6 +189,31 @@ class ContentType(StrEnum):
     PCM_S32LE = "s32le"  # PCM 32-bit little-endian
     PCM_F32LE = "f32le"  # PCM 32-bit float
     PCM_F64LE = "f64le"  # PCM 64-bit float
+    PCM_S16BE = "s16be"  # PCM 16-bit big-endian
+    PCM_S24BE = "s24be"  # PCM 24-bit big-endian
+    PCM_S32BE = "s32be"  # PCM 32-bit big-endian
+    PCM_BLURAY = "pcm_bluray"  # Blu-ray specific PCM
+    PCM_DVD = "pcm_dvd"  # DVD specific PCM
+
+    # --- ADPCM Codecs ---
+    ADPCM_IMA = "adpcm_ima_qt"  # QuickTime variant
+    ADPCM_MS = "adpcm_ms"  # Microsoft variant
+    ADPCM_SWF = "adpcm_swf"  # Flash audio
+
+    # --- PDM Codecs ---
+    DSD_LSBF = "dsd_lsbf"  # DSD least-significant-bit first
+    DSD_MSBF = "dsd_msbf"  # DSD most-significant-bit first
+    DSD_LSBF_PLANAR = "dsd_lsbf_planar"  # DSD planar least-significant-bit first
+    DSD_MSBF_PLANAR = "dsd_msbf_planar"  # DSD planar most-significant-bit first
+
+    # --- Voice Codecs ---
+    AMR = "amr_nb"  # Adaptive Multi-Rate Narrowband, voice codec
+    AMR_WB = "amr_wb"  # Adaptive Multi-Rate Wideband, voice codec
+    SPEEX = "speex"  # Open-source voice codec, voice codec
+    PCM_ALAW = "alaw"  # G.711 A-law, voice codec
+    PCM_MULAW = "mulaw"  # G.711 µ-law, voice codec
+    G722 = "g722"  # ITU-T 7 kHz audio
+    G726 = "g726"  # ADPCM telephone quality
 
     # --- Special ---
     PCM = "pcm"  # PCM generic (details determined later)
@@ -219,6 +262,14 @@ class ContentType(StrEnum):
             ContentType.WAV,
             ContentType.ALAC,
             ContentType.WAVPACK,
+            ContentType.TAK,
+            ContentType.APE,
+            ContentType.TRUEHD,
+            ContentType.DSD_LSBF,
+            ContentType.DSD_MSBF,
+            ContentType.DSD_LSBF_PLANAR,
+            ContentType.DSD_MSBF_PLANAR,
+            ContentType.RA_144,
         )
 
     @classmethod
