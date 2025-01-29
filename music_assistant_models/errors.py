@@ -53,7 +53,7 @@ class LoginFailed(MusicAssistantError):
 
 
 class AudioError(MusicAssistantError):
-    """Error raised when an issue arrised when processing audio."""
+    """Error raised when an issue arose when processing audio."""
 
     error_code = 7
 
