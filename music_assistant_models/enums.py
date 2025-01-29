@@ -144,28 +144,37 @@ class AlbumType(StrEnum):
 class ContentType(StrEnum):
     """Enum with audio content/container types supported by ffmpeg."""
 
-    OGG = "ogg"
-    FLAC = "flac"
-    MP3 = "mp3"
-    AAC = "aac"
-    MPEG = "mpeg"
-    ALAC = "alac"
-    WAV = "wav"
-    AIFF = "aiff"
-    WMA = "wma"
-    M4A = "m4a"
-    MP4 = "mp4"
-    M4B = "m4b"
-    DSF = "dsf"
-    OPUS = "opus"
-    WAVPACK = "wavpack"
-    PCM_S16LE = "s16le"  # PCM signed 16-bit little-endian
-    PCM_S24LE = "s24le"  # PCM signed 24-bit little-endian
-    PCM_S32LE = "s32le"  # PCM signed 32-bit little-endian
-    PCM_F32LE = "f32le"  # PCM 32-bit floating-point little-endian
-    PCM_F64LE = "f64le"  # PCM 64-bit floating-point little-endian
+    # --- Containers ---
+    OGG = "ogg"  # Ogg container (Vorbis/Opus/FLAC)
+    WAV = "wav"  # WAV container (usually PCM)
+    AIFF = "aiff"  # AIFF container
+    MPEG = "mpeg"  # MPEG-PS/MPEG-TS container
+    M4A = "m4a"  # MPEG-4 Audio (AAC/ALAC)
+    MP4 = "mp4"  # MPEG-4 container
+    M4B = "m4b"  # MPEG-4 Audiobook
+    DSF = "dsf"  # DSD Stream File
+
+    # --- Can both be a container and codec ---
+    FLAC = "flac"  # FLAC lossless audio
+    MP3 = "mp3"  # MPEG-1 Audio Layer III
+    WMA = "wma"  # Windows Media Audio
+    WAVPACK = "wavpack"  # WavPack lossless
+
+    # --- Codecs ---
+    AAC = "aac"  # Advanced Audio Coding
+    ALAC = "alac"  # Apple Lossless Audio Codec
+    OPUS = "opus"  # Opus audio codec
+
+    # --- PCM Codecs ---
+    PCM_S16LE = "s16le"  # PCM 16-bit little-endian
+    PCM_S24LE = "s24le"  # PCM 24-bit little-endian
+    PCM_S32LE = "s32le"  # PCM 32-bit little-endian
+    PCM_F32LE = "f32le"  # PCM 32-bit float
+    PCM_F64LE = "f64le"  # PCM 64-bit float
+
+    # --- Special ---
     PCM = "pcm"  # PCM generic (details determined later)
-    UNKNOWN = "?"
+    UNKNOWN = "?"  # Unknown type
 
     @classmethod
     def _missing_(cls, value: object) -> ContentType:  # noqa: ARG003
