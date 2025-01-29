@@ -191,6 +191,7 @@ class ContentType(StrEnum):
         tempstr = tempstr.replace("mp4", "m4a")
         tempstr = tempstr.replace("mp4a", "m4a")
         tempstr = tempstr.replace("wv", "wavpack")
+        tempstr = tempstr.replace("pcm_", "")
         try:
             return cls(tempstr)
         except ValueError:
