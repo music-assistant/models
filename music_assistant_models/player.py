@@ -94,10 +94,14 @@ class Player(DataClassDictMixin):
     # also referred to as "sync leader"
     synced_to: str | None = None
 
-    # active_source: return active source id for this player
+    # active_source: return active source (id) for this player
+    # this can be a player native source id as defined in 'source list'
+    # or a Music Assistant queue id, if Music Assistant is the active source.
+    # When set to known, the player provider has no accurate information about the source.
+    # iN that case, the player manager will try to find out the active source.
     active_source: str | None = None
 
-    # source_list: return list of available sources for this player
+    # source_list: return list of available (native) sources for this player
     source_list: UniqueList[PlayerSource] = field(default_factory=UniqueList)
 
     # active_group: return player_id of the active group for this player (if any)
@@ -121,9 +125,9 @@ class Player(DataClassDictMixin):
     # poll_interval: a (dynamic) interval in seconds to poll the player (used with needs_poll)
     poll_interval: int = 30
 
-    #
-    # THE BELOW ATTRIBUTES ARE MANAGED BY CONFIG AND THE PLAYER MANAGER
-    #
+    #############################################################################
+    # the fields below are managed by the player manager and config             #
+    #############################################################################
 
     # enabled: if the player is enabled
     # will be set by the player manager based on config
@@ -165,15 +169,21 @@ class Player(DataClassDictMixin):
     # mute_control: the volume control attached to this player (set by config)
     mute_control: str = PLAYER_CONTROL_NATIVE
 
-    # last_poll: when was the player last polled (used with needs_poll)
-    last_poll: float = 0
-
     #############################################################################
     # the fields below will only be used server-side and not sent to the client #
     #############################################################################
 
+    # previous volume level is used by the player manager in case of fake muting
     previous_volume_level: int | None = field(
         default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
+    # last_poll: when was the player last polled (used with needs_poll)
+    last_poll: float = field(
+        default=0.0,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
