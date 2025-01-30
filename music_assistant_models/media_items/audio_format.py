@@ -17,6 +17,7 @@ class AudioFormat(DataClassDictMixin):
     """Model for AudioFormat details."""
 
     content_type: ContentType = ContentType.UNKNOWN
+    codec_type: ContentType = ContentType.UNKNOWN
     sample_rate: int = 44100
     bit_depth: int = 16
     channels: int = 2
