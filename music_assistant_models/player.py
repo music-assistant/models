@@ -6,9 +6,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from mashumaro import DataClassDictMixin
-
-from music_assistant_models.constants import POWER_CONTROL_NATIVE, VOLUME_CONTROL_NATIVE
+from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .enums import MediaType, PlayerFeature, PlayerState, PlayerType
 from .unique_list import UniqueList
@@ -69,13 +67,13 @@ class Player(DataClassDictMixin):
     type: PlayerType
     name: str
     available: bool
-    powered: bool
     device_info: DeviceInfo
     supported_features: set[PlayerFeature] = field(default_factory=set)
 
     state: PlayerState | None = None
     elapsed_time: float | None = None
     elapsed_time_last_updated: float | None = None
+    powered: bool | None = None
     volume_level: int | None = None
     volume_muted: bool | None = None
 
@@ -157,17 +155,23 @@ class Player(DataClassDictMixin):
     # announcement_in_progress: boolean to indicate there's an announcement in progress.
     announcement_in_progress: bool = False
 
-    # power_control: the power control attached to this player (set by config)
-    power_control: str = POWER_CONTROL_NATIVE
-
-    # volume_control: the volume control attached to this player (set by config)
-    volume_control: str = VOLUME_CONTROL_NATIVE
-
     # last_poll: when was the player last polled (used with needs_poll)
     last_poll: float = 0
 
-    # internal use only
-    _prev_volume_level: int = 0
+    #############################################################################
+    # the fields below will only be used server-side and not sent to the client #
+    #############################################################################
+
+    previous_volume_level: int | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
+    #############################################################################
+    # helper methods and properties                                             #
+    #############################################################################
 
     @property
     def corrected_elapsed_time(self) -> float | None:
