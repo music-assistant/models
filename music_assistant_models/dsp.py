@@ -68,11 +68,14 @@ class ParametricEQBand(DataClassDictMixin):
 class ParametricEQFilter(DSPFilterBase):
     """Model for a Parametric EQ filter."""
 
+    preamp: float | None = 0.0
     type: Literal[DSPFilterType.PARAMETRIC_EQ] = DSPFilterType.PARAMETRIC_EQ
     bands: list[ParametricEQBand] = field(default_factory=list)
 
     def validate(self) -> None:
         """Validate the Parametric EQ filter."""
+        if self.preamp and (not -60.0 <= self.preamp <= 60.0):
+            raise ValueError("Preamp must be in the range -60.0 to 60.0 dB")
         # Validate bands
         for band in self.bands:
             if not 0.0 < band.frequency <= 100000.0:
