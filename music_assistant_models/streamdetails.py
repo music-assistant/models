@@ -74,6 +74,7 @@ class StreamDetails(DataClassDictMixin):
     loudness_album: float | None = None
     prefer_album_loudness: bool = False
     volume_normalization_mode: VolumeNormalizationMode | None = None
+    volume_normalization_gain_correct: float | None = None
     queue_id: str | None = None
     seconds_streamed: float | None = None
     target_loudness: float | None = None
