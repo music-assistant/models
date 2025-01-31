@@ -58,6 +58,12 @@ class PlayerSource(DataClassDictMixin):
     name: str
     # passive: this source can not be selected/activated by MA/the user
     passive: bool = False
+    # can_play_pause: this source can be paused and resumed
+    can_play_pause: bool = False
+    # can_seek: this source can be seeked
+    can_seek: bool = False
+    # can_next_previous: this source can be skipped to next/previous item
+    can_next_previous: bool = False
 
 
 @dataclass
