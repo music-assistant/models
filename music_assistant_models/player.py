@@ -77,8 +77,8 @@ class Player(DataClassDictMixin):
     available: bool
     device_info: DeviceInfo
     supported_features: set[PlayerFeature] = field(default_factory=set)
+    state: PlayerState = PlayerState.IDLE
 
-    state: PlayerState | None = None
     elapsed_time: float | None = None
     elapsed_time_last_updated: float | None = None
     powered: bool | None = None
