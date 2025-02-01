@@ -8,7 +8,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
-from .constants import PLAYER_CONTROL_NATIVE
+from .constants import PLAYER_CONTROL_NATIVE, PLAYER_CONTROL_NONE
 from .enums import MediaType, PlayerFeature, PlayerState, PlayerType
 from .media_items.audio_format import AudioFormat
 from .unique_list import UniqueList
@@ -229,3 +229,31 @@ class Player(DataClassDictMixin):
     def current_item_id(self, uri: str) -> None:
         """Set current_item_id (for backwards compatibility)."""
         self.current_media = PlayerMedia(uri)
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Adjust dict object after it has been serialized."""
+        # TEMP 2025-02-01: convert power to boolean for backwards compatibility
+        # Remove this in a future release (after 2.4 is released to stable)
+        d["powered"] = True if d["powered"] is None else d["powered"]
+
+        # TEMP 2025-02-01: convert volume_level to int for backwards compatibility
+        # Remove this in a future release (after 2.4 is released to stable)
+        d["volume_level"] = 0 if d["volume_level"] is None else d["volume_level"]
+
+        # TEMP 2025-02-01: convert volume_muted to bool for backwards compatibility
+        # Remove this in a future release (after 2.4 is released to stable)
+        d["volume_muted"] = False if d["volume_muted"] is None else d["volume_muted"]
+
+        # Override supported features based on playercontrol for backwards compatibility
+        # Remove this in a future release if needed
+        for control, feature in [
+            ("power_control", "power"),
+            ("mute_control", "volume_mute"),
+            ("volume_control", "volume_set"),
+        ]:
+            if control == PLAYER_CONTROL_NONE and feature in d["supported_features"]:
+                d["supported_features"].remove(feature)
+            elif control != PLAYER_CONTROL_NONE and feature not in d["supported_features"]:
+                d["supported_features"].append(feature)
+
+        return d
