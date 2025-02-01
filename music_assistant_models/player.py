@@ -251,9 +251,9 @@ class Player(DataClassDictMixin):
             ("mute_control", "volume_mute"),
             ("volume_control", "volume_set"),
         ]:
-            if control == PLAYER_CONTROL_NONE and feature in d["supported_features"]:
+            if d[control] == PLAYER_CONTROL_NONE and feature in d["supported_features"]:
                 d["supported_features"].remove(feature)
-            elif control != PLAYER_CONTROL_NONE and feature not in d["supported_features"]:
+            elif d[control] != PLAYER_CONTROL_NONE and feature not in d["supported_features"]:
                 d["supported_features"].append(feature)
 
         return d
