@@ -127,8 +127,6 @@ class StreamDetails(DataClassDictMixin):
 
     # This contains the DSPDetails of all players in the group.
     # In case of single player playback, dict will contain only one entry.
-    # The leader will have is_leader set to True.
-    # (keep in mind that PlayerGroups have no (explicit) leader!)
     dsp: dict[str, DSPDetails] | None = None
 
     # the fields below are managed by the queue/stream controller and may not be set by providers
