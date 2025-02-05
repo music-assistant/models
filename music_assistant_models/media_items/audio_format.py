@@ -61,7 +61,14 @@ class AudioFormat(DataClassDictMixin):
         """Check equality of two items."""
         if not isinstance(other, AudioFormat):
             return False
-        return self.output_format_str == other.output_format_str
+        return str(self) == str(other)
+
+    def __str__(self) -> str:
+        """Return string representation."""
+        return (
+            f"{self.output_format_str} {self.sample_rate}/{self.bit_depth} "
+            f"{self.channels} channels"
+        )
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
