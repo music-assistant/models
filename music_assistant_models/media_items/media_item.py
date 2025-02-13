@@ -34,6 +34,7 @@ class _MediaItemBase(DataClassDictMixin):
     # uri is auto generated, do not override unless really needed
     uri: str | None = None
     external_ids: set[tuple[ExternalID, str]] = field(default_factory=set)
+    is_playable: bool = True
     media_type: MediaType = MediaType.UNKNOWN
 
     def __post_init__(self) -> None:
@@ -324,6 +325,7 @@ class BrowseFolder(MediaItem):
     # label: a labelid that needs to be translated by the frontend
     label: str = ""
     provider_mappings: set[ProviderMapping] = field(default_factory=set)
+    is_playable: bool = False
 
     def __post_init__(self) -> None:
         """Call after init."""

@@ -70,6 +70,8 @@ MediaItemType = (
     | BrowseFolder
 )
 
+MediaItemTypeOrItemMapping = MediaItemType | ItemMapping
+
 # directly playable media items
 PlayableMediaItemType = Track | Radio | Audiobook | PluginSource | PodcastEpisode
 
@@ -87,7 +89,7 @@ class SearchResults(DataClassDictMixin):
     podcasts: Sequence[Podcast | ItemMapping] = field(default_factory=list)
 
 
-def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
+def media_from_dict(media_item: dict[str, Any]) -> MediaItemTypeOrItemMapping:
     """Return MediaItem from dict."""
     if "provider_mappings" not in media_item:
         return ItemMapping.from_dict(media_item)
