@@ -505,11 +505,28 @@ class ConfigEntryType(StrEnum):
 class StreamType(StrEnum):
     """Enum for the type of streamdetails."""
 
-    HTTP = "http"  # regular http stream
+    # http: regular http stream - url provided in path
+    HTTP = "http"
+
+    # encrypted_http: encrypted http stream - url and decryption_key are provided
     ENCRYPTED_HTTP = "encrypted_http"  # encrypted http stream
-    HLS = "hls"  # http HLS stream
-    ICY = "icy"  # http stream with icy metadata
+
+    # hls: http HLS stream - url provided in path
+    HLS = "hls"
+
+    # icy: http stream with icy metadata - url provided in path
+    ICY = "icy"
+
+    # local_file: local file which is accessible by the MA server process
     LOCAL_FILE = "local_file"
+
+    # named_pipe: named pipe (fifo) which is accessible by the MA server process
+    NAMED_PIPE = "named_pipe"
+
+    # other_ffmpeg: any other ffmpeg compatible input stream (used together with extra_input_args)
+    OTHER_FFMPEG = "other_ffmpeg"
+
+    # custom: custom (bytes) stream - provided by an (async) generator
     CUSTOM = "custom"
 
 
