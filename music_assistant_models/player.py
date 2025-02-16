@@ -50,7 +50,7 @@ class PlayerMedia(DataClassDictMixin):
     custom_data: dict[str, Any] | None = None  # optional
 
 
-@dataclass(frozen=True)
+@dataclass
 class PlayerSource(DataClassDictMixin):
     """Model for a player source."""
 
@@ -105,7 +105,7 @@ class Player(DataClassDictMixin):
     # this can be a player native source id as defined in 'source list'
     # or a Music Assistant queue id, if Music Assistant is the active source.
     # When set to known, the player provider has no accurate information about the source.
-    # iN that case, the player manager will try to find out the active source.
+    # In that case, the player manager will try to find out the active source.
     active_source: str | None = None
 
     # source_list: return list of available (native) sources for this player
@@ -228,7 +228,47 @@ class Player(DataClassDictMixin):
     @current_item_id.setter
     def current_item_id(self, uri: str) -> None:
         """Set current_item_id (for backwards compatibility)."""
-        self.current_media = PlayerMedia(uri)
+        self.set_current_media(uri=uri)
+
+    def set_current_media(  # noqa: PLR0913
+        self,
+        uri: str,
+        media_type: MediaType = MediaType.UNKNOWN,
+        title: str | None = None,
+        artist: str | None = None,
+        album: str | None = None,
+        image_url: str | None = None,
+        duration: int | None = None,
+        queue_id: str | None = None,
+        queue_item_id: str | None = None,
+        custom_data: dict[str, Any] | None = None,
+        clear_all: bool = False,
+    ) -> None:
+        """Set current_media."""
+        if self.current_media is None or clear_all:
+            self.current_media = PlayerMedia(
+                uri=uri,
+                media_type=media_type,
+            )
+        self.current_media.uri = uri
+        if media_type != MediaType.UNKNOWN:
+            self.current_media.media_type = media_type
+        if title:
+            self.current_media.title = title
+        if artist:
+            self.current_media.artist = artist
+        if album:
+            self.current_media.album = album
+        if image_url:
+            self.current_media.image_url = image_url
+        if duration:
+            self.current_media.duration = duration
+        if queue_id:
+            self.current_media.queue_id = queue_id
+        if queue_item_id:
+            self.current_media.queue_item_id = queue_item_id
+        if custom_data:
+            self.current_media.custom_data = custom_data
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Adjust dict object after it has been serialized."""
