@@ -66,8 +66,7 @@ class AudioFormat(DataClassDictMixin):
     def __str__(self) -> str:
         """Return string representation."""
         return (
-            f"{self.output_format_str} {self.sample_rate}/{self.bit_depth} "
-            f"{self.channels} channels"
+            f"{self.output_format_str} {self.sample_rate}/{self.bit_depth} {self.channels} channels"
         )
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
