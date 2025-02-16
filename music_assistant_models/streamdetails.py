@@ -12,16 +12,6 @@ from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
 
 
-@dataclass
-class LivestreamMetadata(DataClassDictMixin):
-    """Metadata of livestream."""
-
-    title: str | None = None  # optional
-    artist: str | None = None  # optional
-    album: str | None = None  # optional
-    image_url: str | None = None  # optional
-
-
 @dataclass(kw_only=True)
 class StreamDetails(DataClassDictMixin):
     """Model for streamdetails."""
@@ -50,9 +40,9 @@ class StreamDetails(DataClassDictMixin):
     # total size in bytes of the item, calculated at eof when omitted
     size: int | None = None
 
-    # stream_metadata: radio/live streams can optionally set/use this field
-    # to set the metadata of any media during the stream
-    stream_metadata: LivestreamMetadata | None = None
+    # stream_title: radio/live streams can optionally set/use this field
+    # to set the title of the playing media during the stream
+    stream_title: str | None = None
 
     #############################################################################
     # the fields below will only be used server-side and not sent to the client #
@@ -165,37 +155,7 @@ class StreamDetails(DataClassDictMixin):
         """Return pretty printable string of object."""
         return self.uri
 
-    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
-        """Execute action(s) on serialization."""
-        # for backwards compatibility
-        d["stream_title"] = self.stream_title
-        return d
-
     @property
     def uri(self) -> str:
         """Return uri representation of item."""
         return f"{self.provider}://{self.media_type.value}/{self.item_id}"
-
-    @property
-    def stream_title(self) -> str | None:
-        """Return simple (instead of full metadata) streamtitle for backwards compatibility."""
-        if self.stream_metadata and self.stream_metadata.title:
-            if self.stream_metadata.artist:
-                return f"{self.stream_metadata.artist} - {self.stream_metadata.title}"
-            return self.stream_metadata.title
-        return None
-
-    @stream_title.setter
-    def stream_title(self, value: str | None) -> None:
-        """Set simple streamtitle (instead of full metadata) for backwards compatibility."""
-        if value is None:
-            self.stream_metadata = None
-            return
-        if not self.stream_metadata:
-            self.stream_metadata = LivestreamMetadata()
-        if " - " in value:
-            artist, title = value.split(" - ", 1)
-            self.stream_metadata.artist = artist
-            self.stream_metadata.title = title
-        else:
-            self.stream_metadata.title = value
