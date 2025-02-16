@@ -301,18 +301,6 @@ class PodcastEpisode(MediaItem):
 
 
 @dataclass(kw_only=True)
-class PluginSource(MediaItem):
-    """Model for a (generic) playable media source provided by a Plugin."""
-
-    __hash__ = _MediaItemBase.__hash__
-    __eq__ = _MediaItemBase.__eq__
-
-    duration: int | None = None
-
-    media_type: MediaType = MediaType.PLUGIN_SOURCE
-
-
-@dataclass(kw_only=True)
 class BrowseFolder(MediaItem):
     """Representation of a Folder used in Browse (which contains media items)."""
 
