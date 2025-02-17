@@ -20,14 +20,14 @@ ENCRYPT_CALLBACK: Callable[[str], str] | None = None
 DECRYPT_CALLBACK: Callable[[str], str] | None = None
 
 ConfigValueType = (
-    str
+    float
     | int
-    | float
     | bool
-    | list[str]
+    | str
+    | list[int]
     | list[tuple[int, int]]
     | tuple[int, int]
-    | list[int]
+    | list[str]
     | Enum
     | None
 )
