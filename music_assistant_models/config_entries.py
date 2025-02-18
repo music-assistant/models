@@ -62,7 +62,7 @@ class ConfigValueOption(DataClassDictMixin):
 
 
 @dataclass(kw_only=True)
-class _ConfigEntry(DataClassDictMixin):
+class ConfigEntry(DataClassDictMixin):
     """Model for a Config Entry.
 
     The definition of something that can be configured
@@ -114,31 +114,8 @@ class _ConfigEntry(DataClassDictMixin):
     def parse_value(
         self,
         value: ConfigValueTypes,
-        allow_none: bool = True,  # noqa: ARG002
-    ) -> ConfigValueTypes:
-        """Parse value from the config entry details and plain value."""
-        self.value = value
-        return self.value
-
-
-@dataclass(kw_only=True)
-class ConfigEntry(_ConfigEntry):
-    """Model for a Config Entry.
-
-    The definition of something that can be configured
-    for an object (e.g. provider or player)
-    within Music Assistant.
-    """
-
-    multi_value: bool = False
-    default_value: ConfigValueType | None = None
-    value: ConfigValueType | None = None
-
-    def parse_value(  # type: ignore[override]
-        self,
-        value: ConfigValueType | None,
         allow_none: bool = True,
-    ) -> ConfigValueType | None:
+    ) -> ConfigValueTypes:
         """Parse value from the config entry details and plain value."""
         if self.type == ConfigEntryType.LABEL:
             value = self.label
@@ -148,6 +125,9 @@ class ConfigEntry(_ConfigEntry):
         if value is None and (not self.required or allow_none):
             value = cast(ConfigValueType | None, self.default_value)
 
+        if isinstance(value, list) and not self.multi_value:
+            raise ValueError(f"{self.key} must be a single value")
+
         if value is None and self.required:
             raise ValueError(f"{self.key} is required")
 
@@ -156,7 +136,7 @@ class ConfigEntry(_ConfigEntry):
 
 
 @dataclass(kw_only=True)
-class MultiValueConfigEntry(_ConfigEntry):
+class MultiValueConfigEntry(ConfigEntry):
     """Model for a Config Entry which allows multiple values to be selected.
 
     This is a helper class to handle multiple values in a single config entry,
