@@ -6,7 +6,7 @@ import logging
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, cast
+from typing import Any, Final, cast
 
 from mashumaro import DataClassDictMixin
 
@@ -21,22 +21,16 @@ DECRYPT_CALLBACK: Callable[[str], str] | None = None
 ConfigValueType = (
     # order is important here for the (de)serialization!
     # https://github.com/Fatal1ty/mashumaro/pull/256
-    bool | float | int | str | tuple[int, int]
-)
-ConfigValueTypeMulti = (
-    # order is important here for the (de)serialization!
-    # https://github.com/Fatal1ty/mashumaro/pull/256
-    list[bool] | list[float] | list[int] | list[str] | list[tuple[int, int]]
+    bool | float | int | str | list[float] | list[int] | list[str] | list[bool] | None
 )
 
-ConfigValueTypes = ConfigValueType | ConfigValueTypeMulti | None
 
 ConfigEntryTypeMap: dict[ConfigEntryType, type[ConfigValueType]] = {
     ConfigEntryType.BOOLEAN: bool,
     ConfigEntryType.STRING: str,
     ConfigEntryType.SECURE_STRING: str,
     ConfigEntryType.INTEGER: int,
-    ConfigEntryType.INTEGER_TUPLE: tuple[int, int],
+    ConfigEntryType.SPLITTED_STRING: str,
     ConfigEntryType.FLOAT: float,
     ConfigEntryType.LABEL: str,
     ConfigEntryType.DIVIDER: str,
@@ -61,6 +55,9 @@ class ConfigValueOption(DataClassDictMixin):
     value: ConfigValueType
 
 
+MULTI_VALUE_SPLITTER: Final[str] = "||"
+
+
 @dataclass(kw_only=True)
 class ConfigEntry(DataClassDictMixin):
     """Model for a Config Entry.
@@ -75,7 +72,7 @@ class ConfigEntry(DataClassDictMixin):
     type: ConfigEntryType
     # label: default label when no translation for the key is present
     label: str
-    default_value: ConfigValueType | ConfigValueTypeMulti | None = None
+    default_value: ConfigValueType = None
     required: bool = True
     # options [optional]: select from list of possible values/options
     options: list[ConfigValueOption] = field(default_factory=list)
@@ -102,81 +99,58 @@ class ConfigEntry(DataClassDictMixin):
     # action_label: default label for the action when no translation for the action is present
     action_label: str | None = None
     # value: set by the config manager/flow (or in rare cases by the provider itself)
-    value: ConfigValueType | ConfigValueTypeMulti | None = None
+    value: ConfigValueType = None
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
-        if self.multi_value and not isinstance(self, MultiValueConfigEntry):
-            raise ValueError(f"{self.key} must be a MultiValueConfigEntry")
         if self.type in UI_ONLY:
             self.required = False
 
     def parse_value(
         self,
-        value: ConfigValueTypes,
+        value: ConfigValueType,
         allow_none: bool = True,
-    ) -> ConfigValueTypes:
+    ) -> ConfigValueType:
         """Parse value from the config entry details and plain value."""
         if self.type == ConfigEntryType.LABEL:
             value = self.label
         elif self.type in UI_ONLY:
-            value = cast(str | None, value or self.default_value)
+            value = value or self.default_value
 
-        if value is None and (not self.required or allow_none):
-            value = cast(ConfigValueType | None, self.default_value)
+        if value is None:
+            value = self.default_value
 
         if isinstance(value, list) and not self.multi_value:
             raise ValueError(f"{self.key} must be a single value")
-
-        if value is None and self.required:
-            raise ValueError(f"{self.key} is required")
-
-        self.value = value
-        return self.value
-
-
-@dataclass(kw_only=True)
-class MultiValueConfigEntry(ConfigEntry):
-    """Model for a Config Entry which allows multiple values to be selected.
-
-    This is a helper class to handle multiple values in a single config entry,
-    otherwise the serializer gets confused with the types.
-    """
-
-    multi_value: bool = True
-    default_value: ConfigValueTypeMulti = field(default_factory=list)
-    value: ConfigValueTypeMulti | None = None
-
-    def parse_value(  # type: ignore[override]
-        self,
-        value: ConfigValueTypeMulti | None,
-        allow_none: bool = True,
-    ) -> ConfigValueTypeMulti:
-        """Parse value from the config entry details and plain value."""
-        if value is None and (not self.required or allow_none):
-            value = self.default_value
-        if value is None:
-            raise ValueError(f"{self.key} is required")
         if self.multi_value and not isinstance(value, list):
-            raise ValueError(f"{self.key} must be a list")
+            raise ValueError(f"value for {self.key} must be a list")
+
+        if value is None and self.required and not allow_none:
+            raise ValueError(f"{self.key} is required")
 
         self.value = value
         return self.value
 
-    def __post_init__(self) -> None:
-        """Run some basic sanity checks after init."""
-        super().__post_init__()
-        if self.multi_value and not isinstance(self.default_value, list):
-            raise ValueError(f"default value for {self.key} must be a list")
+    def get_splitted_values(self) -> tuple[str, ...] | list[tuple[str, ...]]:
+        """Return split values for SPLITTED_STRING type."""
+        if self.type != ConfigEntryType.SPLITTED_STRING:
+            raise ValueError(f"{self.key} is not a SPLITTED_STRING")
+        value = self.value or self.default_value
+        if self.multi_value:
+            assert isinstance(value, list)
+            value = cast(list[str], value)
+            return [tuple(x.split(MULTI_VALUE_SPLITTER, 1)) for x in value]
+        assert isinstance(value, str)
+        return tuple(value.split(MULTI_VALUE_SPLITTER, 1))
 
 
 @dataclass
 class Config(DataClassDictMixin):
     """Base Configuration object."""
 
-    values: dict[str, ConfigEntry | MultiValueConfigEntry]
+    values: dict[str, ConfigEntry]
 
-    def get_value(self, key: str) -> ConfigValueTypes:
+    def get_value(self, key: str) -> ConfigValueType:
         """Return config value for given key."""
         config_value = self.values[key]
         if config_value.type == ConfigEntryType.SECURE_STRING and config_value.value:
@@ -189,7 +163,7 @@ class Config(DataClassDictMixin):
     @classmethod
     def parse(
         cls,
-        config_entries: Iterable[ConfigEntry | MultiValueConfigEntry],
+        config_entries: Iterable[ConfigEntry],
         raw: dict[str, Any],
     ) -> Config:
         """Parse Config from the raw values (as stored in persistent storage)."""
@@ -199,10 +173,7 @@ class Config(DataClassDictMixin):
             if isinstance(entry.default_value, Enum):
                 entry.default_value = entry.default_value.value  # type: ignore[unreachable]
             # create a copy of the entry
-            if entry.multi_value:
-                conf.values[entry.key] = MultiValueConfigEntry.from_dict(entry.to_dict())
-            else:
-                conf.values[entry.key] = ConfigEntry.from_dict(entry.to_dict())
+            conf.values[entry.key] = ConfigEntry.from_dict(entry.to_dict())
             conf.values[entry.key].parse_value(
                 raw.get("values", {}).get(entry.key), allow_none=True
             )
@@ -212,8 +183,8 @@ class Config(DataClassDictMixin):
         """Return minimized/raw dict to store in persistent storage."""
 
         def _handle_value(
-            value: ConfigEntry | MultiValueConfigEntry,
-        ) -> ConfigValueTypes:
+            value: ConfigEntry,
+        ) -> ConfigValueType:
             if value.type == ConfigEntryType.SECURE_STRING:
                 assert isinstance(value.value, str)
                 assert ENCRYPT_CALLBACK is not None
@@ -238,7 +209,7 @@ class Config(DataClassDictMixin):
                 d["values"][key]["value"] = SECURE_STRING_SUBSTITUTE
         return d
 
-    def update(self, update: dict[str, ConfigValueTypes]) -> set[str]:
+    def update(self, update: dict[str, ConfigValueType]) -> set[str]:
         """Update Config with updated values."""
         changed_keys: set[str] = set()
 
@@ -261,7 +232,7 @@ class Config(DataClassDictMixin):
                 continue
             cur_val = self.values[key].value if key in self.values else None
             # parse entry to do type validation
-            parsed_val = self.values[key].parse_value(new_val)  # type: ignore[arg-type]
+            parsed_val = self.values[key].parse_value(new_val)
             if cur_val != parsed_val:
                 changed_keys.add(f"values/{key}")
 
@@ -272,7 +243,7 @@ class Config(DataClassDictMixin):
         # For now we just use the parse method to check for not allowed None values
         # this can be extended later
         for value in self.values.values():
-            value.parse_value(value.value, allow_none=False)  # type: ignore[arg-type]
+            value.parse_value(value.value, allow_none=False)
 
 
 @dataclass

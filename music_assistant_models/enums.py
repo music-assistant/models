@@ -489,7 +489,7 @@ class ConfigEntryType(StrEnum):
     INTEGER = "integer"
     FLOAT = "float"
     LABEL = "label"
-    INTEGER_TUPLE = "integer_tuple"
+    SPLITTED_STRING = "splitted_string"
     DIVIDER = "divider"
     ACTION = "action"
     ICON = "icon"
