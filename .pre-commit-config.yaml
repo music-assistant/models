@@ -54,6 +54,10 @@ repos:
         name: ✅ Check code for common misspellings
         language: system
         types: [text]
+        args:
+          - --ignore-words-list=ue
+          - --skip="./.*,*.csv,*.json,*.ambr"
+          - --quiet-level=2
         entry: scripts/run-in-env.sh codespell
       - id: detect-private-key
         name: 🕵️  Detect Private Keys

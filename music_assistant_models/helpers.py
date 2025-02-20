@@ -9,6 +9,7 @@ from _collections_abc import dict_keys, dict_values
 from asyncio import Task
 from types import MethodType
 from typing import Any
+from unicodedata import combining, normalize
 from uuid import UUID
 
 from music_assistant_models.enums import MediaType
@@ -59,9 +60,25 @@ def get_serializable_value(obj: Any, raise_unhandled: bool = False) -> Any:
     return obj
 
 
+_LATIN = "ä  æ  ǽ  đ ð ƒ ħ ı ł ø ǿ ö  œ  ß  ŧ ü "  # noqa: RUF001
+_ASCII = "ae ae ae d d f h i l o o oe oe ss t ue"
+_OUTLIERS = str.maketrans(dict(zip(_LATIN.split(), _ASCII.split(), strict=False)))
+
+
+def remove_diacritics(input_str: str) -> str:
+    """Remove diacritics from string."""
+    return "".join(
+        c for c in normalize("NFD", input_str.lower().translate(_OUTLIERS)) if not combining(c)
+    )
+
+
 def create_sort_name(input_str: str) -> str:
     """Create (basic/simple) sort name/title from string."""
-    input_str = input_str.lower().strip()
+    input_str = remove_diacritics(input_str.lower().strip())
+    while input_str.startswith(
+        (",", ".", ":", "!", "?", "(", "[", "{", "<", ">", ")", "]", "}", "/", "`", "'", '"')
+    ):
+        input_str = input_str[1:]
     for item in ["the ", "de ", "les ", "dj ", "las ", "los ", "le ", "la ", "el ", "a ", "an "]:
         if input_str.startswith(item):
             input_str = input_str.replace(item, "", 1) + f", {item}"
