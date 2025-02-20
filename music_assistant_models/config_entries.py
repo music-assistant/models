@@ -18,11 +18,18 @@ LOGGER = logging.getLogger(__name__)
 ENCRYPT_CALLBACK: Callable[[str], str] | None = None
 DECRYPT_CALLBACK: Callable[[str], str] | None = None
 
-ConfigValueType = (
+
+_ConfigValueTypeSingle = (
     # order is important here for the (de)serialization!
     # https://github.com/Fatal1ty/mashumaro/pull/256
-    bool | float | int | str | list[float] | list[int] | list[str] | list[bool] | None
+    bool | float | int | str
 )
+_ConfigValueTypeMulti = (
+    # order is important here for the (de)serialization!
+    # https://github.com/Fatal1ty/mashumaro/pull/256
+    list[float] | list[int] | list[str] | list[bool]
+)
+ConfigValueType = _ConfigValueTypeSingle | _ConfigValueTypeMulti | None
 
 
 ConfigEntryTypeMap: dict[ConfigEntryType, type[ConfigValueType]] = {
@@ -125,8 +132,25 @@ class ConfigEntry(DataClassDictMixin):
         if self.multi_value and not isinstance(value, list):
             raise ValueError(f"value for {self.key} must be a list")
 
+        # handle some value type conversions caused by the serialization
+        def convert_value(_value: _ConfigValueTypeSingle) -> _ConfigValueTypeSingle:
+            if self.type == ConfigEntryType.FLOAT and isinstance(_value, int | str):
+                return float(_value)
+            if self.type == ConfigEntryType.INTEGER and isinstance(_value, float | str):
+                return int(_value)
+            if self.type == ConfigEntryType.BOOLEAN and isinstance(_value, int | str):
+                return bool(_value)
+            return _value
+
         if value is None and self.required and not allow_none:
             raise ValueError(f"{self.key} is required")
+
+        if self.multi_value and value is not None:
+            value = cast(_ConfigValueTypeMulti, value)
+            value = [convert_value(x) for x in value]  # type: ignore[assignment]
+        elif value is not None:
+            value = cast(_ConfigValueTypeSingle, value)
+            value = convert_value(value)
 
         self.value = value
         return self.value
