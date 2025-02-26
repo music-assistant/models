@@ -127,8 +127,9 @@ class DSPConfig(DataClassDictMixin):
     input_gain: float = 0.0
     # Output gain in dB, will be applied after all other DSP filters
     output_gain: float = 0.0
-    # Enable/disable the default output limiter, will be applied after all other DSP effects
-    # to prevent clipping
+    # This option is no longer used and just kept for migrating
+    # to the player settings
+    # TODO: remove in a future release
     output_limiter: bool = True
 
     def validate(self) -> None:
