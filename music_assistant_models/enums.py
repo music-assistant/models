@@ -379,7 +379,7 @@ class EventType(StrEnum):
     PLAYER_ADDED = "player_added"
     PLAYER_UPDATED = "player_updated"
     PLAYER_REMOVED = "player_removed"
-    PLAYER_SETTINGS_UPDATED = "player_settings_updated"
+    PLAYER_CONFIG_UPDATED = "player_config_updated"
     QUEUE_ADDED = "queue_added"
     QUEUE_UPDATED = "queue_updated"
     QUEUE_ITEMS_UPDATED = "queue_items_updated"
@@ -390,7 +390,6 @@ class EventType(StrEnum):
     MEDIA_ITEM_UPDATED = "media_item_updated"
     MEDIA_ITEM_DELETED = "media_item_deleted"
     PROVIDERS_UPDATED = "providers_updated"
-    PLAYER_CONFIG_UPDATED = "player_config_updated"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     AUTH_SESSION = "auth_session"
     UNKNOWN = "unknown"
@@ -525,6 +524,9 @@ class StreamType(StrEnum):
 
     # other_ffmpeg: any other ffmpeg compatible input stream (used together with extra_input_args)
     OTHER_FFMPEG = "other_ffmpeg"
+
+    # cache_file: (temporary) cached file - path provided in path
+    CACHE_FILE = "cache_file"
 
     # custom: custom (bytes) stream - provided by an (async) generator
     CUSTOM = "custom"

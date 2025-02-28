@@ -103,6 +103,19 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
 
+    # enable_cache: bool to indicate that the audio be be temporary cached
+    # this increases performance (especially while seeking) and reduces network
+    # usage for streams that are played multiple times. For some (slow) streams
+    # its even required to prevent buffering issues.
+    # leave/set to None to let the core decide based on the stream type.
+    # True to enforce caching, False to disable caching.
+    enable_cache: bool | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
     #############################################################################
     # the fields below will be set/controlled by the streamcontroller           #
     #############################################################################
@@ -145,6 +158,12 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
     stream_error: bool | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+    cache: Any = field(
         default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
