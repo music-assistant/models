@@ -309,6 +309,9 @@ class RepeatMode(StrEnum):
     ONE = "one"  # repeat one/single track
     ALL = "all"  # repeat entire queue
 
+    # fallback
+    UNKNOWN = "unknown"
+
 
 class PlayerState(StrEnum):
     """Enum for the (playback)state of a player."""
@@ -316,6 +319,14 @@ class PlayerState(StrEnum):
     IDLE = "idle"
     PAUSED = "paused"
     PLAYING = "playing"
+
+    # fallback
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> PlayerState:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
 
 
 class PlayerType(StrEnum):
@@ -478,6 +489,14 @@ class ProviderType(StrEnum):
     PLUGIN = "plugin"
     CORE = "core"
 
+    # fallback
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ProviderType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
 
 class ConfigEntryType(StrEnum):
     """Enum for the type of a config entry."""
@@ -531,6 +550,14 @@ class StreamType(StrEnum):
     # custom: custom (bytes) stream - provided by an (async) generator
     CUSTOM = "custom"
 
+    # fallback
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> StreamType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
 
 class VolumeNormalizationMode(StrEnum):
     """Enum with possible VolumeNormalization modes."""
@@ -541,3 +568,11 @@ class VolumeNormalizationMode(StrEnum):
     FALLBACK_FIXED_GAIN = "fallback_fixed_gain"
     FIXED_GAIN = "fixed_gain"
     FALLBACK_DYNAMIC = "fallback_dynamic"
+
+    # fallback
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> VolumeNormalizationMode:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
