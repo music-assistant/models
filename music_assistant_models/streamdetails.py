@@ -178,3 +178,11 @@ class StreamDetails(DataClassDictMixin):
     def uri(self) -> str:
         """Return uri representation of item."""
         return f"{self.provider}://{self.media_type.value}/{self.item_id}"
+
+    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
+        """Execute action(s) on serialization."""
+        # TEMP 2025-02-28: convert StreamType.CACHE_FILE for
+        # backwards compatibility with older client versions
+        # Remove this in a future release
+        d["stream_type"] = d["stream_type"].replace("cache_file", "local_file")
+        return d
