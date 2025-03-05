@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
@@ -169,6 +170,12 @@ class StreamDetails(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(UTC),
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
 
     def __str__(self) -> str:
         """Return pretty printable string of object."""
@@ -181,8 +188,8 @@ class StreamDetails(DataClassDictMixin):
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
-        # TEMP 2025-02-28: convert StreamType.CACHE_FILE for
+        # TEMP 2025-02-28: convert StreamType.CACHE for
         # backwards compatibility with older client versions
         # Remove this in a future release
-        d["stream_type"] = d["stream_type"].replace("cache_file", "local_file")
+        d["stream_type"] = d["stream_type"].replace("cache", "local_file")
         return d
