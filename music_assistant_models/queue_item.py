@@ -26,6 +26,8 @@ class QueueItem(DataClassDictMixin):
     media_item: PlayableMediaItemType | None = None
     image: MediaItemImage | None = None
     index: int = 0
+    # the available flag can be used to mark items that are not available/playable anymore
+    available: bool = True
 
     def __post_init__(self) -> None:
         """Set default values."""
