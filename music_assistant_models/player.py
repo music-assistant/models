@@ -9,7 +9,7 @@ from typing import Any
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import PLAYER_CONTROL_NATIVE, PLAYER_CONTROL_NONE
-from .enums import MediaType, PlayerFeature, PlayerState, PlayerType
+from .enums import BuiltinPlayerEventType, MediaType, PlayerFeature, PlayerState, PlayerType
 from .media_items.audio_format import AudioFormat
 from .unique_list import UniqueList
 
@@ -297,3 +297,13 @@ class Player(DataClassDictMixin):
                 d["supported_features"].append(feature)
 
         return d
+
+
+@dataclass
+class BuiltinPlayerEvent(DataClassDictMixin):
+    """Model for events sent to the builtin (web) player."""
+
+    type: BuiltinPlayerEventType
+    volume: int | None = None  # set if action is SET_VOLUME
+    media_url: str | None = None  # set if action is PLAY_MEDIA
+
