@@ -307,3 +307,13 @@ class BuiltinPlayerEvent(DataClassDictMixin):
     volume: int | None = None  # set if action is SET_VOLUME
     media_url: str | None = None  # set if action is PLAY_MEDIA
 
+
+@dataclass
+class BuiltinPlayerState(DataClassDictMixin):
+    """Model for state updates from the builtin (web) player."""
+
+    playing: bool
+    paused: bool
+    position: int
+    volume: int
+    muted: bool
