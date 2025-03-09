@@ -413,7 +413,7 @@ class EventType(StrEnum):
 
 
 class BuiltinPlayerEventType(StrEnum):
-    """Enum with possible actions for the builtin web player."""
+    """Enum with possible actions for the builtin (web) player."""
 
     PLAY = "play"
     PAUSE = "pause"
