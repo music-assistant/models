@@ -403,12 +403,27 @@ class EventType(StrEnum):
     PROVIDERS_UPDATED = "providers_updated"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     AUTH_SESSION = "auth_session"
+    BUILTIN_PLAYER = "builtin_player"
     UNKNOWN = "unknown"
 
     @classmethod
     def _missing_(cls, value: object) -> EventType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
+
+
+class BuiltinPlayerEventType(StrEnum):
+    """Enum with possible actions for the builtin (web) player."""
+
+    PLAY = "play"
+    PAUSE = "pause"
+    RESUME = "resume"
+    STOP = "stop"
+    MUTE = "mute"
+    UNMUTE = "unmute"
+    SET_VOLUME = "set_volume"
+    PLAY_MEDIA = "play_media"
+    TIMEOUT = "timeout"
 
 
 class ProviderFeature(StrEnum):
