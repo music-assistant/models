@@ -544,8 +544,11 @@ class StreamType(StrEnum):
     # other_ffmpeg: any other ffmpeg compatible input stream (used together with extra_input_args)
     OTHER_FFMPEG = "other_ffmpeg"
 
-    # cache: audio data is cached in memory (bytes) - provided by an (async) generator
+    # cache: audio data is cached
     CACHE = "cache"
+
+    # multi_file: multiple files are provided in a list
+    MULTI_FILE = "multi_file"
 
     # custom: custom (bytes) stream - provided by an (async) generator
     CUSTOM = "custom"

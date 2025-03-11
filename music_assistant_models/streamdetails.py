@@ -188,8 +188,9 @@ class StreamDetails(DataClassDictMixin):
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
-        # TEMP 2025-02-28: convert StreamType.CACHE for
+        # TEMP 2025-02-28: convert StreamType.CACHE and StreamType.MULTI_FILE for
         # backwards compatibility with older client versions
         # Remove this in a future release
         d["stream_type"] = d["stream_type"].replace("cache", "local_file")
+        d["stream_type"] = d["stream_type"].replace("multi_file", "local_file")
         return d
