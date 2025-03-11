@@ -218,6 +218,7 @@ class ContentType(StrEnum):
 
     # --- Special ---
     PCM = "pcm"  # PCM generic (details determined later)
+    NUT = "nut"  # NUT container (ffmpeg)
     UNKNOWN = "?"  # Unknown type
 
     @classmethod
