@@ -13,6 +13,13 @@ from .media_items.audio_format import AudioFormat
 # ruff: noqa: S105
 
 
+class AudioChannel(StrEnum):
+    """Enum of all channels for DSP filters."""
+
+    FL = "FL"
+    FR = "FR"
+
+
 class DSPFilterType(StrEnum):
     """Enum of all supported DSP Filter Types."""
 
@@ -62,6 +69,8 @@ class ParametricEQBand(DataClassDictMixin):
     type: ParametricEQBandType = ParametricEQBandType.PEAK
     # Enable/disable the band
     enabled: bool = True
+    # Channel to apply the band to (if not specified, applies to all channels)
+    channel: AudioChannel | None = None
 
 
 @dataclass
