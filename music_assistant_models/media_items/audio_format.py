@@ -33,7 +33,7 @@ class AudioFormat(DataClassDictMixin):
             )
         elif not self.output_format_str:
             self.output_format_str = self.content_type.value
-        if self.bit_rate and self.bit_rate > 100000:
+        if self.bit_rate and self.bit_rate > 10000:
             # correct bit rate in bits per second to kbps
             self.bit_rate = int(self.bit_rate / 1000)
 
