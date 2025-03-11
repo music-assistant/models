@@ -14,8 +14,9 @@ from .media_items.audio_format import AudioFormat
 
 
 class AudioChannel(StrEnum):
-    """Enum of all channels for DSP filters."""
+    """Enum of all channel targets for DSP filters."""
 
+    ALL = "ALL"
     FL = "FL"
     FR = "FR"
 
@@ -69,8 +70,8 @@ class ParametricEQBand(DataClassDictMixin):
     type: ParametricEQBandType = ParametricEQBandType.PEAK
     # Enable/disable the band
     enabled: bool = True
-    # Channel to apply the band to (if not specified, applies to all channels)
-    channel: AudioChannel | None = None
+    # Channel to apply the band to
+    channel: AudioChannel = AudioChannel.ALL
 
 
 @dataclass
