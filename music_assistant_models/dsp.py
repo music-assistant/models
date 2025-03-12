@@ -13,6 +13,19 @@ from .media_items.audio_format import AudioFormat
 # ruff: noqa: S105
 
 
+class AudioChannel(StrEnum):
+    """Enum of all channel targets for DSP filters."""
+
+    ALL = "ALL"
+    FL = "FL"
+    FR = "FR"
+
+    @classmethod
+    def _missing_(cls, _: object) -> AudioChannel:
+        """Set default enum member if an unknown value is provided."""
+        return cls.ALL
+
+
 class DSPFilterType(StrEnum):
     """Enum of all supported DSP Filter Types."""
 
@@ -62,6 +75,8 @@ class ParametricEQBand(DataClassDictMixin):
     type: ParametricEQBandType = ParametricEQBandType.PEAK
     # Enable/disable the band
     enabled: bool = True
+    # Channel to apply the band to
+    channel: AudioChannel = AudioChannel.ALL
 
 
 @dataclass
@@ -69,6 +84,10 @@ class ParametricEQFilter(DSPFilterBase):
     """Model for a Parametric EQ filter."""
 
     preamp: float | None = 0.0
+    # Additional per-channel preamp values, they are less efficient than the global preamp setting,
+    # but are required for some use cases
+    # AudioChannel.ALL is not allowed here, use the global preamp setting instead
+    per_channel_preamp: dict[AudioChannel, float] = field(default_factory=dict)
     type: Literal[DSPFilterType.PARAMETRIC_EQ] = DSPFilterType.PARAMETRIC_EQ
     bands: list[ParametricEQBand] = field(default_factory=list)
 
@@ -76,6 +95,11 @@ class ParametricEQFilter(DSPFilterBase):
         """Validate the Parametric EQ filter."""
         if self.preamp and (not -60.0 <= self.preamp <= 60.0):
             raise ValueError("Preamp must be in the range -60.0 to 60.0 dB")
+        if AudioChannel.ALL in self.per_channel_preamp:
+            raise ValueError("AudioChannel.ALL is not allowed in per_channel_preamp")
+        for gain in self.per_channel_preamp.values():
+            if not -60.0 <= gain <= 60.0:
+                raise ValueError("Preamp must be in the range -60.0 to 60.0 dB")
         # Validate bands
         for band in self.bands:
             if not 0.0 < band.frequency <= 100000.0:
