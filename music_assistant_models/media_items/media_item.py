@@ -333,3 +333,4 @@ class RecommendationFolder(BrowseFolder):
     is_playable: bool = False
     icon: str | None = None  # optional material design icon name
     items: UniqueList[MediaItem | ItemMapping] = field(default_factory=UniqueList)
+    description: str | None = None  # optional description for the recommendation
