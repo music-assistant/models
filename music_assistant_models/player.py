@@ -8,7 +8,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
-from .constants import PLAYER_CONTROL_NATIVE, PLAYER_CONTROL_NONE
+from .constants import PLAYER_CONTROL_NONE
 from .enums import MediaType, PlayerFeature, PlayerState, PlayerType
 from .media_items.audio_format import AudioFormat
 from .unique_list import UniqueList
@@ -168,13 +168,13 @@ class Player(DataClassDictMixin):
     announcement_in_progress: bool = False
 
     # power_control: the power control attached to this player (set by config)
-    power_control: str = PLAYER_CONTROL_NATIVE
+    power_control: str = PLAYER_CONTROL_NONE
 
     # volume_control: the volume control attached to this player (set by config)
-    volume_control: str = PLAYER_CONTROL_NATIVE
+    volume_control: str = PLAYER_CONTROL_NONE
 
     # mute_control: the volume control attached to this player (set by config)
-    mute_control: str = PLAYER_CONTROL_NATIVE
+    mute_control: str = PLAYER_CONTROL_NONE
 
     #############################################################################
     # the fields below will only be used server-side and not sent to the client #
