@@ -20,6 +20,11 @@ class AudioChannel(StrEnum):
     FL = "FL"
     FR = "FR"
 
+    @classmethod
+    def _missing_(cls, _: object) -> AudioChannel:
+        """Set default enum member if an unknown value is provided."""
+        return cls.ALL
+
 
 class DSPFilterType(StrEnum):
     """Enum of all supported DSP Filter Types."""
