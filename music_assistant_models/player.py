@@ -26,13 +26,6 @@ class DeviceInfo(DataClassDictMixin):
     ip_address: str | None = None
     mac_address: str | None = None
 
-    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
-        """Execute action(s) on serialization."""
-        # TEMP 2024-11-20: add alias to 'address' for ip_address for backwards compatibility
-        # Remove this in a future release
-        d["address"] = d.get("ip_address") or ""
-        return d
-
 
 @dataclass
 class PlayerMedia(DataClassDictMixin):
@@ -269,31 +262,3 @@ class Player(DataClassDictMixin):
             self.current_media.queue_item_id = queue_item_id
         if custom_data:
             self.current_media.custom_data = custom_data
-
-    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
-        """Adjust dict object after it has been serialized."""
-        # TEMP 2025-02-01: convert power to boolean for backwards compatibility
-        # Remove this in a future release (after 2.4 is released to stable)
-        d["powered"] = True if d["powered"] is None else d["powered"]
-
-        # TEMP 2025-02-01: convert volume_level to int for backwards compatibility
-        # Remove this in a future release (after 2.4 is released to stable)
-        d["volume_level"] = 0 if d["volume_level"] is None else d["volume_level"]
-
-        # TEMP 2025-02-01: convert volume_muted to bool for backwards compatibility
-        # Remove this in a future release (after 2.4 is released to stable)
-        d["volume_muted"] = False if d["volume_muted"] is None else d["volume_muted"]
-
-        # Override supported features based on playercontrol for backwards compatibility
-        # Remove this in a future release if needed
-        for control, feature in [
-            ("power_control", "power"),
-            ("mute_control", "volume_mute"),
-            ("volume_control", "volume_set"),
-        ]:
-            if d[control] == PLAYER_CONTROL_NONE and feature in d["supported_features"]:
-                d["supported_features"].remove(feature)
-            elif d[control] != PLAYER_CONTROL_NONE and feature not in d["supported_features"]:
-                d["supported_features"].append(feature)
-
-        return d

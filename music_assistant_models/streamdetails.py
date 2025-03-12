@@ -190,7 +190,7 @@ class StreamDetails(DataClassDictMixin):
         """Execute action(s) on serialization."""
         # TEMP 2025-02-28: convert StreamType.CACHE and StreamType.MULTI_FILE for
         # backwards compatibility with older client versions
-        # Remove this in a future release
+        # Remove this in a future release (after 2.5 is released)
         d["stream_type"] = d["stream_type"].replace("cache", "local_file")
         d["stream_type"] = d["stream_type"].replace("multi_file", "local_file")
         return d
