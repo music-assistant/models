@@ -24,6 +24,7 @@ from .media_item import (
     Podcast,
     PodcastEpisode,
     Radio,
+    RecommendationFolder,
     Track,
 )
 from .metadata import MediaItemChapter, MediaItemImage, MediaItemLink, MediaItemMetadata
@@ -51,6 +52,7 @@ __all__ = [
     "PodcastEpisode",
     "ProviderMapping",
     "Radio",
+    "RecommendationFolder",
     "Track",
     "UniqueList",
 ]

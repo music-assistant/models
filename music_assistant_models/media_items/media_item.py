@@ -34,7 +34,11 @@ class _MediaItemBase(DataClassDictMixin):
     # uri is auto generated, do not override unless really needed
     uri: str | None = None
     external_ids: set[tuple[ExternalID, str]] = field(default_factory=set)
+    # is_playable: if the item is playable (can be used in play_media command)
     is_playable: bool = True
+    # translation_key:
+    # an optional translation key identifier for the frontend (to use instead of name)
+    translation_key: str | None = None
     media_type: MediaType = MediaType.UNKNOWN
 
     def __post_init__(self) -> None:
@@ -182,7 +186,6 @@ class Album(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     media_type: MediaType = MediaType.ALBUM
-    version: str = ""
     year: int | None = None
     artists: UniqueList[Artist | ItemMapping] = field(default_factory=UniqueList)
     album_type: AlbumType = AlbumType.UNKNOWN
@@ -202,7 +205,6 @@ class Track(MediaItem):
 
     media_type: MediaType = MediaType.TRACK
     duration: int = 0
-    version: str = ""
     artists: UniqueList[Artist | ItemMapping] = field(default_factory=UniqueList)
     album: Album | ItemMapping | None = None  # required for album tracks
     disc_number: int = 0  # required for album tracks
@@ -245,7 +247,7 @@ class Radio(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     media_type: MediaType = MediaType.RADIO
-    duration: int = 172800
+    duration: int | None = None
 
 
 @dataclass(kw_only=True)
@@ -301,7 +303,7 @@ class PodcastEpisode(MediaItem):
 
 
 @dataclass(kw_only=True)
-class BrowseFolder(MediaItem):
+class BrowseFolder(_MediaItemBase):
     """Representation of a Folder used in Browse (which contains media items)."""
 
     __hash__ = _MediaItemBase.__hash__
@@ -310,9 +312,7 @@ class BrowseFolder(MediaItem):
     media_type: MediaType = MediaType.FOLDER
     # path: the path (in uri style) to/for this browse folder
     path: str = ""
-    # label: a labelid that needs to be translated by the frontend
-    label: str = ""
-    provider_mappings: set[ProviderMapping] = field(default_factory=set)
+    image: MediaItemImage | None = None
     is_playable: bool = False
 
     def __post_init__(self) -> None:
@@ -320,11 +320,16 @@ class BrowseFolder(MediaItem):
         super().__post_init__()
         if not self.path:
             self.path = f"{self.provider}://{self.item_id}"
-        if not self.provider_mappings:
-            self.provider_mappings.add(
-                ProviderMapping(
-                    item_id=self.item_id,
-                    provider_domain=self.provider,
-                    provider_instance=self.provider,
-                )
-            )
+
+
+@dataclass(kw_only=True)
+class RecommendationFolder(BrowseFolder):
+    """Representation of a Recommendation folder."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    media_type: MediaType = MediaType.FOLDER
+    is_playable: bool = False
+    icon: str | None = None  # optional material design icon name
+    items: UniqueList[MediaItem | ItemMapping] = field(default_factory=UniqueList)
