@@ -96,7 +96,9 @@ class ConfigEntry(DataClassDictMixin):
     # depends_on [optional]: needs to be set before this setting is enabled in the frontend
     depends_on: str | None = None
     # depends_on_value [optional]: complementary to depends_on, only enable if this value is set
-    depends_on_value: str | None = None
+    depends_on_value: ConfigValueType | None = None
+    # depends_on_value_not [optional]: same as depends_on_value but inverted
+    depends_on_value_not: ConfigValueType | None = None
     # hidden: hide from UI
     hidden: bool = False
     # category: category to group this setting into in the frontend (e.g. advanced)
