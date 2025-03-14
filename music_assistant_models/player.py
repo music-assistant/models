@@ -9,7 +9,7 @@ from typing import Any
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import PLAYER_CONTROL_NONE
-from .enums import MediaType, PlayerFeature, PlayerState, PlayerType
+from .enums import HidePlayerOption, MediaType, PlayerFeature, PlayerState, PlayerType
 from .media_items.audio_format import AudioFormat
 from .unique_list import UniqueList
 
@@ -118,6 +118,14 @@ class Player(DataClassDictMixin):
     # can be used by a player provider to exclude some sort of players
     enabled_by_default: bool = True
 
+    # hidden_by_default: if the player is hidden by default
+    # can be used by a player provider to hide some sort of players
+    hidden_by_default: bool = False
+
+    # expose_to_ha_by_default: if the player should be exposed to Home Assistant by default
+    # can be used by a player provider to exclude some sort of players
+    expose_to_ha_by_default: bool = True
+
     # needs_poll: bool that can be set by the player(provider)
     # if this player needs to be polled for state changes by the player manager
     needs_poll: bool = False
@@ -135,10 +143,23 @@ class Player(DataClassDictMixin):
     # nor will it be added to the HA integration
     enabled: bool = True
 
-    # hidden: if the player is hidden in the UI
+    # hide_player_in_ui: if the player should be hidden in the UI
     # will be set by the player manager based on config
-    # a hidden player is hidden in the UI only but can still be controlled
-    hidden: bool = False
+    # if set to ALWAYS, the player will be hidden in the UI
+    # if set to AUTO, the player will be hidden in the UI if it's not playing
+    # if set to NEVER, the player will never be hidden in the UI
+    hide_player_in_ui: set[HidePlayerOption] = field(
+        default_factory=lambda: {
+            HidePlayerOption.WHEN_GROUP_ACTIVE,
+            HidePlayerOption.WHEN_UNAVAILABLE,
+            HidePlayerOption.WHEN_SYNCED,
+        }
+    )
+
+    # expose_to_ha: if the player should be exposed to Home Assistant
+    # will be set by the player manager based on config
+    # if set to False, the player will not be added to the HA integration
+    expose_to_ha: bool = True
 
     # icon: material design icon for this player
     # will be set by the player manager based on config

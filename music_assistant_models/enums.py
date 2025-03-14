@@ -595,3 +595,29 @@ class VolumeNormalizationMode(StrEnum):
     def _missing_(cls, value: object) -> VolumeNormalizationMode:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
+
+
+class HidePlayerOption(StrEnum):
+    """Enum with possible HidePlayer options."""
+
+    NEVER = "never"
+
+    # when_off: hide player in the UI when it is off
+    WHEN_OFF = "when_off"
+
+    # when_group_active: hide player in the UI when its active in any groups
+    WHEN_GROUP_ACTIVE = "when_group_active"
+
+    # when_synced: hide player in the UI when it is synced to another player
+    WHEN_SYNCED = "when_synced"
+
+    # when_unavailable: hide player in the UI when it is unavailable
+    WHEN_UNAVAILABLE = "when_unavailable"
+
+    # always: always hide the player in the UI
+    ALWAYS = "always"
+
+    @classmethod
+    def _missing_(cls, value: object) -> HidePlayerOption:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.NEVER
