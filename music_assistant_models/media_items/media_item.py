@@ -309,7 +309,10 @@ class BrowseFolder(_MediaItemBase):
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
+    # mediatype is always folder for browse folders
+    # independent of the actual content mediatype(s)
     media_type: MediaType = MediaType.FOLDER
+
     # path: the path (in uri style) to/for this browse folder
     path: str = ""
     image: MediaItemImage | None = None
@@ -329,8 +332,11 @@ class RecommendationFolder(BrowseFolder):
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
+    # mediatype is always folder for recommendation folders
+    # independent of the actual content mediatype(s)
     media_type: MediaType = MediaType.FOLDER
+
     is_playable: bool = False
     icon: str | None = None  # optional material design icon name
     items: UniqueList[MediaItem | ItemMapping] = field(default_factory=UniqueList)
-    description: str | None = None  # optional description for the recommendation
+    subtitle: str | None = None  # optional subtitle for the recommendation
