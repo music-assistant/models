@@ -283,3 +283,11 @@ class Player(DataClassDictMixin):
             self.current_media.queue_item_id = queue_item_id
         if custom_data:
             self.current_media.custom_data = custom_data
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Adjust dict object after it has been serialized."""
+        # TEMP 2025-03-15: convert power to boolean for backwards compatibility
+        # Remove this once the HA integration is updated to handle this
+        if d["powered"] is None and d["power_control"] == PLAYER_CONTROL_NONE:
+            d["powered"] = True
+        return d
