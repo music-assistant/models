@@ -20,6 +20,7 @@ class BuiltinPlayerEvent(DataClassDictMixin):
 class BuiltinPlayerState(DataClassDictMixin):
     """Model for state updates from the builtin (web) player."""
 
+    powered: bool
     playing: bool
     paused: bool
     position: int
