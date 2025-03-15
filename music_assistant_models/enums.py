@@ -425,6 +425,8 @@ class BuiltinPlayerEventType(StrEnum):
     SET_VOLUME = "set_volume"
     PLAY_MEDIA = "play_media"
     TIMEOUT = "timeout"
+    POWER_OFF = "power_off"
+    POWER_ON = "power_on"
 
 
 class ProviderFeature(StrEnum):
