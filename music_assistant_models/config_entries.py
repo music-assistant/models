@@ -148,10 +148,10 @@ class ConfigEntry(DataClassDictMixin):
             raise ValueError(f"{self.key} is required")
 
         if self.multi_value and value is not None:
-            value = cast(_ConfigValueTypeMulti, value)
+            value = cast("_ConfigValueTypeMulti", value)
             value = [convert_value(x) for x in value]  # type: ignore[assignment]
         elif value is not None:
-            value = cast(_ConfigValueTypeSingle, value)
+            value = cast("_ConfigValueTypeSingle", value)
             value = convert_value(value)
 
         self.value = value
@@ -164,7 +164,7 @@ class ConfigEntry(DataClassDictMixin):
         value = self.value or self.default_value
         if self.multi_value:
             assert isinstance(value, list)
-            value = cast(list[str], value)
+            value = cast("list[str]", value)
             return [tuple(x.split(MULTI_VALUE_SPLITTER, 1)) for x in value]
         assert isinstance(value, str)
         return tuple(value.split(MULTI_VALUE_SPLITTER, 1))

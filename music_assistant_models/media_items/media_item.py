@@ -127,7 +127,7 @@ class MediaItem(_MediaItemBase):
             # this is probably the client
             return any(x.available for x in self.provider_mappings)
         if TYPE_CHECKING:
-            available_providers = cast(set[str], available_providers)
+            available_providers = cast("set[str]", available_providers)
         for x in self.provider_mappings:
             if available_providers.intersection({x.provider_domain, x.provider_instance}):
                 return True
