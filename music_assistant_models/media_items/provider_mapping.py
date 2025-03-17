@@ -41,7 +41,7 @@ class ProviderMapping(DataClassDictMixin):
             # this is probably the client
             return 0
         if TYPE_CHECKING:
-            local_provs = cast(set[str], local_provs)
+            local_provs = cast("set[str]", local_provs)
         if self.provider_domain in ("filesystem_local", "filesystem_smb"):
             return 2
         if self.provider_instance in local_provs:
