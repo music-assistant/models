@@ -21,7 +21,9 @@ class MediaItemPlaybackProgressReport(DataClassDictMixin):
     media_type: MediaType
     name: str
     artist: str | None
+    artist_mbids: list[str] | None
     album: str | None
+    album_mbid: str | None
     image_url: str | None
     duration: int
     mbid: str | None
