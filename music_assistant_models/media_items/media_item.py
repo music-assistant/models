@@ -300,7 +300,7 @@ class PodcastEpisode(MediaItem):
     podcast: Podcast | ItemMapping
     duration: int = 0
 
-    publish_date: datetime | None
+    publish_date: datetime | None = None
 
     # resume point info
     # set to None if unknown/unsupported by provider
