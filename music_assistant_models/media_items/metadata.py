@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
+from datetime import datetime
 
 from mashumaro import DataClassDictMixin
 
@@ -87,7 +88,7 @@ class MediaItemMetadata(DataClassDictMixin):
     performers: set[str] | None = None
     preview: str | None = None
     popularity: int | None = None
-    release_date: str | None = None
+    release_date: datetime | None = None
     languages: UniqueList[str] | None = None
     # chapters is a list of available chapters, sorted by position
     # most commonly used for audiobooks and podcast episodes
