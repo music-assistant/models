@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from mashumaro import DataClassDictMixin
@@ -299,8 +298,6 @@ class PodcastEpisode(MediaItem):
     position: int  # sort position / episode number (set to 0 if unknown)
     podcast: Podcast | ItemMapping
     duration: int = 0
-
-    publish_date: datetime | None
 
     # resume point info
     # set to None if unknown/unsupported by provider
