@@ -344,5 +344,13 @@ class RecommendationFolder(BrowseFolder):
 
     is_playable: bool = False
     icon: str | None = None  # optional material design icon name
-    items: UniqueList[MediaItem | ItemMapping] = field(default_factory=UniqueList)
+    items: UniqueList[MediaItemTypeOrItemMapping] = field(default_factory=UniqueList)
     subtitle: str | None = None  # optional subtitle for the recommendation
+
+
+# some type aliases
+MediaItemType = (
+    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | BrowseFolder
+)
+MediaItemTypeOrItemMapping = MediaItemType | ItemMapping
+PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode

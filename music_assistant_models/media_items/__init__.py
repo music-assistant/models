@@ -20,6 +20,9 @@ from .media_item import (
     BrowseFolder,
     ItemMapping,
     MediaItem,
+    MediaItemType,
+    MediaItemTypeOrItemMapping,
+    PlayableMediaItemType,
     Playlist,
     Podcast,
     PodcastEpisode,
@@ -42,10 +45,13 @@ __all__ = [
     "MediaItemImage",
     "MediaItemLink",
     "MediaItemMetadata",
+    "MediaItemType",
+    "MediaItemTypeOrItemMapping",
     "Metadata",
     "MetadataProvider",
     "MetadataProviderStatus",
     "MetadataProviderType",
+    "PlayableMediaItemType",
     "Playlist",
     "PlaylistTrack",
     "Podcast",
@@ -56,15 +62,6 @@ __all__ = [
     "Track",
     "UniqueList",
 ]
-
-MediaItemType = (
-    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | BrowseFolder
-)
-
-MediaItemTypeOrItemMapping = MediaItemType | ItemMapping
-
-# directly playable media items
-PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
 
 
 @dataclass(kw_only=True)
