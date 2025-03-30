@@ -83,6 +83,7 @@ class MediaItemMetadata(DataClassDictMixin):
     style: str | None = None
     copyright: str | None = None
     lyrics: str | None = None  # tracks only
+    lrc_lyrics: str | None = None  # tracks only
     label: str | None = None
     links: set[MediaItemLink] | None = None
     performers: set[str] | None = None
