@@ -361,6 +361,8 @@ class PlayerFeature(StrEnum):
     seek: The player supports seeking to a specific.
     enqueue: The player supports (en)queuing of media items natively.
     select_source: The player has native support for selecting a source.
+    gapless_playback: The player supports gapless playback.
+    gapless_different_samplerate: Supports gapless playback between different samplerates.
     """
 
     POWER = "power"
@@ -374,6 +376,8 @@ class PlayerFeature(StrEnum):
     PLAY_ANNOUNCEMENT = "play_announcement"
     ENQUEUE = "enqueue"
     SELECT_SOURCE = "select_source"
+    GAPLESS_PLAYBACK = "gapless_playback"
+    GAPLESS_DIFFERENT_SAMPLERATE = "gapless_different_samplerate"
     UNKNOWN = "unknown"
 
     @classmethod
