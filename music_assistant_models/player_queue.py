@@ -66,8 +66,20 @@ class PlayerQueue(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
-    next_track_enqueued: str | None = field(
+    next_item_id_enqueued: str | None = field(
         default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+    session_id: str | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+    items_last_updated: float = field(
+        default_factory=time.time,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
