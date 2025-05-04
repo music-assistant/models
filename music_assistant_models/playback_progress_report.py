@@ -17,6 +17,7 @@ from .enums import MediaType
 class MediaItemPlaybackProgressReport(DataClassDictMixin):
     """Object to submit in a progress report during/after media playback."""
 
+    item_id: str
     uri: str
     media_type: MediaType
     name: str
@@ -26,6 +27,7 @@ class MediaItemPlaybackProgressReport(DataClassDictMixin):
     album_mbid: str | None
     image_url: str | None
     duration: int
+    provider: str
     mbid: str | None
     seconds_played: int
     fully_played: bool
