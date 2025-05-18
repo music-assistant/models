@@ -344,13 +344,13 @@ class RecommendationFolder(BrowseFolder):
 
     is_playable: bool = False
     icon: str | None = None  # optional material design icon name
-    items: UniqueList[MediaItemTypeOrItemMapping] = field(default_factory=UniqueList)
+    items: UniqueList[MediaItemTypeOrItemMapping | BrowseFolder] = field(default_factory=UniqueList)
     subtitle: str | None = None  # optional subtitle for the recommendation
 
 
 # some type aliases
-MediaItemType = (
-    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | BrowseFolder
-)
+# NOTE: BrowseFolder is not part of the MediaItemType alias, as it lacks
+# provider mappings, i.e. we do not map a provider item to a BrowseFolder.
+MediaItemType = Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode
 MediaItemTypeOrItemMapping = MediaItemType | ItemMapping
 PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
