@@ -8,7 +8,7 @@ from typing import Any, Self
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
-from .enums import PlayerState, RepeatMode
+from .enums import PlaybackState, RepeatMode
 from .media_items import MediaItemType, media_from_dict
 from .queue_item import QueueItem
 
@@ -22,9 +22,9 @@ class PlayLogEntry:
     seconds_streamed: float | None = None
 
 
-@dataclass
-class PlayerQueue(DataClassDictMixin):
-    """Representation of a PlayerQueue within Music Assistant."""
+@dataclass(frozen=True)
+class PlayerQueueState(DataClassDictMixin):
+    """Representation of the state of a PlayerQueue within Music Assistant."""
 
     queue_id: str
     active: bool
@@ -42,7 +42,7 @@ class PlayerQueue(DataClassDictMixin):
 
     elapsed_time: float = 0
     elapsed_time_last_updated: float = field(default_factory=time.time)
-    state: PlayerState = PlayerState.IDLE
+    state: PlaybackState = PlaybackState.IDLE
     current_item: QueueItem | None = None
     next_item: QueueItem | None = None
     radio_source: list[MediaItemType] = field(default_factory=list)
@@ -108,3 +108,7 @@ class PlayerQueue(DataClassDictMixin):
         if "enqueued_media_items" in d:
             d["enqueued_media_items"] = [media_from_dict(x) for x in d["enqueued_media_items"]]
         return cls.from_dict(d)
+
+
+# alias for backwards compatibility
+PlayerQueue = PlayerQueueState
