@@ -61,11 +61,11 @@ class PlayerSource(DataClassDictMixin):
 
 
 @dataclass(frozen=True)
-class PlayerState(DataClassDictMixin):
-    """Representation of the state of a player within Music Assistant."""
+class Player(DataClassDictMixin):
+    """Representation of (the state of) a player within Music Assistant."""
 
     player_id: str
-    provider: str  # instance_id of the player provider
+    provider: str  # instance_id/lookup_key of the player provider
     type: PlayerType
     name: str
     available: bool
@@ -190,7 +190,3 @@ class PlayerState(DataClassDictMixin):
         # add alias for extra_data for backwards compatibility
         d["extra_data"] = d["extra_attributes"]
         return d
-
-
-# alias for backwards compatibility
-Player = PlayerState

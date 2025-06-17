@@ -23,8 +23,8 @@ class PlayLogEntry:
 
 
 @dataclass(frozen=True)
-class PlayerQueueState(DataClassDictMixin):
-    """Representation of the state of a PlayerQueue within Music Assistant."""
+class PlayerQueue(DataClassDictMixin):
+    """Representation of (the state of) a PlayerQueue within Music Assistant."""
 
     queue_id: str
     active: bool
@@ -108,7 +108,3 @@ class PlayerQueueState(DataClassDictMixin):
         if "enqueued_media_items" in d:
             d["enqueued_media_items"] = [media_from_dict(x) for x in d["enqueued_media_items"]]
         return cls.from_dict(d)
-
-
-# alias for backwards compatibility
-PlayerQueue = PlayerQueueState

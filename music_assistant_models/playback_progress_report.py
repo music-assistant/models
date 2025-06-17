@@ -13,7 +13,7 @@ from mashumaro import DataClassDictMixin
 from .enums import MediaType
 
 
-@dataclass
+@dataclass(frozen=True)
 class MediaItemPlaybackProgressReport(DataClassDictMixin):
     """Object to submit in a progress report during/after media playback."""
 
