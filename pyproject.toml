@@ -8,6 +8,7 @@ classifiers = [
   "Environment :: Console",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dependencies = ["orjson>=3.9", "mashumaro>=3.14"]
 description = "Music Assistant Base Models"
@@ -47,7 +48,7 @@ fix = true
 show-fixes = true
 
 line-length = 100
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint.pydocstyle]
 # Use Google-style docstrings.
