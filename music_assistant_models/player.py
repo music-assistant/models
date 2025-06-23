@@ -12,7 +12,7 @@ from .constants import PLAYER_CONTROL_NONE
 from .enums import HidePlayerOption, MediaType, PlaybackState, PlayerFeature, PlayerType
 from .unique_list import UniqueList
 
-type EXTRA_ATTRIBUTES_TYPES = str | int | float | bool | None
+EXTRA_ATTRIBUTES_TYPES = str | int | float | bool | None
 
 
 @dataclass
