@@ -8,6 +8,7 @@ classifiers = [
   "Environment :: Console",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dependencies = ["orjson>=3.9", "mashumaro>=3.14"]
 description = "Music Assistant Base Models"
@@ -21,13 +22,13 @@ version = "0.0.0"
 test = [
   "codespell==2.4.1",
   "isort==6.0.1",
-  "mypy==1.15.0",
+  "mypy==1.16.1",
   "pre-commit==4.2.0",
   "pre-commit-hooks==5.0.0",
-  "pytest==8.3.5",
-  "pytest-cov==6.1.1",
+  "pytest==8.4.1",
+  "pytest-cov==6.2.1",
   "tomli==2.2.1",
-  "ruff==0.11.9",
+  "ruff==0.11.13",
 ]
 
 [tool.codespell]
@@ -47,7 +48,7 @@ fix = true
 show-fixes = true
 
 line-length = 100
-target-version = "py311"
+target-version = "py313"
 
 [tool.ruff.lint.pydocstyle]
 # Use Google-style docstrings.

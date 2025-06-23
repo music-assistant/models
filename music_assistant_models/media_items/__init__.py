@@ -21,7 +21,6 @@ from .media_item import (
     ItemMapping,
     MediaItem,
     MediaItemType,
-    MediaItemTypeOrItemMapping,
     PlayableMediaItemType,
     Playlist,
     Podcast,
@@ -46,7 +45,6 @@ __all__ = [
     "MediaItemLink",
     "MediaItemMetadata",
     "MediaItemType",
-    "MediaItemTypeOrItemMapping",
     "Metadata",
     "MetadataProvider",
     "MetadataProviderStatus",
@@ -77,7 +75,7 @@ class SearchResults(DataClassDictMixin):
     podcasts: Sequence[Podcast | ItemMapping] = field(default_factory=list)
 
 
-def media_from_dict(media_item: dict[str, Any]) -> MediaItemTypeOrItemMapping:
+def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
     """Return MediaItem from dict."""
     if "provider_mappings" not in media_item:
         return ItemMapping.from_dict(media_item)
