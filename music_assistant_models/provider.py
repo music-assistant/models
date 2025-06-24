@@ -9,7 +9,7 @@ from typing import Any
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from .enums import MediaType, ProviderFeature, ProviderType
+from .enums import MediaType, ProviderFeature, ProviderStage, ProviderType
 
 
 @dataclass
@@ -24,6 +24,8 @@ class ProviderManifest(DataClassORJSONMixin):
 
     # optional params
 
+    # stage: the stage of the provider, used to determine if it is stable or experimental
+    stage: ProviderStage = ProviderStage.STABLE
     # requirements: list of (pip style) python packages required for this provider
     requirements: list[str] = field(default_factory=list)
     # documentation: link/url to documentation.
