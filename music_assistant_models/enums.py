@@ -632,3 +632,33 @@ class HidePlayerOption(StrEnum):
     def _missing_(cls, value: object) -> HidePlayerOption:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.NEVER
+
+
+class ProviderStage(StrEnum):
+    """Enum with possible Provider (development/stability) stages."""
+
+    # alpha: early development stage, not ready for production use
+    ALPHA = "alpha"
+
+    # beta: feature complete, but not fully tested, may contain bugs
+    BETA = "beta"
+
+    # stable: fully tested and ready for production use
+    STABLE = "stable"
+
+    # experimental: not stable, may change at any time, not recommended for production use
+    # often indicates a provider that is in heavy development or is based on reverse engineering
+    # or breaks often due to upstream changes
+    EXPERIMENTAL = "experimental"
+
+    # unmaintained: no longer maintained, no longer receiving updates or support
+    # looking for a community maintainer - the provider may not work in the future
+    UNMAINTAINED = "unmaintained"
+
+    # deprecated: no longer supported, will be removed in the future
+    DEPRECATED = "deprecated"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ProviderStage:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.STABLE
