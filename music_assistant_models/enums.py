@@ -314,7 +314,7 @@ class RepeatMode(StrEnum):
     UNKNOWN = "unknown"
 
 
-class PlayerState(StrEnum):
+class PlaybackState(StrEnum):
     """Enum for the (playback)state of a player."""
 
     IDLE = "idle"
@@ -325,9 +325,13 @@ class PlayerState(StrEnum):
     UNKNOWN = "unknown"
 
     @classmethod
-    def _missing_(cls, value: object) -> PlayerState:  # noqa: ARG003
+    def _missing_(cls, value: object) -> PlaybackState:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
+
+
+# alias for backwards compatibility
+PlayerState = PlaybackState
 
 
 class PlayerType(StrEnum):

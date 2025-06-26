@@ -9,7 +9,7 @@ from .enums import EventType
 from .helpers import get_serializable_value
 
 
-@dataclass
+@dataclass(frozen=True)
 class MassEvent(DataClassORJSONMixin):
     """Representation of an Event emitted in/by Music Assistant."""
 
