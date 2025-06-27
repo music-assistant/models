@@ -22,7 +22,7 @@ class PlayLogEntry:
     seconds_streamed: float | None = None
 
 
-@dataclass(frozen=True)
+@dataclass
 class PlayerQueue(DataClassDictMixin):
     """Representation of (the state of) a PlayerQueue within Music Assistant."""
 

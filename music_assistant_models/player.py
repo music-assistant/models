@@ -60,7 +60,7 @@ class PlayerSource(DataClassDictMixin):
     can_next_previous: bool = False
 
 
-@dataclass(frozen=True)
+@dataclass
 class Player(DataClassDictMixin):
     """Representation of (the state of) a player within Music Assistant."""
 
