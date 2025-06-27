@@ -44,7 +44,7 @@ class PlayerMedia(DataClassDictMixin):
     custom_data: dict[str, Any] | None = None  # optional
 
 
-@dataclass(frozen=True)
+@dataclass
 class PlayerSource(DataClassDictMixin):
     """Model for a player source."""
 
