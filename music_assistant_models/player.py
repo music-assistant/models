@@ -59,6 +59,10 @@ class PlayerSource(DataClassDictMixin):
     # can_next_previous: this source can be skipped to next/previous item
     can_next_previous: bool = False
 
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
 
 @dataclass
 class Player(DataClassDictMixin):
