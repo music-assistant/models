@@ -179,7 +179,8 @@ class Player(DataClassDictMixin):
             return self.current_media.queue_item_id or self.current_media.uri
         return None
 
-    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+    @classmethod
+    def __post_serialize__(cls, d: dict[str, Any]) -> dict[str, Any]:
         """Adjust dict object after it has been serialized."""
         # TEMP 2025-03-15: convert power to boolean for backwards compatibility
         # Remove this once the HA integration is updated to handle this
@@ -193,4 +194,21 @@ class Player(DataClassDictMixin):
         d["group_childs"] = d["group_members"]
         # add alias for extra_data for backwards compatibility
         d["extra_data"] = d["extra_attributes"]
+        return d
+
+    @classmethod
+    def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
+        """Adjust object before it will be deserialized."""
+        # add alias for playback_state for backwards compatibility
+        if "playback_state" not in d and "state" in d:
+            d["playback_state"] = d["state"]
+        # add alias for name for backwards compatibility
+        if "name" not in d and "display_name" in d:
+            d["name"] = d["display_name"]
+        # add alias for group_members for backwards compatibility
+        if "group_members" not in d and "group_childs" in d:
+            d["group_members"] = d["group_childs"]
+        # add alias for extra_attributes for backwards compatibility
+        if "extra_attributes" not in d and "extra_data" in d:
+            d["extra_attributes"] = d["extra_data"]
         return d
