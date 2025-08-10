@@ -88,7 +88,6 @@ class SyncTask:
 
     def to_dict(self) -> dict[str, Any]:
         """Return SyncTask as (serializable) dict."""
-        # ruff: noqa:ARG002
         return {
             "provider_domain": self.provider_domain,
             "provider_instance": self.provider_instance,
