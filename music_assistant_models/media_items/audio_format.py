@@ -69,6 +69,10 @@ class AudioFormat(DataClassDictMixin):
             f"{self.output_format_str} {self.sample_rate}/{self.bit_depth} {self.channels} channels"
         )
 
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.__str__())
+
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
         # bit_rate is now optional. Set default value to keep compatibility
