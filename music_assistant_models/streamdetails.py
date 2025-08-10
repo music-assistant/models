@@ -13,6 +13,27 @@ from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
 
 
+@dataclass
+class StreamMetadata(DataClassDictMixin):
+    """
+    Metadata of a live broadcast / media stream.
+
+    This is used, for example, to provide information about the currently playing
+    track on a radio station. A provider may use this to expose additional
+    metadata about the stream.
+    """
+
+    # mandatory fields
+    title: str
+
+    # optional fields
+    artist: str | None = None
+    album: str | None = None
+    image_url: str | None = None
+    duration: int | None = None
+    uri: str | None = None
+
+
 @dataclass(kw_only=True)
 class StreamDetails(DataClassDictMixin):
     """Model for streamdetails."""
@@ -20,7 +41,7 @@ class StreamDetails(DataClassDictMixin):
     # NOTE: the actual provider/itemid of the streamdetails may differ
     # from the connected media_item due to track linking etc.
     # the streamdetails are only used to provide details about the content
-    # that is going to be streamed.
+    # that is (going to be) streamed.
 
     #############################################################################
     # mandatory fields                                                          #
@@ -41,9 +62,9 @@ class StreamDetails(DataClassDictMixin):
     # total size in bytes of the item, calculated at eof when omitted
     size: int | None = None
 
-    # stream_title: radio/live streams can optionally set/use this field
-    # to set the title of the playing media during the stream
-    stream_title: str | None = None
+    # stream metadata: radio/live streams can optionally set/use this field
+    # to set the metadata of the playing media during the stream
+    stream_metadata: StreamMetadata | None = None
 
     #############################################################################
     # the fields below will only be used server-side and not sent to the client #
@@ -104,7 +125,7 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
 
-    # enable_cache: bool to indicate that the audio be be temporary cached
+    # enable_cache: bool to indicate that the audio may be temporary cached
     # this increases performance (especially while seeking) and reduces network
     # usage for streams that are played multiple times. For some (slow) streams
     # its even required to prevent buffering issues.
@@ -186,6 +207,28 @@ class StreamDetails(DataClassDictMixin):
         """Return uri representation of item."""
         return f"{self.provider}://{self.media_type.value}/{self.item_id}"
 
+    @property
+    def stream_title(self) -> str | None:
+        """
+        Return stream title representation of item.
+
+        Provided for backwards compatibility reasons.
+        """
+        if self.stream_metadata:
+            if self.stream_metadata.artist:
+                return f"{self.stream_metadata.artist} - {self.stream_metadata.title}"
+            return self.stream_metadata.title
+        return None
+
+    @stream_title.setter
+    def stream_title(self, value: str) -> None:
+        """Set stream title representation of item."""
+        if " - " in value:
+            artist, title = value.split(" - ", 1)
+            self.stream_metadata = StreamMetadata(title=title, artist=artist)
+        else:
+            self.stream_metadata = StreamMetadata(title=value)
+
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
         # TEMP 2025-02-28: convert StreamType.CACHE and StreamType.MULTI_FILE for
@@ -193,4 +236,6 @@ class StreamDetails(DataClassDictMixin):
         # Remove this in a future release (after 2.5 is released)
         d["stream_type"] = d["stream_type"].replace("cache", "local_file")
         d["stream_type"] = d["stream_type"].replace("multi_file", "local_file")
+        # add alias for stream_title for backwards compatibility
+        d["stream_title"] = self.stream_title
         return d
