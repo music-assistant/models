@@ -204,7 +204,7 @@ class Track(MediaItem):
     duration: int = 0
     version: str = ""
     artists: UniqueList[Artist | ItemMapping] = field(default_factory=UniqueList)
-    last_played: int = 0
+    last_played: int = 0  # only available for library/database items
     album: Album | ItemMapping | None = None  # required for album tracks
     disc_number: int = 0  # required for album tracks
     track_number: int = 0  # required for album tracks
