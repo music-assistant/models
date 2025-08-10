@@ -17,16 +17,21 @@ from .enums import MediaType
 class MediaItemPlaybackProgressReport(DataClassDictMixin):
     """Object to submit in a progress report during/after media playback."""
 
+    # mandatory fields
     uri: str
     media_type: MediaType
     name: str
-    artist: str | None
-    artist_mbids: list[str] | None
-    album: str | None
-    album_mbid: str | None
-    image_url: str | None
     duration: int
-    mbid: str | None
     seconds_played: int
     fully_played: bool
     is_playing: bool
+
+    # optional fields
+    mbid: str | None = None
+    artist: str | None = None
+    artist_mbids: list[str] | None = None
+    album: str | None = None
+    album_mbid: str | None = None
+    album_artist: str | None = None
+    album_artist_mbids: list[str] | None = None
+    image_url: str | None = None
