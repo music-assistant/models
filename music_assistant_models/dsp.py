@@ -165,6 +165,25 @@ class DSPConfig(DataClassDictMixin):
             f.validate()
 
 
+@dataclass
+class DSPConfigPreset(DataClassDictMixin):
+    """Model for a persisted DSP config preset."""
+
+    # User friendly name displayed in the UI
+    name: str
+    # The config
+    config: DSPConfig
+    # Unique ID used to represent the preset
+    preset_id: str | None = None
+
+    def validate(self) -> None:
+        """Validate the DSP preset and configuration."""
+        if not self.name or len(self.name) == 0:
+            raise ValueError("Preset name is required")
+
+        self.config.validate()
+
+
 class DSPState(StrEnum):
     """Enum of all DSP states of DSPDetails."""
 
