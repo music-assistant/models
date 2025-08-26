@@ -11,6 +11,7 @@ from mashumaro import DataClassDictMixin, field_options, pass_through
 from .dsp import DSPDetails
 from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
+from .smart_fades import SmartFadesAnalysis
 
 
 @dataclass(kw_only=True)
@@ -128,6 +129,9 @@ class StreamDetails(DataClassDictMixin):
     target_loudness: float | None = None
     strip_silence_begin: bool = False
     strip_silence_end: bool = False
+
+    # Smart fades BPM analysis for intelligent crossfading
+    smart_fades: SmartFadesAnalysis | None = None
 
     # This contains the DSPDetails of all players in the group.
     # In case of single player playback, dict will contain only one entry.
