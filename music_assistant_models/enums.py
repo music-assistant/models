@@ -136,6 +136,8 @@ class AlbumType(StrEnum):
 
     ALBUM = "album"
     SINGLE = "single"
+    LIVE = "live"
+    SOUNDTRACK = "soundtrack"
     COMPILATION = "compilation"
     EP = "ep"
     UNKNOWN = "unknown"
