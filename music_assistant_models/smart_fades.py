@@ -18,6 +18,7 @@ class SmartFadesAnalysis(DataClassDictMixin):
     beats: np.ndarray          # Beat positions in seconds (from madmom)
     downbeats: np.ndarray      # Downbeat positions in seconds (from madmom) 
     confidence: float          # Analysis confidence score 0-1
+    duration: float = 0.0      # Duration of the track in seconds
     
     class Config(BaseConfig):
         serialization_strategy = {
