@@ -10,7 +10,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
 ]
-dependencies = ["orjson>=3.9", "mashumaro>=3.14", "numpy>=1.24.0"]
+dependencies = ["orjson>=3.9", "mashumaro>=3.14", "numpy>=2.2.0"]
 description = "Music Assistant Base Models"
 license = {text = "Apache-2.0"}
 readme = "README.md"
