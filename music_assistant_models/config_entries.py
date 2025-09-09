@@ -109,6 +109,8 @@ class ConfigEntry(DataClassDictMixin):
     action_label: str | None = None
     # value: set by the config manager/flow (or in rare cases by the provider itself)
     value: ConfigValueType = None
+    # validate: an optional custom validation callback
+    validate: Callable[[ConfigValueType], bool] | None = None
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
@@ -146,6 +148,10 @@ class ConfigEntry(DataClassDictMixin):
 
         if value is None and self.required and not allow_none:
             raise ValueError(f"{self.key} is required")
+
+        # handle optional validation callback
+        if self.validate is not None and not (self.validate(value)):
+            raise ValueError(f"{value} is not a valid value for {self.key}")
 
         if self.multi_value and value is not None:
             value = cast("_ConfigValueTypeMulti", value)
