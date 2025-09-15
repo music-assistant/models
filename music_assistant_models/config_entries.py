@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Final, cast
 
-from mashumaro import DataClassDictMixin
+from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import SECURE_STRING_SUBSTITUTE
 from .enums import ConfigEntryType, ProviderType
@@ -110,7 +110,12 @@ class ConfigEntry(DataClassDictMixin):
     # value: set by the config manager/flow (or in rare cases by the provider itself)
     value: ConfigValueType = None
     # validate: an optional custom validation callback
-    validate: Callable[[ConfigValueType], bool] | None = None
+    validate: Callable[[ConfigValueType], bool] | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
