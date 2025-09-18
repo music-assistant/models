@@ -152,12 +152,17 @@ class StreamDetails(DataClassDictMixin):
     strip_silence_begin: bool = False
     strip_silence_end: bool = False
 
-    # Smart fades BPM analysis for intelligent crossfading
-    smart_fades: SmartFadesAnalysis | None = None
-
     # This contains the DSPDetails of all players in the group.
     # In case of single player playback, dict will contain only one entry.
     dsp: dict[str, DSPDetails] | None = None
+
+    # Smart fades BPM analysis for intelligent crossfading
+    smart_fades: Any = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
 
     # the fields below are managed by the queue/stream controller and may not be set by providers
     fade_in: bool = field(
