@@ -20,6 +20,9 @@ class ProviderMapping(DataClassDictMixin):
     provider_domain: str
     provider_instance: str
     available: bool = True
+    # in_library: whether the item is in the user's library within this provider
+    # if this is unknown in the current state, this shall be None
+    in_library: bool | None = None
     # quality/audio details (streamable content only)
     audio_format: AudioFormat = field(default_factory=AudioFormat)
     # url = link to provider details page if exists
