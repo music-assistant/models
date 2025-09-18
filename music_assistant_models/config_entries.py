@@ -94,14 +94,16 @@ class ConfigEntry(DataClassDictMixin):
     # NOTE: for using multi_value, it is required to use the MultiValueConfigEntry
     # class instead of ConfigEntry to prevent (de)serialization issues
     multi_value: bool = False
-    # depends_on [optional]: needs to be set before this setting is enabled in the frontend
+    # depends_on [optional]: needs to be set before this setting is visible in the frontend
     depends_on: str | None = None
-    # depends_on_value [optional]: complementary to depends_on, only enable if this value is set
+    # depends_on_value [optional]: complementary to depends_on, only show if this value is set
     depends_on_value: ConfigValueType | None = None
     # depends_on_value_not [optional]: same as depends_on_value but inverted
     depends_on_value_not: ConfigValueType | None = None
     # hidden: hide from UI
     hidden: bool = False
+    # read_only: prevent user from changing this setting (make it disabled)
+    read_only: bool = False
     # category: category to group this setting into in the frontend (e.g. advanced)
     category: str = "generic"
     # action: (configentry)action that is needed to get the value for this entry
