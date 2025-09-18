@@ -8,8 +8,6 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
-from .smart_fades import SmartFadesAnalysis
-
 from .dsp import DSPDetails
 from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
