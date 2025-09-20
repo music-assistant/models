@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable, Iterable
+from copy import deepcopy
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Final, cast
 
-from mashumaro import DataClassDictMixin
+from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import SECURE_STRING_SUBSTITUTE
 from .enums import ConfigEntryType, ProviderType
@@ -93,14 +94,16 @@ class ConfigEntry(DataClassDictMixin):
     # NOTE: for using multi_value, it is required to use the MultiValueConfigEntry
     # class instead of ConfigEntry to prevent (de)serialization issues
     multi_value: bool = False
-    # depends_on [optional]: needs to be set before this setting is enabled in the frontend
+    # depends_on [optional]: needs to be set before this setting is visible in the frontend
     depends_on: str | None = None
-    # depends_on_value [optional]: complementary to depends_on, only enable if this value is set
+    # depends_on_value [optional]: complementary to depends_on, only show if this value is set
     depends_on_value: ConfigValueType | None = None
     # depends_on_value_not [optional]: same as depends_on_value but inverted
     depends_on_value_not: ConfigValueType | None = None
     # hidden: hide from UI
     hidden: bool = False
+    # read_only: prevent user from changing this setting (make it disabled)
+    read_only: bool = False
     # category: category to group this setting into in the frontend (e.g. advanced)
     category: str = "generic"
     # action: (configentry)action that is needed to get the value for this entry
@@ -109,6 +112,13 @@ class ConfigEntry(DataClassDictMixin):
     action_label: str | None = None
     # value: set by the config manager/flow (or in rare cases by the provider itself)
     value: ConfigValueType = None
+    # validate: an optional custom validation callback
+    validate: Callable[[ConfigValueType], bool] | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
@@ -119,6 +129,7 @@ class ConfigEntry(DataClassDictMixin):
         self,
         value: ConfigValueType,
         allow_none: bool = True,
+        raise_on_error: bool = True,
     ) -> ConfigValueType:
         """Parse value from the config entry details and plain value."""
         if self.type == ConfigEntryType.LABEL:
@@ -130,9 +141,13 @@ class ConfigEntry(DataClassDictMixin):
             value = self.default_value
 
         if isinstance(value, list) and not self.multi_value:
-            raise ValueError(f"{self.key} must be a single value")
+            if raise_on_error:
+                raise ValueError(f"{self.key} must be a single value")
+            value = self.default_value
         if self.multi_value and not isinstance(value, list):
-            raise ValueError(f"value for {self.key} must be a list")
+            if raise_on_error:
+                raise ValueError(f"value for {self.key} must be a list")
+            value = self.default_value
 
         # handle some value type conversions caused by the serialization
         def convert_value(_value: _ConfigValueTypeSingle) -> _ConfigValueTypeSingle:
@@ -145,7 +160,15 @@ class ConfigEntry(DataClassDictMixin):
             return _value
 
         if value is None and self.required and not allow_none:
-            raise ValueError(f"{self.key} is required")
+            if raise_on_error:
+                raise ValueError(f"{self.key} is required")
+            value = self.default_value
+
+        # handle optional validation callback
+        if self.validate is not None and not (self.validate(value)):
+            if raise_on_error:
+                raise ValueError(f"{value} is not a valid value for {self.key}")
+            value = self.default_value
 
         if self.multi_value and value is not None:
             value = cast("_ConfigValueTypeMulti", value)
@@ -201,10 +224,12 @@ class Config(DataClassDictMixin):
             # unpack Enum value in default_value
             if isinstance(entry.default_value, Enum):
                 entry.default_value = entry.default_value.value  # type: ignore[unreachable]
-            # create a copy of the entry
-            conf.values[entry.key] = ConfigEntry.from_dict(entry.to_dict())
+            # copy original entry to prevent mutation
+            conf.values[entry.key] = deepcopy(entry)
             conf.values[entry.key].parse_value(
-                raw.get("values", {}).get(entry.key), allow_none=True
+                raw.get("values", {}).get(entry.key),
+                allow_none=True,
+                raise_on_error=False,
             )
         return conf
 

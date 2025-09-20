@@ -78,6 +78,7 @@ class MediaItemMetadata(DataClassDictMixin):
     explicit: bool | None = None
     # NOTE: images is a list of available images, sorted by preference
     images: UniqueList[MediaItemImage] | None = None
+    grouping: str | None = None
     genres: set[str] | None = None
     mood: str | None = None
     style: str | None = None
