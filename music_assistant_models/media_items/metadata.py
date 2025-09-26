@@ -118,10 +118,9 @@ class MediaItemMetadata(DataClassDictMixin):
             elif new_val and fld.name in (
                 "popularity",
                 "last_refresh",
-                "cache_checksum",
             ):
                 # some fields are always allowed to be overwritten
-                # (such as checksum and last_refresh)
+                # (such as popularity and last_refresh)
                 setattr(self, fld.name, new_val)
             elif cur_val is None:
                 setattr(self, fld.name, new_val)

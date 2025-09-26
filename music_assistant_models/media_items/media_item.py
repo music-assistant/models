@@ -235,10 +235,6 @@ class Playlist(MediaItem):
     owner: str = ""
     is_editable: bool = False
 
-    # cache_checksum: optional value to (in)validate cache
-    # detect changes to the playlist tracks listing
-    cache_checksum: str | None = None
-
 
 @dataclass(kw_only=True)
 class Radio(MediaItem):
