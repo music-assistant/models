@@ -90,6 +90,9 @@ class Player(DataClassDictMixin):
     #   and this will include the player's own id (as first item in the list).
     group_members: UniqueList[str] = field(default_factory=UniqueList)
 
+    # static_group_members: List of player group member id's that can not be ungrouped.
+    static_group_members: UniqueList[str] = field(default_factory=UniqueList)
+
     # can_group_with: return set of player_id's this player can group/sync with
     # can also be instance id of an entire provider if all players can group with each other
     can_group_with: set[str] = field(default_factory=set)
