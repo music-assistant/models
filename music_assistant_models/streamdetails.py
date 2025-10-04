@@ -81,7 +81,7 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
     # data: provider specific data (not exposed externally)
-    # this info is for example used to pass slong details to the get_audio_stream
+    # this info is for example used to pass along details to the get_audio_stream
     # this field may be set by the provider when creating the streamdetails
     data: Any = field(
         default=None,
@@ -126,19 +126,6 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
 
-    # enable_cache: bool to indicate that the audio may be temporary cached
-    # this increases performance (especially while seeking) and reduces network
-    # usage for streams that are played multiple times. For some (slow) streams
-    # its even required to prevent buffering issues.
-    # leave/set to None to let the core decide based on the stream type.
-    # True to enforce caching, False to disable caching.
-    enable_cache: bool | None = field(
-        default=None,
-        compare=False,
-        metadata=field_options(serialize="omit", deserialize=pass_through),
-        repr=False,
-    )
-
     #############################################################################
     # the fields below will be set/controlled by the streamcontroller           #
     #############################################################################
@@ -154,14 +141,6 @@ class StreamDetails(DataClassDictMixin):
     # This contains the DSPDetails of all players in the group.
     # In case of single player playback, dict will contain only one entry.
     dsp: dict[str, DSPDetails] | None = None
-
-    # Smart fades BPM analysis for intelligent crossfading
-    smart_fades: Any = field(
-        default=None,
-        compare=False,
-        metadata=field_options(serialize="omit", deserialize=pass_through),
-        repr=False,
-    )
 
     # the fields below are managed by the queue/stream controller and may not be set by providers
     fade_in: bool = field(
@@ -240,11 +219,6 @@ class StreamDetails(DataClassDictMixin):
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
-        # TEMP 2025-02-28: convert StreamType.CACHE and StreamType.MULTI_FILE for
-        # backwards compatibility with older client versions
-        # Remove this in a future release (after 2.5 is released)
-        d["stream_type"] = d["stream_type"].replace("cache", "local_file")
-        d["stream_type"] = d["stream_type"].replace("multi_file", "local_file")
         # add alias for stream_title for backwards compatibility
         d["stream_title"] = self.stream_title
         return d
