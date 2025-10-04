@@ -38,6 +38,7 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
     PLUGIN_SOURCE = "plugin_source"
+    SOUND_EFFECT = "sound_effect"
     UNKNOWN = "unknown"
 
     @classmethod
