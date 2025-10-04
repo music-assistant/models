@@ -31,6 +31,7 @@ class StreamMetadata(DataClassDictMixin):
     album: str | None = None
     image_url: str | None = None
     duration: int | None = None
+    description: str | None = None
     uri: str | None = None
 
 
