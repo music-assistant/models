@@ -143,6 +143,11 @@ class AlbumType(StrEnum):
     EP = "ep"
     UNKNOWN = "unknown"
 
+    @classmethod
+    def _missing_(cls, value: object) -> AlbumType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
 
 class ContentType(StrEnum):
     """Enum with audio content/container types supported by ffmpeg."""
@@ -304,6 +309,12 @@ class QueueOption(StrEnum):
     NEXT = "next"
     REPLACE_NEXT = "replace_next"
     ADD = "add"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> QueueOption:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
 
 
 class RepeatMode(StrEnum):
@@ -313,8 +324,12 @@ class RepeatMode(StrEnum):
     ONE = "one"  # repeat one/single track
     ALL = "all"  # repeat entire queue
 
-    # fallback
     UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> RepeatMode:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
 
 
 class PlaybackState(StrEnum):
@@ -440,6 +455,13 @@ class BuiltinPlayerEventType(StrEnum):
     TIMEOUT = "timeout"
     POWER_OFF = "power_off"
     POWER_ON = "power_on"
+
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> BuiltinPlayerEventType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
 
 
 class ProviderFeature(StrEnum):
