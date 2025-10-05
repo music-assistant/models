@@ -313,7 +313,6 @@ class SoundEffect(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     duration: int = 0
-
     media_type: MediaType = MediaType.SOUND_EFFECT
 
 
