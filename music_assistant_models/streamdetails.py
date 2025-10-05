@@ -35,6 +35,20 @@ class StreamMetadata(DataClassDictMixin):
     uri: str | None = None
 
 
+@dataclass
+class MultiPartPath:
+    """
+    Model for a multipart path.
+
+    Used when a stream is split into multiple parts, e.g. chapters.
+    """
+
+    path: str
+    # use the duration field to specify the duration of this part
+    # for more efficient seeking
+    duration: float | None = None
+
+
 @dataclass(kw_only=True)
 class StreamDetails(DataClassDictMixin):
     """Model for streamdetails."""
@@ -74,7 +88,8 @@ class StreamDetails(DataClassDictMixin):
     # path: url or (local accessible) path to the stream (if not custom stream)
     # this field should be set by the provider when creating the streamdetails
     # unless the stream is a custom stream
-    path: str | None = field(
+    # if the stream consists of multiple parts, this may also be a list of MultiPartPath
+    path: str | list[MultiPartPath] | None = field(
         default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
@@ -135,8 +150,6 @@ class StreamDetails(DataClassDictMixin):
     volume_normalization_mode: VolumeNormalizationMode | None = None
     volume_normalization_gain_correct: float | None = None
     target_loudness: float | None = None
-    strip_silence_begin: bool = False
-    strip_silence_end: bool = False
 
     # This contains the DSPDetails of all players in the group.
     # In case of single player playback, dict will contain only one entry.
@@ -173,7 +186,7 @@ class StreamDetails(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
-    cache: Any = field(
+    buffer: Any = field(  # for future use
         default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
