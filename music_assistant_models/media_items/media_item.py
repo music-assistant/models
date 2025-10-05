@@ -306,6 +306,18 @@ class PodcastEpisode(MediaItem):
 
 
 @dataclass(kw_only=True)
+class SoundEffect(MediaItem):
+    """Model for a Sound Effect."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    duration: int = 0
+
+    media_type: MediaType = MediaType.SOUND_EFFECT
+
+
+@dataclass(kw_only=True)
 class BrowseFolder(_MediaItemBase):
     """Representation of a Folder used in Browse (which contains media items)."""
 
