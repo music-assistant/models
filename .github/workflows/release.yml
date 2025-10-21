@@ -1,47 +1,81 @@
 name: Publish releases
 
+# Creates a GitHub release, builds and publishes to PyPI, and creates a PR in the server repo
+# Can be triggered manually with a version number or called by the auto-release workflow
+
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number (e.g., 2.16.7) - Creates release, publishes to PyPI, and updates server repo"
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: "Version number (e.g., 2.16.7)"
+        required: true
+        type: string
+    secrets:
+      PYPI_TOKEN:
+        required: true
+      PRIVILEGED_GITHUB_TOKEN:
+        required: true
 
 env:
   PYTHON_VERSION: "3.13"
-  BASE_IMAGE_VERSION_STABLE: "1.1.2"
-  BASE_IMAGE_VERSION_BETA: "1.1.2"
 
 jobs:
-  build-artifact:
-    name: Builds python artifact uploads to Github Artifact store and PyPi
+  create-release:
+    name: Create Release
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.vars.outputs.tag }}
+      version: ${{ inputs.version }}
     steps:
-      - uses: actions/checkout@v5
-      - name: Get tag
-        id: vars
-        run: >-
-          echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
-      - name: Validate version number
-        run: >-
-          if [[ "${{ github.event.release.prerelease }}" == "true" ]]; then
-            if ! [[ "${{ steps.vars.outputs.tag }}" =~ "b" || "${{ steps.vars.outputs.tag }}" =~ "rc" ]]; then
-            echo "Pre-release: Tag is missing beta suffix (${{ steps.vars.outputs.tag }})"
-              exit 1
-            fi
-          else
-            if [[ "${{ steps.vars.outputs.tag }}" =~ "b" || "${{ steps.vars.outputs.tag }}" =~ "rc" ]]; then
-              echo "Release: Tag must not have a beta (or rc) suffix (${{ steps.vars.outputs.tag }})"
-              exit 1
-            fi
-          fi
+      - name: Checkout the repository
+        uses: actions/checkout@v5
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+          git push origin "${{ inputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate release notes with Release Drafter
+        id: release_drafter
+        uses: release-drafter/release-drafter@v6.1.0
+        with:
+          config-name: release-drafter.yml
+          version: ${{ inputs.version }}
+          tag: ${{ inputs.version }}
+          publish: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-and-publish:
+    name: Build and Publish
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.version }}
+
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v6.0.0
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install build
+
+      - name: Install build dependencies
         run: >-
           pip install build tomli tomli-w
-      - name: Set Python project version from tag
+
+      - name: Set Python project version
         shell: python
         run: |-
           import tomli
@@ -50,26 +84,119 @@ jobs:
           with open("pyproject.toml", "rb") as f:
             pyproject = tomli.load(f)
 
-          pyproject["project"]["version"] = "${{ steps.vars.outputs.tag }}"
+          pyproject["project"]["version"] = "${{ inputs.version }}"
 
           with open("pyproject.toml", "wb") as f:
             tomli_w.dump(pyproject, f)
-      - name: Build python package
-        run: >-
+
+      - name: Build package
+        run: |
+          yarn build
+          rm -rf dist music_assistant_models.egg-info
           python3 -m build
-      - name: Upload distributions
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
+
       - name: Publish release to PyPI
         uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
 
-    # - name: Create Server + Client repo PR (TODO!)
-    #   uses: music-assistant/frontend-release-pr-action@main
-    #   with:
-    #     github_token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
-    #     new_release_version: ${{ env.version }}
+      - name: Upload release assets
+        run: |
+          gh release upload "${{ inputs.version }}" dist/*.whl dist/*.tar.gz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  server-repo-pr:
+    name: Server repo PR
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for PyPI availability
+        run: |
+          VERSION="${{ inputs.version }}"
+          echo "Waiting for music-assistant-models==$VERSION to be available on PyPI..."
+
+          # Wait up to 5 minutes (30 attempts * 10 seconds)
+          MAX_ATTEMPTS=30
+          ATTEMPT=1
+
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: Checking PyPI..."
+
+            # Check if the package version is available on PyPI
+            if pip index versions music-assistant-models 2>/dev/null | grep -q "$VERSION"; then
+              echo "✅ Package music-assistant-models==$VERSION is now available on PyPI!"
+              exit 0
+            fi
+
+            if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+              echo "Package not yet available, waiting 10 seconds..."
+              sleep 10
+            fi
+
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+
+          echo "⚠️ Warning: Package not found on PyPI after 5 minutes, proceeding anyway..."
+          exit 0
+
+      - name: Get release notes
+        id: release_notes
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          # Get the release notes from the models release
+          RELEASE_DATA=$(gh release view "$VERSION" --repo music-assistant/models --json body)
+
+          RELEASE_NOTES=$(echo "$RELEASE_DATA" | jq -r '.body')
+
+          # Fix relative links in release notes to point to models repo
+          # Convert models#123 or #123 to [#123](https://github.com/music-assistant/models/pull/123)
+          RELEASE_NOTES=$(echo "$RELEASE_NOTES" | sed -E 's/(^|[^[])(models)?#([0-9]+)/\1[#\3](https:\/\/github.com\/music-assistant\/models\/pull\/\3)/g')
+
+          # Set multiline output
+          {
+            echo 'notes<<EOF'
+            echo "$RELEASE_NOTES"
+            echo EOF
+          } >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+
+      - name: Checkout server repository
+        uses: actions/checkout@v4
+        with:
+          repository: music-assistant/server
+          token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          path: .
+
+      - name: Update models version
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          # Update pyproject.toml
+          sed -i.bak "s/music-assistant-models==.*/music-assistant-models==$VERSION\",/" pyproject.toml
+
+          # Update requirements_all.txt
+          sed -i.bak "s/music-assistant-models==.*/music-assistant-models==$VERSION/" requirements_all.txt
+
+          # Remove backup files
+          rm -f pyproject.toml.bak requirements_all.txt.bak
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          commit-message: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
+          branch: "auto-update-models-${{ inputs.version }}"
+          delete-branch: true
+          title: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
+          body: |
+            Update music-assistant-models to version [${{ inputs.version }}](https://github.com/music-assistant/models/releases/tag/${{ inputs.version }})
+
+            ${{ steps.release_notes.outputs.notes }}
+
+          labels: |
+            dependencies

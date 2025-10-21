@@ -1,45 +1,40 @@
-name-template: '$RESOLVED_VERSION'
-tag-template: '$RESOLVED_VERSION'
-change-template: '- #$NUMBER - $TITLE (@$AUTHOR)'
-categories:
+change-template: "- $TITLE (by @$AUTHOR in #$NUMBER)"
 
+# Exclude bots from contributors list
+exclude-contributors:
+  - dependabot
+  - dependabot[bot]
+  - github-actions
+  - github-actions[bot]
+
+categories:
   - title: "⚠ Breaking Changes"
     labels:
-      - 'breaking-change'
+      - "breaking-change"
+
+  - title: "🚀 Features and enhancements"
+    labels:
+      - "feature"
+      - "enhancement"
+      - "new-feature"
 
   - title: "🐛 Bugfixes"
     labels:
-      - 'bugfix'
+      - "bugfix"
 
-  - title: "🚀 Features"
+  - title: "🧰 Maintenance and dependency bumps"
+    collapse-after: 3
     labels:
-      - 'feature'
-      - 'enhancement'
-      - 'new-feature'
-      - 'new-provider'
-
-  - title: '🧰 Maintenance'
-    labels:
-      - 'ci'
-      - 'documentation'
-      - 'maintenance'
-
-  - title: '⬆️ Dependencies'
-    collapse-after: 1
-    labels:
-      - 'dependencies'
+      - "ci"
+      - "documentation"
+      - "maintenance"
+      - "dependencies"
 
 template: |
-  ## What’s Changed
 
   $CHANGES
 
-version-resolver:
-  major:
-    labels:
-      - 'breaking-change'
-  minor:
-    labels:
-      - 'new-feature'
-      - 'new-provider'
-  default: patch
+
+  ## :bow: Contributors
+
+  $CONTRIBUTORS
