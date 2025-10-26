@@ -28,11 +28,11 @@ class DeviceInfo(DataClassDictMixin):
     mac_address: str | None = None
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PlayerMedia(DataClassDictMixin):
     """Metadata of Media loading/loaded into a player."""
 
-    uri: str  # uri or other identifier of the loaded media
+    uri: str  # uri or other identifier of the loaded media - mandatory!
     media_type: MediaType = MediaType.UNKNOWN
     title: str | None = None  # optional
     artist: str | None = None  # optional
@@ -41,7 +41,18 @@ class PlayerMedia(DataClassDictMixin):
     duration: int | None = None  # optional
     source_id: str | None = None  # optional (ID of the source, may be a queue id)
     queue_item_id: str | None = None  # only present for requests from queue controller
-    custom_data: dict[str, Any] | None = None  # optional
+    custom_data: dict[str, Any] | None = None  # optional - must be serializable
+    elapsed_time: int | None = (
+        None  # optional - elapsed playback time of the currently playing media
+    )
+    elapsed_time_last_updated: float | None = None  # UTC timestamp
+
+    @property
+    def corrected_elapsed_time(self) -> float | None:
+        """Return the corrected/realtime elapsed time (while playing)."""
+        if self.elapsed_time is None or self.elapsed_time_last_updated is None:
+            return None
+        return self.elapsed_time + (time.time() - self.elapsed_time_last_updated)
 
 
 @dataclass

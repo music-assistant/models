@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -35,6 +36,13 @@ class StreamMetadata(DataClassDictMixin):
     uri: str | None = None
     elapsed_time: int | None = None
     elapsed_time_last_updated: float | None = None  # UTC timestamp
+
+    @property
+    def corrected_elapsed_time(self) -> float | None:
+        """Return the corrected/realtime elapsed time (while playing)."""
+        if self.elapsed_time is None or self.elapsed_time_last_updated is None:
+            return None
+        return self.elapsed_time + (time.time() - self.elapsed_time_last_updated)
 
 
 @dataclass
