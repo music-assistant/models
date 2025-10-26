@@ -42,9 +42,9 @@ class PlayerMedia(DataClassDictMixin):
     source_id: str | None = None  # optional (ID of the source, may be a queue id)
     queue_item_id: str | None = None  # only present for requests from queue controller
     custom_data: dict[str, Any] | None = None  # optional - must be serializable
-    elapsed_time: int | None = (
-        None  # optional - elapsed playback time of the currently playing media
-    )
+
+    # optional - elapsed playback time of the currently playing media
+    elapsed_time: int | None = None
     elapsed_time_last_updated: float | None = None  # UTC timestamp
 
     @property
