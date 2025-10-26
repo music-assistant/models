@@ -61,6 +61,38 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check if release notes are empty and add commit log fallback
+        run: |
+          RELEASE_BODY=$(gh release view "${{ inputs.version }}" --json body -q .body)
+
+          # Check if release body is empty or just says "No changes"
+          if [[ -z "$RELEASE_BODY" ]] || [[ "$RELEASE_BODY" =~ "No changes" ]]; then
+            echo "Release notes are empty or contain 'No changes'. Generating commit log..."
+
+            # Get the previous tag
+            PREV_TAG=$(git describe --tags --abbrev=0 "${{ inputs.version }}^" 2>/dev/null || echo "")
+
+            if [[ -z "$PREV_TAG" ]]; then
+              # If no previous tag, get all commits
+              COMMIT_LOG=$(git log --pretty=format:"* %s (%h)" "${{ inputs.version }}")
+            else
+              # Get commits between previous tag and current tag
+              COMMIT_LOG=$(git log --pretty=format:"* %s (%h)" "$PREV_TAG..${{ inputs.version }}")
+            fi
+
+            # Update release notes with commit log
+            echo "## Changes" > /tmp/release_notes.md
+            echo "" >> /tmp/release_notes.md
+            echo "$COMMIT_LOG" >> /tmp/release_notes.md
+
+            gh release edit "${{ inputs.version }}" --notes-file /tmp/release_notes.md
+            echo "Release notes updated with commit log."
+          else
+            echo "Release notes already contain content from Release Drafter."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-and-publish:
     name: Build and Publish
     needs: create-release
