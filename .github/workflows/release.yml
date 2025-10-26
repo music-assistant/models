@@ -26,8 +26,13 @@ env:
   PYTHON_VERSION: "3.13"
 
 jobs:
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/test.yml
+
   create-release:
     name: Create Release
+    needs: test
     runs-on: ubuntu-latest
     outputs:
       version: ${{ inputs.version }}
