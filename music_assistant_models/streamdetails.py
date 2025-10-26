@@ -33,6 +33,8 @@ class StreamMetadata(DataClassDictMixin):
     duration: int | None = None
     description: str | None = None
     uri: str | None = None
+    elapsed_time: int | None = None
+    elapsed_time_last_updated: float | None = None  # UTC timestamp
 
 
 @dataclass
