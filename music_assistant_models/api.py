@@ -15,7 +15,7 @@ from .helpers import get_serializable_value
 class CommandMessage(DataClassORJSONMixin):
     """Model for a Message holding a command from server to client or client to server."""
 
-    message_id: str | int
+    message_id: str
     command: str
     args: dict[str, Any] | None = None
 
