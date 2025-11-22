@@ -58,6 +58,7 @@ class ServerInfoMessage(DataClassORJSONMixin):
     base_url: str
     homeassistant_addon: bool = False
     onboard_done: bool = False
+    requires_auth: bool = False
 
 
 MessageType = (
