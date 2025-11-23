@@ -142,10 +142,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  server-repo-pr:
-    name: Server repo PR
+  prepare-downstream-prs:
+    name: Prepare downstream PRs
     needs: build-and-publish
     runs-on: ubuntu-latest
+    outputs:
+      release_notes: ${{ steps.release_notes.outputs.notes }}
     steps:
       - name: Wait for PyPI availability
         run: |
@@ -199,6 +201,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
 
+  server-repo-pr:
+    name: Server repo PR
+    needs: prepare-downstream-prs
+    runs-on: ubuntu-latest
+    steps:
+
       - name: Checkout server repository
         uses: actions/checkout@v6
         with:
@@ -231,7 +239,46 @@ jobs:
           body: |
             Update music-assistant-models to version [${{ inputs.version }}](https://github.com/music-assistant/models/releases/tag/${{ inputs.version }})
 
-            ${{ steps.release_notes.outputs.notes }}
+            ${{ needs.prepare-downstream-prs.outputs.release_notes }}
+
+          labels: |
+            dependencies
+
+  client-repo-pr:
+    name: Client repo PR
+    needs: prepare-downstream-prs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout client repository
+        uses: actions/checkout@v6
+        with:
+          repository: music-assistant/client
+          token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          path: .
+
+      - name: Update models version
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          # Update pyproject.toml
+          sed -i.bak "s/music-assistant-models==.*/music-assistant-models==$VERSION\",/" pyproject.toml
+
+          # Remove backup file
+          rm -f pyproject.toml.bak
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          commit-message: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
+          branch: "auto-update-models-${{ inputs.version }}"
+          delete-branch: true
+          title: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
+          body: |
+            Update music-assistant-models to version [${{ inputs.version }}](https://github.com/music-assistant/models/releases/tag/${{ inputs.version }})
+
+            ${{ needs.prepare-downstream-prs.outputs.release_notes }}
 
           labels: |
             dependencies
