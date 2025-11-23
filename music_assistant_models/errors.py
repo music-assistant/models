@@ -133,3 +133,27 @@ class ActionUnavailable(MusicAssistantError):
     """Error thrown when a action is denied because is is (temporary) unavailable/not possible."""
 
     error_code = 19
+
+
+class AuthenticationRequired(MusicAssistantError):
+    """Error raised when authentication is required but not provided."""
+
+    error_code = 20
+
+
+class AuthenticationFailed(MusicAssistantError):
+    """Error raised when authentication credentials are invalid."""
+
+    error_code = 21
+
+
+class InsufficientPermissions(MusicAssistantError):
+    """Error raised when user lacks required permissions for an action."""
+
+    error_code = 22
+
+
+class InvalidToken(MusicAssistantError):
+    """Error raised when an access token is invalid or expired."""
+
+    error_code = 23
