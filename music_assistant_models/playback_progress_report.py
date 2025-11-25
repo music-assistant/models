@@ -28,10 +28,12 @@ class MediaItemPlaybackProgressReport(DataClassDictMixin):
 
     # optional fields
     mbid: str | None = None
-    artist: str | None = None
+    artist: str | None = None  # This is a concatenated string of all artist names
+    artists: list[str] | None = None  # This is a list of the artist names
     artist_mbids: list[str] | None = None
     album: str | None = None
     album_mbid: str | None = None
     album_artist: str | None = None
     album_artist_mbids: list[str] | None = None
     image_url: str | None = None
+    version: str | None = None
