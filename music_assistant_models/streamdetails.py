@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -11,6 +12,8 @@ from mashumaro import DataClassDictMixin, field_options, pass_through
 from .dsp import DSPDetails
 from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
+
+type StreamMetadataUpdateCallback = Callable[[StreamDetails, int], Awaitable[None]]
 
 
 @dataclass
@@ -158,6 +161,23 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
 
+    # stream metadata update callback
+    # optional (async) callback that will be called to update the stream metadata
+    # it will be passed the streamdetails object and the elapsed time in seconds
+    stream_metadata_update_callback: StreamMetadataUpdateCallback | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+    # interval in seconds to call the stream metadata update callback
+    stream_metadata_update_interval: int = field(
+        default=5,  # 5 seconds
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
     #############################################################################
     # the fields below will be set/controlled by the streamcontroller           #
     #############################################################################
@@ -211,6 +231,12 @@ class StreamDetails(DataClassDictMixin):
     )
     created_at: float = field(
         default_factory=time.time,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+    stream_metadata_last_updated: float | None = field(
+        default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
