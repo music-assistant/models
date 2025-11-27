@@ -36,6 +36,8 @@ class User(DataClassORJSONMixin):
     display_name: str | None = None
     avatar_url: str | None = None
     preferences: dict[str, Any] = field(default_factory=dict)
+    provider_filter: list[str] = field(default_factory=list)
+    player_filter: list[str] = field(default_factory=list)
 
 
 @dataclass
