@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
@@ -151,6 +150,14 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
 
+    # expiration: time in seconds until the streamdetails expire
+    expiration: int = field(
+        default=600,  # 10 minutes
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
     #############################################################################
     # the fields below will be set/controlled by the streamcontroller           #
     #############################################################################
@@ -196,14 +203,14 @@ class StreamDetails(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
-    buffer: Any = field(  # for future use
+    buffer: Any = field(  # for in-memory buffering of stream data
         default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(UTC),
+    created_at: float = field(
+        default_factory=time.time,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
