@@ -84,6 +84,12 @@ class PlayerQueue(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
+    userid: str | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
 
     @property
     def corrected_elapsed_time(self) -> float:
@@ -100,4 +106,5 @@ class PlayerQueue(DataClassDictMixin):
         # enqueued_media_items needs to survive a restart
         # otherwise 'dont stop the music' will not work
         d["enqueued_media_items"] = [x.to_dict() for x in self.enqueued_media_items]
+        d["userid"] = self.userid
         return d
