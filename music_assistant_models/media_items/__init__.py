@@ -18,6 +18,7 @@ from .media_item import (
     Artist,
     Audiobook,
     BrowseFolder,
+    Genre,
     ItemMapping,
     MediaItem,
     MediaItemType,
@@ -38,6 +39,7 @@ __all__ = [
     "AudioFormat",
     "Audiobook",
     "BrowseFolder",
+    "Genre",
     "ItemMapping",
     "MediaItem",
     "MediaItemChapter",
@@ -68,6 +70,7 @@ class SearchResults(DataClassDictMixin):
 
     artists: Sequence[Artist | ItemMapping] = field(default_factory=list)
     albums: Sequence[Album | ItemMapping] = field(default_factory=list)
+    genres: Sequence[Genre | ItemMapping] = field(default_factory=list)
     tracks: Sequence[Track | ItemMapping] = field(default_factory=list)
     playlists: Sequence[Playlist | ItemMapping] = field(default_factory=list)
     radio: Sequence[Radio | ItemMapping] = field(default_factory=list)
@@ -83,6 +86,8 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return Artist.from_dict(media_item)
     if media_item["media_type"] == "album":
         return Album.from_dict(media_item)
+    if media_item["media_type"] == "genre":
+        return Genre.from_dict(media_item)
     if media_item["media_type"] == "track":
         return Track.from_dict(media_item)
     if media_item["media_type"] == "playlist":
