@@ -20,6 +20,7 @@ class MediaTypeMeta(EnumType):
             MediaType.RADIO,
             MediaType.AUDIOBOOK,
             MediaType.PODCAST,
+            MediaType.GENRE,
         ]
 
 
@@ -39,6 +40,7 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     FLOW_STREAM = "flow_stream"
     PLUGIN_SOURCE = "plugin_source"
     SOUND_EFFECT = "sound_effect"
+    GENRE = "genre"
     UNKNOWN = "unknown"
 
     @classmethod

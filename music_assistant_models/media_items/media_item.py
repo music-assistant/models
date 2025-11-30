@@ -141,6 +141,18 @@ class MediaItem(_MediaItemBase):
         return next((x for x in self.metadata.images if x.type == ImageType.THUMB), None)
 
 
+@dataclass
+class Genre(MediaItem):
+    """Model for a Genre."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+    # Specific for mapping logic
+    aliases: set[str] = field(default_factory=set)
+
+    media_type: MediaType = MediaType.GENRE
+
+
 @dataclass(kw_only=True)
 class ItemMapping(_MediaItemBase):
     """Representation of a minimized item object."""
@@ -361,5 +373,7 @@ class RecommendationFolder(BrowseFolder):
 # some type aliases
 # NOTE: BrowseFolder is not part of the MediaItemType alias, as it lacks
 # provider mappings, i.e. we do not map a provider item to a BrowseFolder.
-MediaItemType = Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode
+MediaItemType = (
+    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | Genre
+)
 PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
