@@ -155,7 +155,6 @@ class Genre(MediaItem):
     playlist_ids: set[str] = field(default_factory=set)
     artist_ids: set[str] = field(default_factory=set)
     podcast_ids: set[str] = field(default_factory=set)
-    podcast_episode_ids: set[str] = field(default_factory=set)
     audiobook_ids: set[str] = field(default_factory=set)
 
     media_type: MediaType = MediaType.GENRE
