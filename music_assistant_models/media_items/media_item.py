@@ -149,13 +149,6 @@ class Genre(MediaItem):
     __eq__ = _MediaItemBase.__eq__
     # Specific for mapping logic
     aliases: set[str] = field(default_factory=set)
-    # Associated media items
-    track_ids: set[str] = field(default_factory=set)
-    album_ids: set[str] = field(default_factory=set)
-    playlist_ids: set[str] = field(default_factory=set)
-    artist_ids: set[str] = field(default_factory=set)
-    podcast_ids: set[str] = field(default_factory=set)
-    audiobook_ids: set[str] = field(default_factory=set)
 
     media_type: MediaType = MediaType.GENRE
 
