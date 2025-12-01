@@ -55,6 +55,11 @@ class ProviderManifest(DataClassORJSONMixin):
     # mdns_discovery: list of mdns types to discover
     mdns_discovery: list[str] | None = None
 
+    # credits: list of credits/attributions
+    # e.g. for libraries used, icons, etc.
+    # accepts markdown formatting.
+    credits: list[str] = field(default_factory=list)
+
     @classmethod
     async def parse(cls, manifest_file: str) -> ProviderManifest:
         """Parse ProviderManifest from file."""
