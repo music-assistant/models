@@ -80,7 +80,7 @@ class Player(DataClassDictMixin):
     """Representation of (the state of) a player within Music Assistant."""
 
     player_id: str
-    provider: str  # instance_id/lookup_key of the player provider
+    provider: str  # instance_id of the player provider
     type: PlayerType
     name: str
     available: bool
