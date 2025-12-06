@@ -80,6 +80,12 @@ class ProviderInstance(DataClassORJSONMixin):
     icon: str | None = None
     is_streaming_provider: bool | None = None  # music providers only
 
+    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
+        """Execute action(s) on serialization."""
+        # add lookup_key for backwards compatibility
+        d["lookup_key"] = self.domain if self.is_streaming_provider else self.instance_id
+        return d
+
 
 @dataclass
 class SyncTask:
