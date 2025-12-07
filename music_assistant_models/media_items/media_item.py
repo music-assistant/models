@@ -123,13 +123,13 @@ class MediaItem(_MediaItemBase):
     @property
     def available(self) -> bool:
         """Return (calculated) availability."""
-        if not (available_providers := get_global_cache_value("unique_providers")):
+        if not (available_providers := get_global_cache_value("available_providers")):
             # this is probably the client
             return any(x.available for x in self.provider_mappings)
         if TYPE_CHECKING:
             available_providers = cast("set[str]", available_providers)
         for x in self.provider_mappings:
-            if available_providers.intersection({x.provider_domain, x.provider_instance}):
+            if x.available and x.provider_instance in available_providers:
                 return True
         return False
 
