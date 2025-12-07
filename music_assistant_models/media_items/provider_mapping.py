@@ -23,10 +23,11 @@ class ProviderMapping(DataClassDictMixin):
     # in_library: whether the item is in the user's library within this provider
     # if this is unknown in the current state, this shall be None
     in_library: bool | None = None
-    # is_unique: whether this mapping is unique across all providers
-    # setting this to True will prevent mapping additional provider(instance)s
-    # for example for local files that are only available from one source
-    # or, in case of a streaming provider, a user-unique upload that is not globally available
+    # is_unique: whether this mapping is unique on this provider_instance.
+    # setting this to True will prevent mapping additional providerinstances
+    # for example, a user-unique upload or playlist that is not globally available
+    # can safely be left as None to accept the default behavior based on
+    # the 'is_streaming_provider' property of the provider
     is_unique: bool | None = None
     # quality/audio details (streamable content only)
     audio_format: AudioFormat = field(default_factory=AudioFormat)
@@ -39,22 +40,25 @@ class ProviderMapping(DataClassDictMixin):
     def quality(self) -> int:
         """Return quality score."""
         quality = self.audio_format.quality
-        # append provider score so filebased providers are scored higher
+        # append priority score so filebased providers are scored higher
         return quality + self.priority
 
     @property
     def priority(self) -> int:
         """Return priority score to sort local providers before online."""
+        # prefer in_library items for better instance-steering
+        base_score = 1 if self.in_library else 0
+        # prefer local file based providers
+        if self.provider_domain in ("filesystem_local", "filesystem_smb"):
+            return base_score + 2
         if not (local_provs := get_global_cache_value("non_streaming_providers")):
             # this is probably the client
-            return 0
+            return base_score
         if TYPE_CHECKING:
             local_provs = cast("set[str]", local_provs)
-        if self.provider_domain in ("filesystem_local", "filesystem_smb"):
-            return 2
         if self.provider_instance in local_provs:
-            return 1
-        return 0
+            return base_score + 1
+        return base_score
 
     def __hash__(self) -> int:
         """Return custom hash."""
