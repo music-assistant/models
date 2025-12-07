@@ -23,6 +23,11 @@ class ProviderMapping(DataClassDictMixin):
     # in_library: whether the item is in the user's library within this provider
     # if this is unknown in the current state, this shall be None
     in_library: bool | None = None
+    # is_unique: whether this mapping is unique across all providers
+    # setting this to True will prevent mapping additional provider(instance)s
+    # for example for local files that are only available from one source
+    # or, in case of a streaming provider, a user-unique upload that is not globally available
+    is_unique: bool | None = None
     # quality/audio details (streamable content only)
     audio_format: AudioFormat = field(default_factory=AudioFormat)
     # url = link to provider details page if exists
