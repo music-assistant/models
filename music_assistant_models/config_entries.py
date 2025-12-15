@@ -110,6 +110,8 @@ class ConfigEntry(DataClassDictMixin):
     action: str | None = None
     # action_label: default label for the action when no translation for the action is present
     action_label: str | None = None
+    # immediate_apply: apply changes immediately when changed in the UI
+    immediate_apply: bool = False
     # value: set by the config manager/flow (or in rare cases by the provider itself)
     value: ConfigValueType = None
     # validate: an optional custom validation callback
