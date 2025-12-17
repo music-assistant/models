@@ -9,7 +9,14 @@ from uuid import uuid4
 from mashumaro import DataClassDictMixin
 
 from .enums import MediaType
-from .media_items import ItemMapping, MediaItemImage, PlayableMediaItemType, UniqueList, is_track
+from .media_items import (
+    ItemMapping,
+    MediaItemImage,
+    PlayableMediaItemType,
+    UniqueList,
+    is_track,
+    media_from_dict,
+)
 from .streamdetails import StreamDetails
 
 
@@ -83,9 +90,19 @@ class QueueItem(DataClassDictMixin):
 
     @classmethod
     def from_cache(cls, d: dict[Any, Any]) -> Self:
-        """Restore a QueueItem from a cache dict."""
+        """Restore a QueueItem from a cache dict.
+
+        Note: We manually deserialize media_item because mashumaro doesn't correctly
+        deserialize union types - it picks the first type in the union (Track)
+        regardless of the actual media_type field value.
+        """
         d.pop("streamdetails", None)
-        return cls.from_dict(d)
+        # Extract and manually deserialize media_item with correct type discrimination
+        media_item_dict = d.pop("media_item", None)
+        result = cls.from_dict(d)
+        if media_item_dict and isinstance(media_item_dict, dict):
+            result.media_item = media_from_dict(media_item_dict)  # type: ignore[assignment]
+        return result
 
 
 def get_image(media_item: PlayableMediaItemType | None) -> MediaItemImage | None:
