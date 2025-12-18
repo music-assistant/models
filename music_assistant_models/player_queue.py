@@ -92,7 +92,7 @@ class PlayerQueue(DataClassDictMixin):
     )
 
     @property
-    def corrected_elapsed_time(self) -> float | None:
+    def corrected_elapsed_time(self) -> float:
         """Return the corrected/realtime elapsed time."""
         if self.state == PlaybackState.PLAYING:
             return self.elapsed_time + (time.time() - self.elapsed_time_last_updated)
