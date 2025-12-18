@@ -92,9 +92,11 @@ class PlayerQueue(DataClassDictMixin):
     )
 
     @property
-    def corrected_elapsed_time(self) -> float:
+    def corrected_elapsed_time(self) -> float | None:
         """Return the corrected/realtime elapsed time."""
-        return self.elapsed_time + (time.time() - self.elapsed_time_last_updated)
+        if self.state == PlaybackState.PLAYING:
+            return self.elapsed_time + (time.time() - self.elapsed_time_last_updated)
+        return self.elapsed_time
 
     def to_cache(self) -> dict[str, Any]:
         """Return the dict that is suitable for storing into the cache db."""
