@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
-from mashumaro import DataClassDictMixin
+from mashumaro import DataClassDictMixin, field_options
 
 from music_assistant_models.enums import AlbumType, ExternalID, ImageType, MediaType
 from music_assistant_models.errors import InvalidDataError
@@ -16,6 +16,7 @@ from music_assistant_models.helpers import (
     get_global_cache_value,
     is_valid_uuid,
 )
+from music_assistant_models.serialization_strategies import DatetimeToUnixTimestampStrategy
 from music_assistant_models.unique_list import UniqueList
 
 from .metadata import MediaItemImage, MediaItemMetadata
@@ -116,7 +117,10 @@ class MediaItem(_MediaItemBase):
     metadata: MediaItemMetadata = field(default_factory=MediaItemMetadata)
     favorite: bool = False
     position: int | None = None  # required for playlist tracks, optional for all other
-    date_added: datetime | None = None  # when item was added to library/collection
+    date_added: datetime | None = field(
+        metadata=field_options(serialization_strategy=DatetimeToUnixTimestampStrategy()),
+        default=None,
+    )  # when item was added to library/collection
 
     def __hash__(self) -> int:
         """Return hash of MediaItem."""
