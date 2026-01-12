@@ -12,6 +12,12 @@ from .enums import PlaybackState, RepeatMode
 from .media_items import MediaItemType
 from .queue_item import QueueItem
 
+@dataclass(frozen=True)
+class QueueTimeUpdate(DataClassDictMixin):
+    """Queue elapsed time update event data."""
+
+    elapsed_time: float
+    elapsed_time_last_updated: float = field(default_factory=time.time)
 
 @dataclass
 class PlayLogEntry:
