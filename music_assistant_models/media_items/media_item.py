@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
 from mashumaro import DataClassDictMixin
@@ -115,6 +116,7 @@ class MediaItem(_MediaItemBase):
     metadata: MediaItemMetadata = field(default_factory=MediaItemMetadata)
     favorite: bool = False
     position: int | None = None  # required for playlist tracks, optional for all other
+    date_added: datetime | None = None  # when item was added to library/collection
 
     def __hash__(self) -> int:
         """Return hash of MediaItem."""
