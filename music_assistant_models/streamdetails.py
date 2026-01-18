@@ -60,6 +60,16 @@ class MultiPartPath:
     # for more efficient seeking
     duration: float | None = None
 
+@dataclass
+class StreamMirror(DataClassDictMixin):
+    """Represents an alternate/mirror URL for the same stream.
+
+    Mirror priorities can be set with :attr:`priority`.
+    """
+
+    path: str
+    # Set the priority of this mirror (lower is higher priority)
+    priority: int = 0
 
 @dataclass(kw_only=True)
 class StreamDetails(DataClassDictMixin):
@@ -101,7 +111,8 @@ class StreamDetails(DataClassDictMixin):
     # this field should be set by the provider when creating the streamdetails
     # unless the stream is a custom stream
     # if the stream consists of multiple parts, this may also be a list of MultiPartPath
-    path: str | list[MultiPartPath] | None = field(
+    # or a list of StreamMirror for mirror URLs
+    path: str | list[MultiPartPath] | list[StreamMirror] | None = field(
         default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
