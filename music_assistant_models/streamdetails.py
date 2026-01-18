@@ -60,6 +60,7 @@ class MultiPartPath:
     # for more efficient seeking
     duration: float | None = None
 
+
 @dataclass
 class StreamMirror(DataClassDictMixin):
     """Represents an alternate/mirror URL for the same stream.
@@ -70,6 +71,7 @@ class StreamMirror(DataClassDictMixin):
     path: str
     # Set the priority of this mirror (lower is higher priority)
     priority: int = 0
+
 
 @dataclass(kw_only=True)
 class StreamDetails(DataClassDictMixin):
