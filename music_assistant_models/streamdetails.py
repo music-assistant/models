@@ -13,7 +13,7 @@ from .dsp import DSPDetails
 from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
 
-type StreamMetadataUpdateCallback = Callable[[StreamDetails, int], Awaitable[None]]
+StreamMetadataUpdateCallback = Callable[[StreamDetails, int], Awaitable[None]]
 
 
 @dataclass
