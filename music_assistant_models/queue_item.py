@@ -42,6 +42,7 @@ class QueueItem(DataClassDictMixin):
         None  # stored as string for serialization (e.g., "guest", "admin")
     )
     added_at: float | None = None  # unix timestamp when item was added
+    queue_option: str | None = None  # how item was added (e.g., "next", "add", "play")
 
     def __post_init__(self) -> None:
         """Set default values."""
@@ -73,6 +74,7 @@ class QueueItem(DataClassDictMixin):
         media_item: PlayableMediaItemType,
         user_id: str | None = None,
         user_role: str | None = None,
+        queue_option: str | None = None,
     ) -> QueueItem:
         """Construct QueueItem from track/radio item.
 
@@ -80,6 +82,7 @@ class QueueItem(DataClassDictMixin):
         :param media_item: The media item (track, radio, etc.) to create a queue item from.
         :param user_id: Optional user ID of who added this item (for guest priority queue).
         :param user_role: Optional user role string (e.g., "guest", "admin") for priority ordering.
+        :param queue_option: Optional queue option string (e.g., "next", "add").
         """
         if is_track(media_item) and hasattr(media_item, "artists"):
             artists = "/".join(x.name for x in media_item.artists)
@@ -102,6 +105,7 @@ class QueueItem(DataClassDictMixin):
             added_by_user_id=user_id,
             added_by_user_role=user_role,
             added_at=time.time(),
+            queue_option=queue_option,
         )
 
     def to_cache(self) -> dict[str, Any]:
