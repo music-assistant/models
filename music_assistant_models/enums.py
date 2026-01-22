@@ -575,8 +575,11 @@ class StreamType(StrEnum):
     # hls: http HLS stream - url provided in path
     HLS = "hls"
 
-    # icy: http stream with icy metadata - url provided in path
+    # icy: http/1.1 stream with icy metadata - url provided in path
     ICY = "icy"
+
+    # shoutcast: legacy shoutcast stream - url provided in path
+    SHOUTCAST = "shoutcast"
 
     # local_file: local file which is accessible by the MA server process
     LOCAL_FILE = "local_file"
