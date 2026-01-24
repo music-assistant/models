@@ -399,6 +399,7 @@ class PlayerFeature(StrEnum):
     NEXT_PREVIOUS = "next_previous"
     PLAY_ANNOUNCEMENT = "play_announcement"
     ENQUEUE = "enqueue"
+    SELECT_SOUND_MODE = "select_sound_mode"
     SELECT_SOURCE = "select_source"
     GAPLESS_PLAYBACK = "gapless_playback"
     GAPLESS_DIFFERENT_SAMPLERATE = "gapless_different_samplerate"

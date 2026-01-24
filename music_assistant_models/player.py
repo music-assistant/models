@@ -76,6 +76,20 @@ class PlayerSource(DataClassDictMixin):
 
 
 @dataclass
+class PlayerSoundMode(DataClassDictMixin):
+    """Model for a player sound mode."""
+
+    id: str
+    name: str
+    # passive: this sound mode can not be selected/activated by MA/the user
+    passive: bool = False
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
+
+@dataclass
 class Player(DataClassDictMixin):
     """Representation of (the state of) a player within Music Assistant."""
 
@@ -111,6 +125,12 @@ class Player(DataClassDictMixin):
     # synced_to: player_id of the player this player is currently synced to
     # also referred to as "sync leader"
     synced_to: str | None = None
+
+    # return active sound mode for this player
+    active_sound_mode: str | None = None
+
+    # sound_mode_list: return list of available (native) sound modes for this player
+    sound_mode_list: UniqueList[PlayerSoundMode] = field(default_factory=UniqueList)
 
     # active_source: return active source (id) for this player
     # this can be a player native source id as defined in 'source list'
