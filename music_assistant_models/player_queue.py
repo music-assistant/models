@@ -8,6 +8,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
+from .constants import EXTRA_ATTRIBUTES_TYPES
 from .enums import PlaybackState, RepeatMode
 from .media_items import MediaItemType
 from .queue_item import QueueItem
@@ -49,6 +50,11 @@ class PlayerQueue(DataClassDictMixin):
 
     flow_mode: bool = False
     resume_pos: int = 0
+
+    # extra_attributes: additional attributes for this player_queue to store/forward
+    # additional data that is not part of the standard model
+    # must be serializable types only
+    extra_attributes: dict[str, EXTRA_ATTRIBUTES_TYPES] = field(default_factory=dict)
 
     #############################################################################
     # the fields below will only be used server-side and not sent to the client #

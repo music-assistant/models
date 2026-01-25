@@ -8,7 +8,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin
 
-from .constants import PLAYER_CONTROL_NONE
+from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
 from .enums import (
     HidePlayerOption,
     IdentifierType,
@@ -18,8 +18,6 @@ from .enums import (
     PlayerType,
 )
 from .unique_list import UniqueList
-
-EXTRA_ATTRIBUTES_TYPES = str | int | float | bool | None
 
 
 @dataclass
