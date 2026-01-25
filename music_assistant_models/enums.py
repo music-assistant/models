@@ -527,11 +527,6 @@ class ProviderFeature(StrEnum):
     CREATE_GROUP_PLAYER = "create_group_player"
     REMOVE_GROUP_PLAYER = "remove_group_player"
 
-    # Protocol provider: indicates this provider delivers protocol-based players
-    # Players from protocol providers are treated as protocol outputs by the PlayerController
-    # and linked to native players when a match is found
-    PROTOCOL_PROVIDER = "protocol_provider"
-
     #
     # METADATAPROVIDER FEATURES
     #
