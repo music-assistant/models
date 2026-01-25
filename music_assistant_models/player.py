@@ -63,10 +63,28 @@ class DeviceInfo(DataClassDictMixin):
         """Get IP address from identifiers."""
         return self.identifiers.get(IdentifierType.IP_ADDRESS)
 
+    @ip_address.setter
+    def ip_address(self, value: str | None) -> None:
+        """Set IP address in identifiers."""
+        if not value:
+            self.identifiers.pop(IdentifierType.IP_ADDRESS, None)
+        else:
+            self.identifiers[IdentifierType.IP_ADDRESS] = value
+
     @property
     def mac_address(self) -> str | None:
         """Get MAC address from identifiers."""
         return self.identifiers.get(IdentifierType.MAC_ADDRESS)
+
+    @mac_address.setter
+    def mac_address(self, value: str | None) -> None:
+        """Set MAC address in identifiers."""
+        if not value:
+            self.identifiers.pop(IdentifierType.MAC_ADDRESS, None)
+        else:
+            # Normalize MAC address to uppercase with colons
+            value = value.upper().replace("-", ":")
+            self.identifiers[IdentifierType.MAC_ADDRESS] = value
 
     def add_identifier(
         self,
