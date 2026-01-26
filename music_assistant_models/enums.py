@@ -357,10 +357,11 @@ PlayerState = PlaybackState
 class PlayerType(StrEnum):
     """Enum with possible Player Types.
 
-    player: A regular player.
+    player: A regular player with native (vendor-specific) support.
     stereo_pair: Same as player but a dedicated stereo pair of 2 speakers.
     group: A (dedicated) (sync)group player or (universal) playergroup.
-    protocol: Protocol-only player (hidden from UI, used for routing).
+    protocol: A generic protocol player (e.g. AirPlay/Chromecast/DLNA) without native support.
+              These are wrapped by a Universal Player and hidden from the UI.
     """
 
     PLAYER = "player"
