@@ -9,14 +9,7 @@ from typing import Any
 from mashumaro import DataClassDictMixin
 
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
-from .enums import (
-    HidePlayerOption,
-    IdentifierType,
-    MediaType,
-    PlaybackState,
-    PlayerFeature,
-    PlayerType,
-)
+from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
 from .unique_list import UniqueList
 
 
@@ -212,17 +205,8 @@ class Player(DataClassDictMixin):
     # nor will it be added to the HA integration
     enabled: bool = True
 
-    # hide_player_in_ui: if the player should be hidden in the UI
-    # if set to ALWAYS, the player will be hidden in the UI
-    # if set to AUTO, the player will be hidden in the UI if it's not playing
-    # if set to NEVER, the player will never be hidden in the UI
-    hide_player_in_ui: set[HidePlayerOption] = field(
-        default_factory=lambda: {
-            HidePlayerOption.WHEN_GROUP_ACTIVE,
-            HidePlayerOption.WHEN_UNAVAILABLE,
-            HidePlayerOption.WHEN_SYNCED,
-        }
-    )
+    # hide_in_ui: if the player should be hidden in the UI
+    hide_in_ui: bool = False
 
     # expose_to_ha: if the player should be exposed to Home Assistant
     # if set to False, the player will not be added to the HA integration
@@ -303,6 +287,15 @@ class Player(DataClassDictMixin):
             d["device_info"]["ip_address"] = d["device_info"]["identifiers"].get(
                 IdentifierType.IP_ADDRESS.value
             )
+        # add alias for hide_in_ui for backwards compatibility
+        if d.get("hide_in_ui") is True:
+            d["hide_player_in_ui"] = ["always"]
+        else:
+            d["hide_player_in_ui"] = [
+                "when_unavailable",
+                "when_synced",
+                "when_group_active",
+            ]
         return d
 
     @classmethod
