@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Self
 from uuid import uuid4
 
 from mashumaro import DataClassDictMixin
 
+from .constants import EXTRA_ATTRIBUTES_TYPES
 from .enums import MediaType
 from .media_items import (
     ItemMapping,
@@ -36,13 +36,11 @@ class QueueItem(DataClassDictMixin):
     index: int = 0
     # the available flag can be used to mark items that are not available/playable anymore
     available: bool = True
-    # guest priority queue: track who added this item for priority ordering
-    added_by_user_id: str | None = None
-    added_by_user_role: str | None = (
-        None  # stored as string for serialization (e.g., "guest", "admin")
-    )
-    added_at: float | None = None  # unix timestamp when item was added
-    queue_option: str | None = None  # how item was added (e.g., "next", "add", "play")
+
+    # extra_attributes: additional attributes for this QueueItem to store/forward
+    # additional data that is not part of the standard model
+    # must be serializable types only
+    extra_attributes: dict[str, EXTRA_ATTRIBUTES_TYPES] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Set default values."""
@@ -72,17 +70,11 @@ class QueueItem(DataClassDictMixin):
         cls,
         queue_id: str,
         media_item: PlayableMediaItemType,
-        user_id: str | None = None,
-        user_role: str | None = None,
-        queue_option: str | None = None,
     ) -> QueueItem:
         """Construct QueueItem from track/radio item.
 
         :param queue_id: The ID of the queue this item belongs to.
         :param media_item: The media item (track, radio, etc.) to create a queue item from.
-        :param user_id: Optional user ID of who added this item (for guest priority queue).
-        :param user_role: Optional user role string (e.g., "guest", "admin") for priority ordering.
-        :param queue_option: Optional queue option string (e.g., "next", "add").
         """
         if is_track(media_item) and hasattr(media_item, "artists"):
             artists = "/".join(x.name for x in media_item.artists)
@@ -102,10 +94,6 @@ class QueueItem(DataClassDictMixin):
             duration=media_item.duration,
             media_item=media_item,
             image=get_image(media_item),
-            added_by_user_id=user_id,
-            added_by_user_role=user_role,
-            added_at=time.time(),
-            queue_option=queue_option,
         )
 
     def to_cache(self) -> dict[str, Any]:

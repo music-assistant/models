@@ -112,8 +112,9 @@ class ConfigEntry(DataClassDictMixin):
     action_label: str | None = None
     # immediate_apply: apply changes immediately when changed in the UI
     immediate_apply: bool = False
-    # require_reload: controller should be reloaded when this value changes
-    require_reload: bool = False
+    # requires_reload: indicates that a reload of the provider (or player playback)
+    # is required when this setting is changed
+    requires_reload: bool = False
     # value: set by the config manager/flow (or in rare cases by the provider itself)
     value: ConfigValueType = None
     # validate: an optional custom validation callback

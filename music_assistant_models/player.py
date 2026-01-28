@@ -8,24 +8,92 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin
 
-from .constants import PLAYER_CONTROL_NONE
-from .enums import HidePlayerOption, MediaType, PlaybackState, PlayerFeature, PlayerType
+from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
+from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
 from .unique_list import UniqueList
 
-EXTRA_ATTRIBUTES_TYPES = str | int | float | bool | None
+
+@dataclass
+class OutputProtocol(DataClassDictMixin):
+    """
+    Represents an output protocol for a player.
+
+    This provides a unified view of all ways to play audio to a device:
+    - Native output (if player supports PLAY_MEDIA)
+    - Protocol outputs (AirPlay, Chromecast, DLNA, etc.)
+    """
+
+    output_protocol_id: str  # Unique ID: "native" or protocol player_id
+    name: str  # Display name: "Native (Sonos)" or "AirPlay"
+    is_native: bool = False  # True if this is the player's native output
+    protocol_domain: str | None = None  # e.g., "airplay", "dlna" (None for native)
+    priority: int = 100  # Lower = more preferred (native = 0 if supported)
+    available: bool = True  # Whether this output protocol is currently available
 
 
 @dataclass
 class DeviceInfo(DataClassDictMixin):
-    """Model for a player's deviceinfo."""
+    """
+    Model for a player's device info.
+
+    Contains device metadata and connection identifiers.
+    """
 
     model: str = "Unknown model"
     manufacturer: str = "Unknown Manufacturer"
     software_version: str | None = None
     model_id: str | None = None
     manufacturer_id: str | None = None
-    ip_address: str | None = None
-    mac_address: str | None = None
+
+    # Identifiers for device identification and protocol player linking
+    # Maps IdentifierType to value (e.g., MAC_ADDRESS -> "AA:BB:CC:DD:EE:FF")
+    identifiers: dict[IdentifierType, str] = field(default_factory=dict)
+
+    @property
+    def ip_address(self) -> str | None:
+        """Get IP address from identifiers."""
+        return self.identifiers.get(IdentifierType.IP_ADDRESS)
+
+    @ip_address.setter
+    def ip_address(self, value: str | None) -> None:
+        """Set IP address in identifiers."""
+        if not value:
+            self.identifiers.pop(IdentifierType.IP_ADDRESS, None)
+        else:
+            self.identifiers[IdentifierType.IP_ADDRESS] = value
+
+    @property
+    def mac_address(self) -> str | None:
+        """Get MAC address from identifiers."""
+        return self.identifiers.get(IdentifierType.MAC_ADDRESS)
+
+    @mac_address.setter
+    def mac_address(self, value: str | None) -> None:
+        """Set MAC address in identifiers."""
+        if not value:
+            self.identifiers.pop(IdentifierType.MAC_ADDRESS, None)
+        else:
+            # Normalize MAC address to uppercase with colons
+            value = value.upper().replace("-", ":")
+            self.identifiers[IdentifierType.MAC_ADDRESS] = value
+
+    def add_identifier(
+        self,
+        identifier_type: IdentifierType,
+        value: str | None,
+    ) -> None:
+        """Add or update an identifier.
+
+        :param identifier_type: The type of identifier (MAC_ADDRESS, UUID, etc.).
+        :param value: The identifier value. If None or empty, removes the identifier.
+        """
+        if not value:
+            self.identifiers.pop(identifier_type, None)
+            return
+        # Normalize MAC address to uppercase with colons
+        if identifier_type == IdentifierType.MAC_ADDRESS:
+            value = value.upper().replace("-", ":")
+        self.identifiers[identifier_type] = value
 
 
 @dataclass(kw_only=True)
@@ -137,17 +205,8 @@ class Player(DataClassDictMixin):
     # nor will it be added to the HA integration
     enabled: bool = True
 
-    # hide_player_in_ui: if the player should be hidden in the UI
-    # if set to ALWAYS, the player will be hidden in the UI
-    # if set to AUTO, the player will be hidden in the UI if it's not playing
-    # if set to NEVER, the player will never be hidden in the UI
-    hide_player_in_ui: set[HidePlayerOption] = field(
-        default_factory=lambda: {
-            HidePlayerOption.WHEN_GROUP_ACTIVE,
-            HidePlayerOption.WHEN_UNAVAILABLE,
-            HidePlayerOption.WHEN_SYNCED,
-        }
-    )
+    # hide_in_ui: if the player should be hidden in the UI
+    hide_in_ui: bool = False
 
     # expose_to_ha: if the player should be exposed to Home Assistant
     # if set to False, the player will not be added to the HA integration
@@ -172,6 +231,16 @@ class Player(DataClassDictMixin):
 
     # mute_control: the volume control attached to this player (set by config)
     mute_control: str = PLAYER_CONTROL_NONE
+
+    # output_protocols: all available output methods for this player
+    # Includes native output (if PLAY_MEDIA supported) + protocol outputs
+    # This is the public API - computed from internal linked_protocols
+    output_protocols: list[OutputProtocol] = field(default_factory=list)
+
+    # active_output_protocol: which output protocol is currently being used for playback
+    # Can be "native" or a protocol player_id
+    # None means no playback in progress or native playback without explicit selection
+    active_output_protocol: str | None = None
 
     #############################################################################
     # helper methods and properties                                             #
@@ -208,6 +277,25 @@ class Player(DataClassDictMixin):
         d["group_childs"] = d["group_members"]
         # add alias for extra_data for backwards compatibility
         d["extra_data"] = d["extra_attributes"]
+        # add alias for device_info.mac_address for backwards compatibility
+        if "device_info" in d and "identifiers" in d["device_info"]:
+            d["device_info"]["mac_address"] = d["device_info"]["identifiers"].get(
+                IdentifierType.MAC_ADDRESS.value
+            )
+        # add alias for device_info.ip_address for backwards compatibility
+        if "device_info" in d and "identifiers" in d["device_info"]:
+            d["device_info"]["ip_address"] = d["device_info"]["identifiers"].get(
+                IdentifierType.IP_ADDRESS.value
+            )
+        # add alias for hide_in_ui for backwards compatibility
+        if d.get("hide_in_ui") is True:
+            d["hide_player_in_ui"] = ["always"]
+        else:
+            d["hide_player_in_ui"] = [
+                "when_unavailable",
+                "when_synced",
+                "when_group_active",
+            ]
         return d
 
     @classmethod

@@ -51,7 +51,7 @@ jobs:
 
       - name: Generate release notes with Release Drafter
         id: release_drafter
-        uses: release-drafter/release-drafter@v6.1.0
+        uses: release-drafter/release-drafter@v6.2.0
         with:
           config-name: release-drafter.yml
           version: ${{ inputs.version }}
@@ -104,7 +104,7 @@ jobs:
           ref: ${{ inputs.version }}
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v6.1.0
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 

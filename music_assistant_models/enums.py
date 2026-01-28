@@ -357,18 +357,41 @@ PlayerState = PlaybackState
 class PlayerType(StrEnum):
     """Enum with possible Player Types.
 
-    player: A regular player.
+    player: A regular player with native (vendor-specific) support.
     stereo_pair: Same as player but a dedicated stereo pair of 2 speakers.
     group: A (dedicated) (sync)group player or (universal) playergroup.
+    protocol: A generic protocol player (e.g. AirPlay/Chromecast/DLNA) without native support.
+              These are wrapped by a Universal Player and hidden from the UI.
     """
 
     PLAYER = "player"
     STEREO_PAIR = "stereo_pair"
     GROUP = "group"
+    PROTOCOL = "protocol"
     UNKNOWN = "unknown"
 
     @classmethod
     def _missing_(cls, value: object) -> PlayerType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class IdentifierType(StrEnum):
+    """
+    Types of identifiers/connections for a device.
+
+    Also used to match protocol players to their parent device.
+    Ordered by reliability (MAC_ADDRESS most reliable).
+    """
+
+    MAC_ADDRESS = "mac_address"  # Most reliable - e.g., "AA:BB:CC:DD:EE:FF"
+    SERIAL_NUMBER = "serial_number"  # Device serial number
+    UUID = "uuid"  # Universal unique identifier
+    IP_ADDRESS = "ip_address"  # Less reliable (DHCP) but useful for fallback
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> IdentifierType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
@@ -402,6 +425,10 @@ class PlayerFeature(StrEnum):
     SELECT_SOURCE = "select_source"
     GAPLESS_PLAYBACK = "gapless_playback"
     GAPLESS_DIFFERENT_SAMPLERATE = "gapless_different_samplerate"
+    # Play media: indicates the player can handle play_media commands directly
+    # If not present, play_media will be routed through linked protocol players
+    PLAY_MEDIA = "play_media"
+
     UNKNOWN = "unknown"
 
     @classmethod
@@ -575,8 +602,11 @@ class StreamType(StrEnum):
     # hls: http HLS stream - url provided in path
     HLS = "hls"
 
-    # icy: http stream with icy metadata - url provided in path
+    # icy: http/1.1 stream with icy metadata - url provided in path
     ICY = "icy"
+
+    # shoutcast: legacy shoutcast stream - url provided in path
+    SHOUTCAST = "shoutcast"
 
     # local_file: local file which is accessible by the MA server process
     LOCAL_FILE = "local_file"
