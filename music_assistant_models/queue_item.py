@@ -66,16 +66,8 @@ class QueueItem(DataClassDictMixin):
         return MediaType.UNKNOWN
 
     @classmethod
-    def from_media_item(
-        cls,
-        queue_id: str,
-        media_item: PlayableMediaItemType,
-    ) -> QueueItem:
-        """Construct QueueItem from track/radio item.
-
-        :param queue_id: The ID of the queue this item belongs to.
-        :param media_item: The media item (track, radio, etc.) to create a queue item from.
-        """
+    def from_media_item(cls, queue_id: str, media_item: PlayableMediaItemType) -> QueueItem:
+        """Construct QueueItem from track/radio item."""
         if is_track(media_item) and hasattr(media_item, "artists"):
             artists = "/".join(x.name for x in media_item.artists)
             name = f"{artists} - {media_item.name}"
