@@ -140,6 +140,10 @@ class ConfigEntry(DataClassDictMixin):
         """Run some basic sanity checks after init."""
         if self.type in UI_ONLY:
             self.required = False
+        if self.translation_key is None:
+            self.translation_key = self.key
+        if self.category_translation_key is None:
+            self.category_translation_key = f"config.category.{self.category}"
 
     def parse_value(
         self,
@@ -327,6 +331,8 @@ class ProviderConfig(Config):
     enabled: bool = True
     # name: an (optional) custom name for this provider instance/config
     name: str | None = None
+    # default_name: default name to use/persist when there is no name set by the user
+    default_name: str | None = None
     # last_error: an optional error message if the provider could not be setup with this config
     last_error: str | None = None
 
@@ -341,7 +347,7 @@ class PlayerConfig(Config):
     enabled: bool = True
     # name: an (optional) custom name for this player
     name: str | None = None
-    # default_name: default name to use when there is no name available
+    # default_name: default name to use/persist when there is no name set by the user
     default_name: str | None = None
     # player_type: type of player (player, protocol, group etc.)
     player_type: PlayerType = PlayerType.PLAYER
