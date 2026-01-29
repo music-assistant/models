@@ -25,8 +25,9 @@ class OutputProtocol(DataClassDictMixin):
 
     output_protocol_id: str  # Unique ID: "native" or protocol player_id
     name: str  # Display name: "Native (Sonos)" or "AirPlay"
+    protocol_domain: str  # e.g., "airplay", "dlna"
+
     is_native: bool = False  # True if this is the player's native output
-    protocol_domain: str | None = None  # e.g., "airplay", "dlna" (None for native)
     priority: int = 100  # Lower = more preferred (native = 0 if supported)
     available: bool = True  # Whether this output protocol is currently available
 
