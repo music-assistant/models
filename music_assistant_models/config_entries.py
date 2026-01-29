@@ -12,7 +12,7 @@ from typing import Any, Final, cast
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import SECURE_STRING_SUBSTITUTE
-from .enums import ConfigEntryType, ProviderType
+from .enums import ConfigEntryType, PlayerType, ProviderType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -115,8 +115,15 @@ class ConfigEntry(DataClassDictMixin):
     # requires_reload: indicates that a reload of the provider (or player playback)
     # is required when this setting is changed
     requires_reload: bool = False
-    # value: set by the config manager/flow (or in rare cases by the provider itself)
-    value: ConfigValueType = None
+    # translation_key: optional custom translation key for this entry
+    translation_key: str | None = None
+    # translation_params: optional parameters for the translation key
+    translation_params: list[str] | None = None
+    # category_translation_key: optional custom translation key for the category
+    category_translation_key: str | None = None
+    # category_translation_params: optional parameters for the category translation key
+    category_translation_params: list[str] | None = None
+
     # validate: an optional custom validation callback
     validate: Callable[[ConfigValueType], bool] | None = field(
         default=None,
@@ -124,6 +131,10 @@ class ConfigEntry(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
+
+    # value: set by the config manager/flow
+    # (or in rare cases by the provider itself during action flows)
+    value: ConfigValueType = None
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
@@ -330,10 +341,10 @@ class PlayerConfig(Config):
     enabled: bool = True
     # name: an (optional) custom name for this player
     name: str | None = None
-    # available: boolean to indicate if the player is available
-    available: bool = True
     # default_name: default name to use when there is no name available
     default_name: str | None = None
+    # player_type: type of player (player, protocol, group etc.)
+    player_type: PlayerType = PlayerType.PLAYER
 
 
 @dataclass
