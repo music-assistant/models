@@ -115,14 +115,16 @@ class ConfigEntry(DataClassDictMixin):
     # requires_reload: indicates that a reload of the provider (or player playback)
     # is required when this setting is changed
     requires_reload: bool = False
-    # translation_key: optional custom translation key for this entry
+    # translation_key: optional translation key for this entry (defaults to settings.{key})
     translation_key: str | None = None
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
-    # category_translation_key: optional custom translation key for the category
+    # category_translation_key: optional translation key for the category
     category_translation_key: str | None = None
     # category_translation_params: optional parameters for the category translation key
     category_translation_params: list[str] | None = None
+    # advanced: mark this setting as advanced (e.g. hide behind an advanced toggle in frontend)
+    advanced: bool = False
 
     # validate: an optional custom validation callback
     validate: Callable[[ConfigValueType], bool] | None = field(
@@ -141,9 +143,9 @@ class ConfigEntry(DataClassDictMixin):
         if self.type in UI_ONLY:
             self.required = False
         if self.translation_key is None:
-            self.translation_key = self.key
+            self.translation_key = f"settings.{self.key}"
         if self.category_translation_key is None:
-            self.category_translation_key = f"config.category.{self.category}"
+            self.category_translation_key = f"settings.category.{self.category}"
 
     def parse_value(
         self,
