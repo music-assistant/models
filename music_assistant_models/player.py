@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Any
 
 from mashumaro import DataClassDictMixin
@@ -145,6 +146,84 @@ class PlayerSource(DataClassDictMixin):
 
 
 @dataclass
+class PlayerSoundMode(DataClassDictMixin):
+    """Model for a player sound mode."""
+
+    id: str
+    name: str
+    # passive: this sound mode can not be selected/activated by MA/the user
+    passive: bool = False
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
+
+class PlayerOptionType(StrEnum):
+    """Enum for the type of a Player Option."""
+
+    BOOLEAN = "boolean"
+    NUMBER = "number"
+    CHOICES = "choices"
+    TEXT = "text"
+
+
+PlayerOptionValueType = bool | int | str
+
+
+@dataclass
+class PlayerOptionChoice(DataClassDictMixin):
+    """A single choice."""
+
+    id: str
+    name: str
+    value: str
+    read_only: bool = False
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
+
+@dataclass(kw_only=True)
+class PlayerOption(DataClassDictMixin):
+    """General PlayerOption.
+
+    The PlayerOption must also have the current state of itself.
+    """
+
+    id: str
+    name: str
+    type: PlayerOptionType
+
+    # translation_key: optional translation key for this entry (defaults to player_options.{id})
+    translation_key: str | None = None
+    # translation_params: optional parameters for the translation key
+    translation_params: list[str] | None = None
+
+    # current value of the option, see PlayerConfigEntry for serialization order.
+    value: PlayerOptionValueType
+    read_only: bool = False  # can the user adjust the option?
+
+    # PlayerOptionType.NUMBER
+    min_value: int | None = None
+    max_value: int | None = None
+    step: int | None = None
+
+    # PlayerOptionType.OPTIONS
+    choices: list[PlayerOptionChoice] | None = None
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
+    def __post_init__(self) -> None:
+        """Run some basic sanity checks after init."""
+        if self.translation_key is None:
+            self.translation_key = f"player_options.{self.id}"
+
+
+@dataclass
 class Player(DataClassDictMixin):
     """Representation of (the state of) a player within Music Assistant."""
 
@@ -180,6 +259,15 @@ class Player(DataClassDictMixin):
     # synced_to: player_id of the player this player is currently synced to
     # also referred to as "sync leader"
     synced_to: str | None = None
+
+    # return active sound mode for this player
+    active_sound_mode: str | None = None
+
+    # sound_mode_list: return list of available (native) sound modes for this player
+    sound_mode_list: UniqueList[PlayerSoundMode] = field(default_factory=UniqueList)
+
+    # player_options: return list of available (native) player options for this player
+    player_options: UniqueList[PlayerOption] = field(default_factory=UniqueList)
 
     # active_source: return active source (id) for this player
     # this can be a player native source id as defined in 'source list'
