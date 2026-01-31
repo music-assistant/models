@@ -159,6 +159,52 @@ class PlayerSoundMode(DataClassDictMixin):
 
 
 @dataclass
+class PlayerOption(DataClassDictMixin):
+    """General PlayerOption.
+
+    The PlayerOption must also have the current state of itself.
+    """
+
+    id: str
+    name: str
+    value: bool | float | str  # current value of the option
+    passive: bool = False  # read-only?
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
+
+@dataclass(kw_only=True)
+class PlayerOptionToggle(PlayerOption):
+    """PlayerOption (by provider) which can be either on or off."""
+
+    # value is either True or False
+
+
+@dataclass(kw_only=True)
+class PlayerOptionNumber(PlayerOption):
+    """PlayerOption (by provider) with a numeric value."""
+
+    type_: type[int | float]
+
+    min_value: int | float
+    max_value: int | float
+
+
+@dataclass
+class PlayerOptionChoice(PlayerOption):
+    """A single option."""
+
+
+@dataclass(kw_only=True)
+class PlayerOptionChoices(PlayerOption):
+    """PlayerOption (by provider) with multiple pre-defined choices."""
+
+    # value must take the choice's id a s value choices: UniqueList[PlayerOptionChoice]
+
+
+@dataclass
 class Player(DataClassDictMixin):
     """Representation of (the state of) a player within Music Assistant."""
 

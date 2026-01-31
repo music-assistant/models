@@ -408,6 +408,8 @@ class PlayerFeature(StrEnum):
     seek: The player supports seeking to a specific.
     enqueue: The player supports (en)queuing of media items natively.
     select_source: The player has native support for selecting a source.
+    select_sound_mode: The player has native support for selecting a sound mode.
+    player_option: The player has at least one additional option to be set.
     gapless_playback: The player supports gapless playback.
     gapless_different_samplerate: Supports gapless playback between different samplerates.
     """
@@ -424,6 +426,7 @@ class PlayerFeature(StrEnum):
     ENQUEUE = "enqueue"
     SELECT_SOUND_MODE = "select_sound_mode"
     SELECT_SOURCE = "select_source"
+    PLAYER_OPTION = "player_option"
     GAPLESS_PLAYBACK = "gapless_playback"
     GAPLESS_DIFFERENT_SAMPLERATE = "gapless_different_samplerate"
     # Play media: indicates the player can handle play_media commands directly
