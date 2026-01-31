@@ -258,8 +258,8 @@ class Player(DataClassDictMixin):
     # sound_mode_list: return list of available (native) sound modes for this player
     sound_mode_list: UniqueList[PlayerSoundMode] = field(default_factory=UniqueList)
 
-    # player_option: return list of available (native) player options for this player
-    player_option_list: UniqueList[PlayerOption] = field(default_factory=UniqueList)
+    # player_options: return list of available (native) player options for this player
+    player_options: UniqueList[PlayerOption] = field(default_factory=UniqueList)
 
     # active_source: return active source (id) for this player
     # this can be a player native source id as defined in 'source list'
