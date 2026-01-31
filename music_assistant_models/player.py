@@ -167,7 +167,7 @@ class PlayerOption(DataClassDictMixin):
 
     id: str
     name: str
-    value: bool | float | str  # current value of the option
+    value: bool | int | str  # current value of the option
     passive: bool = False  # read-only?
 
     def __hash__(self) -> int:
@@ -186,9 +186,9 @@ class PlayerOptionToggle(PlayerOption):
 class PlayerOptionNumber(PlayerOption):
     """PlayerOption (by provider) with a numeric value."""
 
-    min_value: int | float | None = None
-    max_value: int | float | None = None
-    step: int | float | None = None
+    min_value: int | None = None
+    max_value: int | None = None
+    step: int | None = None
 
 
 @dataclass
