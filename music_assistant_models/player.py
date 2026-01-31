@@ -186,10 +186,9 @@ class PlayerOptionToggle(PlayerOption):
 class PlayerOptionNumber(PlayerOption):
     """PlayerOption (by provider) with a numeric value."""
 
-    type_: type[int | float]
-
     min_value: int | float
     max_value: int | float
+    step: int | float
 
 
 @dataclass
