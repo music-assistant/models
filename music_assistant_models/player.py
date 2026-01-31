@@ -162,15 +162,18 @@ class PlayerSoundMode(DataClassDictMixin):
 class PlayerOptionType(StrEnum):
     """Enum for the type of a Player Option."""
 
-    SWITCH = "switch"
+    BOOLEAN = "boolean"
     NUMBER = "number"
-    OPTIONS = "options"
+    CHOICES = "choices"
     TEXT = "text"
 
 
+PlayerOptionValueType = bool | int | str
+
+
 @dataclass
-class PlayerOptionEntry(DataClassDictMixin):
-    """A single option."""
+class PlayerOptionChoice(DataClassDictMixin):
+    """A single choice."""
 
     id: str
     name: str
@@ -199,7 +202,7 @@ class PlayerOption(DataClassDictMixin):
     translation_params: list[str] | None = None
 
     # current value of the option, see PlayerConfigEntry for serialization order.
-    value: bool | int | str
+    value: PlayerOptionValueType
     read_only: bool = False  # can the user adjust the option?
 
     # PlayerOptionType.NUMBER
@@ -208,11 +211,16 @@ class PlayerOption(DataClassDictMixin):
     step: int | None = None
 
     # PlayerOptionType.OPTIONS
-    options: list[PlayerOptionEntry] | None = None
+    choices: list[PlayerOptionChoice] | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""
         return hash(self.id)
+
+    def __post_init__(self) -> None:
+        """Run some basic sanity checks after init."""
+        if self.translation_key is None:
+            self.translation_key = f"player_options.{self.id}"
 
 
 @dataclass
