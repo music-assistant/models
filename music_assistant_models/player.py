@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Any
 
 from mashumaro import DataClassDictMixin
@@ -158,7 +159,30 @@ class PlayerSoundMode(DataClassDictMixin):
         return hash(self.id)
 
 
+class PlayerOptionType(StrEnum):
+    """Enum for the type of a config entry."""
+
+    SWITCH = "switch"
+    NUMBER = "number"
+    OPTIONS = "options"
+    TEXT = "text"
+
+
 @dataclass
+class PlayerOptionEntry(DataClassDictMixin):
+    """A single option."""
+
+    id: str
+    name: str
+    value: str
+    read_only: bool = False
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
+
+@dataclass(kw_only=True)
 class PlayerOption(DataClassDictMixin):
     """General PlayerOption.
 
@@ -167,64 +191,24 @@ class PlayerOption(DataClassDictMixin):
 
     id: str
     name: str
-    value: bool | int | str  # current value of the option
-    passive: bool = False  # read-only?
+    type: PlayerOptionType
 
-    def __hash__(self) -> int:
-        """Return custom hash."""
-        return hash(self.id)
+    # translation_key: optional translation key for this entry (defaults to settings.{key})
+    translation_key: str | None = None
+    # translation_params: optional parameters for the translation key
+    translation_params: list[str] | None = None
 
+    # current value of the option, see PlayerConfigEntry for serialization order.
+    value: bool | int | str
+    read_only: bool = False  # can the user adjust the option?
 
-@dataclass(kw_only=True)
-class PlayerOptionToggle(PlayerOption):
-    """PlayerOption (by provider) which can be either on or off."""
-
-    # value is either True or False
-
-    def __hash__(self) -> int:
-        """Return custom hash."""
-        return hash(self.id)
-
-
-@dataclass(kw_only=True)
-class PlayerOptionNumber(PlayerOption):
-    """PlayerOption (by provider) with a numeric value."""
-
+    # PlayerOptionType.NUMBER
     min_value: int | None = None
     max_value: int | None = None
     step: int | None = None
 
-    def __hash__(self) -> int:
-        """Return custom hash."""
-        return hash(self.id)
-
-
-@dataclass
-class PlayerOptionChoice(PlayerOption):
-    """A single option."""
-
-    def __hash__(self) -> int:
-        """Return custom hash."""
-        return hash(self.id)
-
-
-@dataclass(kw_only=True)
-class PlayerOptionChoices(PlayerOption):
-    """PlayerOption (by provider) with multiple pre-defined choices."""
-
-    # value must take the choice's id as value choices: UniqueList[PlayerOptionChoice]
-    choices: UniqueList[PlayerOptionChoice]
-
-    def __hash__(self) -> int:
-        """Return custom hash."""
-        return hash(self.id)
-
-
-@dataclass(kw_only=True)
-class PlayerOptionText(PlayerOption):
-    """PlayerOption (by provider) with an arbitrary str value."""
-
-    # value is the text
+    # PlayerOptionType.OPTIONS
+    options: list[PlayerOptionEntry] | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""
