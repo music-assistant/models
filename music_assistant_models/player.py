@@ -201,6 +201,7 @@ class PlayerOptionChoices(PlayerOption):
     """PlayerOption (by provider) with multiple pre-defined choices."""
 
     # value must take the choice's id as value choices: UniqueList[PlayerOptionChoice]
+    choices = UniqueList[PlayerOptionChoice]
 
 
 @dataclass(kw_only=True)
@@ -208,7 +209,6 @@ class PlayerOptionText(PlayerOption):
     """PlayerOption (by provider) with an arbitrary str value."""
 
     # value is the text
-    choices = UniqueList[PlayerOptionChoice]
 
 
 @dataclass
