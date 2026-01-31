@@ -193,7 +193,7 @@ class PlayerOption(DataClassDictMixin):
     name: str
     type: PlayerOptionType
 
-    # translation_key: optional translation key for this entry (defaults to settings.{key})
+    # translation_key: optional translation key for this entry (defaults to player_options.{id})
     translation_key: str | None = None
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
