@@ -181,6 +181,10 @@ class PlayerOptionToggle(PlayerOption):
 
     # value is either True or False
 
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
 
 @dataclass(kw_only=True)
 class PlayerOptionNumber(PlayerOption):
@@ -190,10 +194,18 @@ class PlayerOptionNumber(PlayerOption):
     max_value: int | None = None
     step: int | None = None
 
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
+
 
 @dataclass
 class PlayerOptionChoice(PlayerOption):
     """A single option."""
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
 
 
 @dataclass(kw_only=True)
@@ -201,7 +213,11 @@ class PlayerOptionChoices(PlayerOption):
     """PlayerOption (by provider) with multiple pre-defined choices."""
 
     # value must take the choice's id as value choices: UniqueList[PlayerOptionChoice]
-    choices = UniqueList[PlayerOptionChoice]
+    choices: UniqueList[PlayerOptionChoice]
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
 
 
 @dataclass(kw_only=True)
@@ -209,6 +225,10 @@ class PlayerOptionText(PlayerOption):
     """PlayerOption (by provider) with an arbitrary str value."""
 
     # value is the text
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.id)
 
 
 @dataclass
@@ -253,6 +273,9 @@ class Player(DataClassDictMixin):
 
     # sound_mode_list: return list of available (native) sound modes for this player
     sound_mode_list: UniqueList[PlayerSoundMode] = field(default_factory=UniqueList)
+
+    # player_option: return list of available (native) player options for this player
+    player_option_list: UniqueList[PlayerOption] = field(default_factory=UniqueList)
 
     # active_source: return active source (id) for this player
     # this can be a player native source id as defined in 'source list'
