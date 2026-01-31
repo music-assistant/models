@@ -186,9 +186,9 @@ class PlayerOptionToggle(PlayerOption):
 class PlayerOptionNumber(PlayerOption):
     """PlayerOption (by provider) with a numeric value."""
 
-    min_value: int | float
-    max_value: int | float
-    step: int | float
+    min_value: int | float | None = None
+    max_value: int | float | None = None
+    step: int | float | None = None
 
 
 @dataclass
@@ -200,7 +200,14 @@ class PlayerOptionChoice(PlayerOption):
 class PlayerOptionChoices(PlayerOption):
     """PlayerOption (by provider) with multiple pre-defined choices."""
 
-    # value must take the choice's id a s value choices: UniqueList[PlayerOptionChoice]
+    # value must take the choice's id as value choices: UniqueList[PlayerOptionChoice]
+
+
+@dataclass(kw_only=True)
+class PlayerOptionText(PlayerOption):
+    """PlayerOption (by provider) with an arbitrary str value."""
+
+    # value is the text
 
 
 @dataclass
