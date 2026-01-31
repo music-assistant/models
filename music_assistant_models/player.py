@@ -160,7 +160,7 @@ class PlayerSoundMode(DataClassDictMixin):
 
 
 class PlayerOptionType(StrEnum):
-    """Enum for the type of a config entry."""
+    """Enum for the type of a Player Option."""
 
     SWITCH = "switch"
     NUMBER = "number"
