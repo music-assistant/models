@@ -208,6 +208,7 @@ class PlayerOptionText(PlayerOption):
     """PlayerOption (by provider) with an arbitrary str value."""
 
     # value is the text
+    choices = UniqueList[PlayerOptionChoice]
 
 
 @dataclass
