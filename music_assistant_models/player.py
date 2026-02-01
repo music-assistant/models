@@ -171,7 +171,7 @@ class PlayerOptionType(StrEnum):
 
     BOOLEAN = "boolean"
     NUMBER = "number"
-    CHOICES = "choices"
+    OPTIONS = "options"
     TEXT = "text"
 
 
@@ -179,7 +179,7 @@ PlayerOptionValueType = bool | int | str
 
 
 @dataclass
-class PlayerOptionChoice(DataClassDictMixin):
+class PlayerOptionEntry(DataClassDictMixin):
     """A single choice."""
 
     id: str
@@ -218,7 +218,7 @@ class PlayerOption(DataClassDictMixin):
     step: int | None = None
 
     # PlayerOptionType.OPTIONS
-    choices: list[PlayerOptionChoice] | None = None
+    options: list[PlayerOptionEntry] | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""
