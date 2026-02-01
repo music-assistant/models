@@ -175,7 +175,7 @@ class PlayerOptionType(StrEnum):
     TEXT = "text"
 
 
-PlayerOptionValueType = bool | int | str
+PlayerOptionValueType = bool | float | int | str
 
 
 @dataclass
@@ -215,9 +215,9 @@ class PlayerOption(DataClassDictMixin):
     read_only: bool = False  # can the user adjust the option?
 
     # PlayerOptionType.NUMBER
-    min_value: int | None = None
-    max_value: int | None = None
-    step: int | None = None
+    min_value: float | int | None = None
+    max_value: float | int | None = None
+    step: float | int | None = None
 
     # PlayerOptionType.OPTIONS
     options: list[PlayerOptionEntry] | None = None
