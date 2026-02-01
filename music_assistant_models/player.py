@@ -170,19 +170,28 @@ class PlayerOptionType(StrEnum):
     """Enum for the type of a Player Option."""
 
     BOOLEAN = "boolean"
-    NUMBER = "number"
+    INTEGER = "integer"
+    FLOAT = "float"
+    STRING = "string"
     OPTIONS = "options"
-    TEXT = "text"
 
 
 PlayerOptionValueType = bool | float | int | str
+
+PlayerOptionTypeMap: dict[PlayerOptionType, type[PlayerOptionValueType]] = {
+    PlayerOptionType.BOOLEAN: bool,
+    PlayerOptionType.STRING: str,
+    PlayerOptionType.INTEGER: int,
+    PlayerOptionType.FLOAT: float,
+    PlayerOptionType.OPTIONS: str,  # value holds the id (str) of the PlayerOptionEntry
+}
 
 
 @dataclass
 class PlayerOptionEntry(DataClassDictMixin):
     """A single choice."""
 
-    id: str
+    key: str
     name: str
     type: PlayerOptionType
 
@@ -191,7 +200,7 @@ class PlayerOptionEntry(DataClassDictMixin):
 
     def __hash__(self) -> int:
         """Return custom hash."""
-        return hash(self.id)
+        return hash(self.key)
 
 
 @dataclass(kw_only=True)
@@ -201,7 +210,7 @@ class PlayerOption(DataClassDictMixin):
     The PlayerOption must also have the current state of itself.
     """
 
-    id: str
+    key: str
     name: str
     type: PlayerOptionType
 
@@ -214,7 +223,7 @@ class PlayerOption(DataClassDictMixin):
     value: PlayerOptionValueType
     read_only: bool = False  # can the user adjust the option?
 
-    # PlayerOptionType.NUMBER
+    # PlayerOptionType.INTEGER or FLOAT
     min_value: float | int | None = None
     max_value: float | int | None = None
     step: float | int | None = None
@@ -224,12 +233,26 @@ class PlayerOption(DataClassDictMixin):
 
     def __hash__(self) -> int:
         """Return custom hash."""
-        return hash(self.id)
+        return hash(self.key)
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
         if self.translation_key is None:
-            self.translation_key = f"player_options.{self.id}"
+            self.translation_key = f"player_options.{self.key}"
+
+        # Basic type checks
+        if not isinstance(self.value, PlayerOptionTypeMap[self.type]):
+            raise TypeError(
+                f"Value {self.value} must be of type {PlayerOptionTypeMap[self.type]} "
+                "if type is {self.type}"
+            )
+        if self.type in [PlayerOptionType.INTEGER, PlayerOptionType.FLOAT] and not all(
+            isinstance(x, PlayerOptionTypeMap[self.type])
+            for x in [self.min_value, self.max_value, self.step, self.value]
+        ):
+            raise ValueError(f"min_value, max_value and step are mandatory for {self.type}")
+        if self.type == PlayerOptionType.OPTIONS and not self.options:
+            raise ValueError(f"No options provided, but type is {self.type}")
 
 
 @dataclass
