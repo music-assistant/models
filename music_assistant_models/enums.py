@@ -426,7 +426,7 @@ class PlayerFeature(StrEnum):
     ENQUEUE = "enqueue"
     SELECT_SOUND_MODE = "select_sound_mode"
     SELECT_SOURCE = "select_source"
-    PLAYER_OPTION = "player_option"
+    OPTION = "option"
     GAPLESS_PLAYBACK = "gapless_playback"
     GAPLESS_DIFFERENT_SAMPLERATE = "gapless_different_samplerate"
     # Play media: indicates the player can handle play_media commands directly
