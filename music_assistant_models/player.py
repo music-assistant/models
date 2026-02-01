@@ -154,9 +154,16 @@ class PlayerSoundMode(DataClassDictMixin):
     # passive: this sound mode can not be selected/activated by MA/the user
     passive: bool = False
 
+    translation_key: str | None = None
+
     def __hash__(self) -> int:
         """Return custom hash."""
         return hash(self.id)
+
+    def __post_init__(self) -> None:
+        """Run some basic sanity checks after init."""
+        if self.translation_key is None:
+            self.translation_key = f"player_sound_mode.{self.id}"
 
 
 class PlayerOptionType(StrEnum):
@@ -266,8 +273,8 @@ class Player(DataClassDictMixin):
     # sound_mode_list: return list of available (native) sound modes for this player
     sound_mode_list: UniqueList[PlayerSoundMode] = field(default_factory=UniqueList)
 
-    # player_options: return list of available (native) player options for this player
-    player_options: UniqueList[PlayerOption] = field(default_factory=UniqueList)
+    # options: return list of available (native) player options for this player
+    options: UniqueList[PlayerOption] = field(default_factory=UniqueList)
 
     # active_source: return active source (id) for this player
     # this can be a player native source id as defined in 'source list'
