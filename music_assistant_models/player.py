@@ -184,7 +184,9 @@ class PlayerOptionEntry(DataClassDictMixin):
 
     id: str
     name: str
-    value: str
+    type: PlayerOptionType
+
+    value: PlayerOptionValueType
     read_only: bool = False
 
     def __hash__(self) -> int:
