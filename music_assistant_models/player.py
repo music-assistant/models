@@ -223,12 +223,13 @@ class PlayerOption(DataClassDictMixin):
     value: PlayerOptionValueType
     read_only: bool = False  # can the user adjust the option?
 
-    # PlayerOptionType.INTEGER or FLOAT
+    # If PlayerOptionType.INTEGER or FLOAT
+    # mandatory if read_only = False
     min_value: float | int | None = None
     max_value: float | int | None = None
     step: float | int | None = None
 
-    # PlayerOptionType.OPTIONS
+    # If PlayerOptionType.OPTIONS mandatory
     options: list[PlayerOptionEntry] | None = None
 
     def __hash__(self) -> int:
@@ -246,9 +247,13 @@ class PlayerOption(DataClassDictMixin):
                 f"Value {self.value} must be of type {PlayerOptionTypeMap[self.type]} "
                 "if type is {self.type}"
             )
-        if self.type in [PlayerOptionType.INTEGER, PlayerOptionType.FLOAT] and not all(
-            isinstance(x, PlayerOptionTypeMap[self.type])
-            for x in [self.min_value, self.max_value, self.step, self.value]
+        if (
+            not self.read_only
+            and self.type in [PlayerOptionType.INTEGER, PlayerOptionType.FLOAT]
+            and not all(
+                isinstance(x, PlayerOptionTypeMap[self.type])
+                for x in [self.min_value, self.max_value, self.step]
+            )
         ):
             raise ValueError(f"min_value, max_value and step are mandatory for {self.type}")
         if self.type == PlayerOptionType.OPTIONS and not self.options:
