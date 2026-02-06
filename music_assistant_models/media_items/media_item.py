@@ -164,6 +164,7 @@ class ItemMapping(_MediaItemBase):
 
     available: bool = True
     image: MediaItemImage | None = None
+    year: int | None = None
 
     @classmethod
     def from_item(cls, item: MediaItem | ItemMapping) -> ItemMapping:
