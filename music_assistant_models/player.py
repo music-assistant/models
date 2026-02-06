@@ -173,7 +173,6 @@ class PlayerOptionType(StrEnum):
     INTEGER = "integer"
     FLOAT = "float"
     STRING = "string"
-    OPTIONS = "options"
 
 
 PlayerOptionValueType = bool | float | int | str
@@ -204,7 +203,8 @@ class PlayerOptionEntry(DataClassDictMixin):
 
 @dataclass(kw_only=True)
 class PlayerOption(DataClassDictMixin):
-    """General PlayerOption.
+    """
+    Model for a PlayerOption.
 
     The PlayerOption must also have the current state of itself.
     """
@@ -213,12 +213,12 @@ class PlayerOption(DataClassDictMixin):
     name: str
     type: PlayerOptionType
 
-    # translation_key: optional translation key for this entry (defaults to player_options.{id})
+    # translation_key: optional translation key for this PlayerOption (defaults to player_options.{id})
     translation_key: str | None = None
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
 
-    # current value of the option, see PlayerConfigEntry for serialization order.
+    # current value of the option, see PlayerOptionValueType for serialization order.
     value: PlayerOptionValueType
     read_only: bool = False  # can the user adjust the option?
 
