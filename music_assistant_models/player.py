@@ -173,7 +173,6 @@ class PlayerOptionType(StrEnum):
     INTEGER = "integer"
     FLOAT = "float"
     STRING = "string"
-    OPTIONS = "options"
 
 
 PlayerOptionValueType = bool | float | int | str
