@@ -219,7 +219,7 @@ class PlayerOption(DataClassDictMixin):
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
 
-    # current value of the option, see PlayerConfigEntry for serialization order.
+    # current value of the option, see PlayerOptionValueType for serialization order.
     value: PlayerOptionValueType
     read_only: bool = False  # can the user adjust the option?
 
