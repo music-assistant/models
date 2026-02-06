@@ -196,7 +196,6 @@ class PlayerOptionEntry(DataClassDictMixin):
     type: PlayerOptionType
 
     value: PlayerOptionValueType
-    read_only: bool = False
 
     def __hash__(self) -> int:
         """Return custom hash."""
