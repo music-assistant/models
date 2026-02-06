@@ -205,7 +205,8 @@ class PlayerOptionEntry(DataClassDictMixin):
 
 @dataclass(kw_only=True)
 class PlayerOption(DataClassDictMixin):
-    """General PlayerOption.
+    """
+    Model for a PlayerOption.
 
     The PlayerOption must also have the current state of itself.
     """
