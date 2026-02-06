@@ -182,7 +182,6 @@ PlayerOptionTypeMap: dict[PlayerOptionType, type[PlayerOptionValueType]] = {
     PlayerOptionType.STRING: str,
     PlayerOptionType.INTEGER: int,
     PlayerOptionType.FLOAT: float,
-    PlayerOptionType.OPTIONS: str,  # value holds the id (str) of the PlayerOptionEntry
 }
 
 
@@ -213,7 +212,8 @@ class PlayerOption(DataClassDictMixin):
     name: str
     type: PlayerOptionType
 
-    # translation_key: optional translation key for this PlayerOption (defaults to player_options.{id})
+    # translation_key: optional translation key for this PlayerOption
+    # (defaults to player_options.{id})
     translation_key: str | None = None
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
@@ -246,17 +246,6 @@ class PlayerOption(DataClassDictMixin):
                 f"Value {self.value} must be of type {PlayerOptionTypeMap[self.type]} "
                 "if type is {self.type}"
             )
-        if (
-            not self.read_only
-            and self.type in [PlayerOptionType.INTEGER, PlayerOptionType.FLOAT]
-            and not all(
-                isinstance(x, PlayerOptionTypeMap[self.type])
-                for x in [self.min_value, self.max_value, self.step]
-            )
-        ):
-            raise ValueError(f"min_value, max_value and step are mandatory for {self.type}")
-        if self.type == PlayerOptionType.OPTIONS and not self.options:
-            raise ValueError(f"No options provided, but type is {self.type}")
 
 
 @dataclass
