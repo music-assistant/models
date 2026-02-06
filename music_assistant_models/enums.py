@@ -409,7 +409,7 @@ class PlayerFeature(StrEnum):
     enqueue: The player supports (en)queuing of media items natively.
     select_source: The player has native support for selecting a source.
     select_sound_mode: The player has native support for selecting a sound mode.
-    options: The player has at least one additional option to be set.
+    options: The player supports getting/setting additional options.
     gapless_playback: The player supports gapless playback.
     gapless_different_samplerate: Supports gapless playback between different samplerates.
     """
