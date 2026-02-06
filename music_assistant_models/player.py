@@ -228,7 +228,6 @@ class PlayerOption(DataClassDictMixin):
     max_value: float | int | None = None
     step: float | int | None = None
 
-    # If PlayerOptionType.OPTIONS mandatory
     options: list[PlayerOptionEntry] | None = None
 
     def __hash__(self) -> int:
