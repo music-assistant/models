@@ -408,6 +408,8 @@ class PlayerFeature(StrEnum):
     seek: The player supports seeking to a specific.
     enqueue: The player supports (en)queuing of media items natively.
     select_source: The player has native support for selecting a source.
+    select_sound_mode: The player has native support for selecting a sound mode.
+    options: The player supports getting/setting additional options.
     gapless_playback: The player supports gapless playback.
     gapless_different_samplerate: Supports gapless playback between different samplerates.
     """
@@ -422,7 +424,9 @@ class PlayerFeature(StrEnum):
     NEXT_PREVIOUS = "next_previous"
     PLAY_ANNOUNCEMENT = "play_announcement"
     ENQUEUE = "enqueue"
+    SELECT_SOUND_MODE = "select_sound_mode"
     SELECT_SOURCE = "select_source"
+    OPTIONS = "options"
     GAPLESS_PLAYBACK = "gapless_playback"
     GAPLESS_DIFFERENT_SAMPLERATE = "gapless_different_samplerate"
     # Play media: indicates the player can handle play_media commands directly
@@ -448,6 +452,7 @@ class EventType(StrEnum):
     PLAYER_REMOVED = "player_removed"
     PLAYER_CONFIG_UPDATED = "player_config_updated"
     PLAYER_DSP_CONFIG_UPDATED = "player_dsp_config_updated"
+    PLAYER_OPTIONS_UPDATED = "player_options_updated"
     DSP_PRESETS_UPDATED = "dsp_presets_updated"
     QUEUE_ADDED = "queue_added"
     QUEUE_UPDATED = "queue_updated"
