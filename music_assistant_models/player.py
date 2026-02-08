@@ -222,8 +222,7 @@ class PlayerOption(DataClassDictMixin):
     value: PlayerOptionValueType
     read_only: bool = False  # can the user adjust the option?
 
-    # If PlayerOptionType.INTEGER or FLOAT
-    # mandatory if read_only = False
+    # optional min/max value range for int/float (writeable) values
     min_value: float | int | None = None
     max_value: float | int | None = None
     step: float | int | None = None
