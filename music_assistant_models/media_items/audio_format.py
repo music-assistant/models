@@ -31,6 +31,10 @@ class AudioFormat(DataClassDictMixin):
                 f"pcm;codec=pcm;rate={self.sample_rate};"
                 f"bitrate={self.bit_depth};channels={self.channels}"
             )
+        elif not self.output_format_str and self.content_type == ContentType.WAV:
+            self.output_format_str = (
+                f"wav;rate={self.sample_rate};bitrate={self.bit_depth};channels={self.channels}"
+            )
         elif not self.output_format_str:
             self.output_format_str = self.content_type.value
         if self.bit_rate and self.bit_rate > 10000:
