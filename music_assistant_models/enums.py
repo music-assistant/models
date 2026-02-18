@@ -41,7 +41,6 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     PLUGIN_SOURCE = "plugin_source"
     SOUND_EFFECT = "sound_effect"
     GENRE = "genre"
-    GENRE_ALIAS = "genre_alias"
     UNKNOWN = "unknown"
 
     @classmethod
