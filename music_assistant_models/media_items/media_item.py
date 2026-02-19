@@ -146,26 +146,6 @@ class MediaItem(_MediaItemBase):
 
 
 @dataclass(kw_only=True)
-class GenreAlias(DataClassDictMixin):
-    """Alias/synonym entity for provider and user-facing labels."""
-
-    item_id: str
-    name: str
-    genres: set[Genre] | None = None
-    media_items: set[MediaItemType] | None = None
-
-    def __hash__(self) -> int:
-        """Return custom hash."""
-        return hash(self.item_id)
-
-    def __eq__(self, other: object) -> bool:
-        """Check equality of two items."""
-        if not isinstance(other, GenreAlias):
-            return False
-        return self.item_id == other.item_id
-
-
-@dataclass(kw_only=True)
 class Genre(MediaItem):
     """Canonical genre entity."""
 
@@ -174,7 +154,7 @@ class Genre(MediaItem):
 
     media_type: MediaType = MediaType.GENRE
     favorite: bool = False
-    genre_aliases: set[GenreAlias] | None = None
+    genre_aliases: set[str] | None = None
 
     def __post_init__(self) -> None:
         """Call after init."""
