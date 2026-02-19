@@ -147,7 +147,7 @@ class MediaItem(_MediaItemBase):
 
 @dataclass(kw_only=True)
 class Genre(MediaItem):
-    """Canonical genre entity."""
+    """Model for a Genre."""
 
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
