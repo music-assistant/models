@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
@@ -15,6 +16,7 @@ from music_assistant_models.helpers import (
     create_uri,
     get_global_cache_value,
     is_valid_uuid,
+    remove_diacritics,
 )
 from music_assistant_models.unique_list import UniqueList
 
@@ -143,16 +145,25 @@ class MediaItem(_MediaItemBase):
         return next((x for x in self.metadata.images if x.type == ImageType.THUMB), None)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Genre(MediaItem):
     """Model for a Genre."""
 
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
-    # Specific for mapping logic
-    aliases: set[str] = field(default_factory=set)
 
     media_type: MediaType = MediaType.GENRE
+    genre_aliases: set[str] | None = None
+
+    def __post_init__(self) -> None:
+        """Call after init."""
+        super().__post_init__()
+        if self.translation_key is None:
+            normalized_name = remove_diacritics(self.name.strip()).lower()
+            normalized_name = normalized_name.replace("&", "_and_")
+            normalized_name = normalized_name.replace(" ", "_").replace("-", "_")
+            normalized_name = re.sub(r"[^a-z0-9_]", "", normalized_name)
+            self.translation_key = normalized_name
 
 
 @dataclass(kw_only=True)
