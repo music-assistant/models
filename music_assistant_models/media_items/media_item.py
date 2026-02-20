@@ -159,8 +159,6 @@ class Genre(MediaItem):
     def __post_init__(self) -> None:
         """Call after init."""
         super().__post_init__()
-        if self.media_type != MediaType.GENRE:
-            raise InvalidDataError("Genre media type must be GENRE")
         if self.translation_key is None:
             normalized_name = remove_diacritics(self.name.strip()).lower()
             normalized_name = normalized_name.replace("&", "_and_")
