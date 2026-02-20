@@ -153,7 +153,6 @@ class Genre(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     media_type: MediaType = MediaType.GENRE
-    favorite: bool = False
     genre_aliases: set[str] | None = None
 
     def __post_init__(self) -> None:
