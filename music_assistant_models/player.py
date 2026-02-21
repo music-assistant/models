@@ -187,17 +187,19 @@ PlayerOptionTypeMap: dict[PlayerOptionType, type[PlayerOptionValueType]] = {
 
 @dataclass
 class PlayerOptionEntry(DataClassDictMixin):
-    """A single choice."""
+    """A single choice.
 
-    key: str
+    The value has the same type as the base PlayerOption.
+    """
+
     name: str
-    type: PlayerOptionType
-
     value: PlayerOptionValueType
+
+    translation_key: str | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""
-        return hash(self.key)
+        return hash(self.name)
 
 
 @dataclass(kw_only=True)
