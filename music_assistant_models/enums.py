@@ -523,7 +523,7 @@ class ProviderFeature(StrEnum):
 
     # playlist-specific features
     PLAYLIST_TRACKS_EDIT = "playlist_tracks_edit"
-    PLAYLIST_CREATE_TRACKS = "playlist_create"  # creation of playlist with tracks supported
+    PLAYLIST_CREATE = "playlist_create"  # creation of playlist with tracks supported
     PLAYLIST_CREATE_AUDIOBOOKS = "playlist_create_audiobooks"  # with audiobooks
     PLAYLIST_CREATE_PODCAST_EPISODES = "playlist_create_podcast_episodes"  # with podcast episodes
     PLAYLIST_CREATE_RADIOS = "playlist_create_radios"  # with radios
