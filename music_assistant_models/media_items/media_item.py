@@ -263,7 +263,7 @@ class Playlist(MediaItem):
 
     # The playlist may support only a single, or a mix of multiple media types. Allowed entries:
     # MediaType.AUDIOBOOK, MediaType.PODCAST_EPISODE, MediaType.RADIO, MediaType.TRACK
-    supported_mediatypes: set[MediaType]
+    supported_mediatypes: set[MediaType] = field(default_factory=lambda: {MediaType.TRACK})
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
