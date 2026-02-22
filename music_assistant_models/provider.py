@@ -79,7 +79,6 @@ class ProviderInstance(DataClassORJSONMixin):
     available: bool
     icon: str | None = None
     is_streaming_provider: bool | None = None  # music providers only
-    playlist_create_support: tuple[set[MediaType], bool] | None = None  # music providers only
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
