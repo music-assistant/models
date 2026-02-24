@@ -267,6 +267,7 @@ class Playlist(MediaItem):
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
+        super().__post_init__()
         _supported = {
             MediaType.AUDIOBOOK,
             MediaType.PODCAST_EPISODE,
