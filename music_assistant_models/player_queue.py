@@ -8,9 +8,11 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
+from music_assistant_models.media_items.media_item import ItemMapping
+
 from .constants import EXTRA_ATTRIBUTES_TYPES
 from .enums import PlaybackState, RepeatMode
-from .media_items import MediaItemType
+from .media_items import MediaItemType, media_from_dict
 from .queue_item import QueueItem
 
 
@@ -60,7 +62,7 @@ class PlayerQueue(DataClassDictMixin):
     # the fields below will only be used server-side and not sent to the client #
     #############################################################################
 
-    enqueued_media_items: list[MediaItemType] = field(
+    enqueued_media_items: list[MediaItemType | ItemMapping] = field(
         default_factory=list,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
@@ -116,3 +118,12 @@ class PlayerQueue(DataClassDictMixin):
         d["enqueued_media_items"] = [x.to_dict() for x in self.enqueued_media_items]
         d["userid"] = self.userid
         return d
+
+    def from_cache(self, data: dict[str, Any]) -> PlayerQueue:
+        """Update the PlayerQueue from the dict stored in the cache db."""
+        self.enqueued_media_items = [
+            media_from_dict(x) if isinstance(x, dict) else x
+            for x in data.get("enqueued_media_items", [])
+        ]
+        self.userid = data.get("userid")
+        return self
