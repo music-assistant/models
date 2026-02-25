@@ -707,3 +707,12 @@ class ProviderStage(StrEnum):
     def _missing_(cls, value: object) -> ProviderStage:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.STABLE
+
+
+class CoreState(StrEnum):
+    """Enum representing the core state of the Music Assistant server."""
+
+    STARTING = "starting"
+    RUNNING = "running"
+    STOPPING = "stopping"
+    STOPPED = "stopped"
