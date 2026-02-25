@@ -459,13 +459,14 @@ class EventType(StrEnum):
     QUEUE_ITEMS_UPDATED = "queue_items_updated"
     QUEUE_TIME_UPDATED = "queue_time_updated"
     MEDIA_ITEM_PLAYED = "media_item_played"
-    SHUTDOWN = "application_shutdown"
     MEDIA_ITEM_ADDED = "media_item_added"
     MEDIA_ITEM_UPDATED = "media_item_updated"
     MEDIA_ITEM_DELETED = "media_item_deleted"
     PROVIDERS_UPDATED = "providers_updated"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     AUTH_SESSION = "auth_session"
+    CORE_STATE_UPDATED = "core_state_updated"
+    SHUTDOWN = "application_shutdown"  # deprecated: replaced by "core_state_updated"
     UNKNOWN = "unknown"
 
     @classmethod
