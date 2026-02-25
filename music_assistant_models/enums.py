@@ -459,13 +459,14 @@ class EventType(StrEnum):
     QUEUE_ITEMS_UPDATED = "queue_items_updated"
     QUEUE_TIME_UPDATED = "queue_time_updated"
     MEDIA_ITEM_PLAYED = "media_item_played"
-    SHUTDOWN = "application_shutdown"
     MEDIA_ITEM_ADDED = "media_item_added"
     MEDIA_ITEM_UPDATED = "media_item_updated"
     MEDIA_ITEM_DELETED = "media_item_deleted"
     PROVIDERS_UPDATED = "providers_updated"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     AUTH_SESSION = "auth_session"
+    CORE_STATE_UPDATED = "core_state_updated"
+    SHUTDOWN = "application_shutdown"  # deprecated: replaced by "core_state_updated"
     UNKNOWN = "unknown"
 
     @classmethod
@@ -523,7 +524,14 @@ class ProviderFeature(StrEnum):
 
     # playlist-specific features
     PLAYLIST_TRACKS_EDIT = "playlist_tracks_edit"
+    # PLAYLIST_CREATE is deprecated: replaced by PLAYLIST_CREATE_TRACKS (and others)
+    # TODO: remove this after 2.8 release
     PLAYLIST_CREATE = "playlist_create"
+    PLAYLIST_CREATE_TRACKS = "playlist_create_tracks"  # creation of playlist with tracks supported
+    PLAYLIST_CREATE_AUDIOBOOKS = "playlist_create_audiobooks"  # with audiobooks
+    PLAYLIST_CREATE_PODCAST_EPISODES = "playlist_create_podcast_episodes"  # with podcast episodes
+    PLAYLIST_CREATE_RADIOS = "playlist_create_radios"  # with radios
+    PLAYLIST_CREATE_MIXED = "playlist_create_mixed"  # media types of created playlist may be mixed
 
     #
     # PLAYERPROVIDER FEATURES
@@ -707,3 +715,12 @@ class ProviderStage(StrEnum):
     def _missing_(cls, value: object) -> ProviderStage:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.STABLE
+
+
+class CoreState(StrEnum):
+    """Enum representing the core state of the Music Assistant server."""
+
+    STARTING = "starting"
+    RUNNING = "running"
+    STOPPING = "stopping"
+    STOPPED = "stopped"
