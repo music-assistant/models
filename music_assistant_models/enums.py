@@ -523,7 +523,14 @@ class ProviderFeature(StrEnum):
 
     # playlist-specific features
     PLAYLIST_TRACKS_EDIT = "playlist_tracks_edit"
+    # PLAYLIST_CREATE is deprecated: replaced by PLAYLIST_CREATE_TRACKS (and others)
+    # TODO: remove this after 2.8 release
     PLAYLIST_CREATE = "playlist_create"
+    PLAYLIST_CREATE_TRACKS = "playlist_create_tracks"  # creation of playlist with tracks supported
+    PLAYLIST_CREATE_AUDIOBOOKS = "playlist_create_audiobooks"  # with audiobooks
+    PLAYLIST_CREATE_PODCAST_EPISODES = "playlist_create_podcast_episodes"  # with podcast episodes
+    PLAYLIST_CREATE_RADIOS = "playlist_create_radios"  # with radios
+    PLAYLIST_CREATE_MIXED = "playlist_create_mixed"  # media types of created playlist may be mixed
 
     #
     # PLAYERPROVIDER FEATURES

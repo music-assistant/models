@@ -261,6 +261,22 @@ class Playlist(MediaItem):
     owner: str = ""
     is_editable: bool = False
 
+    # The playlist may support only a single, or a mix of multiple media types. Allowed entries:
+    # MediaType.AUDIOBOOK, MediaType.PODCAST_EPISODE, MediaType.RADIO, MediaType.TRACK
+    supported_mediatypes: set[MediaType] = field(default_factory=lambda: {MediaType.TRACK})
+
+    def __post_init__(self) -> None:
+        """Run some basic sanity checks after init."""
+        super().__post_init__()
+        _supported = {
+            MediaType.AUDIOBOOK,
+            MediaType.PODCAST_EPISODE,
+            MediaType.RADIO,
+            MediaType.TRACK,
+        }
+        if len(self.supported_mediatypes.difference(_supported)) > 0:
+            raise TypeError(f"Playlists are only supported for {_supported}.")
+
 
 @dataclass(kw_only=True)
 class Radio(MediaItem):
