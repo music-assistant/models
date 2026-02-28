@@ -563,6 +563,7 @@ class ProviderType(StrEnum):
     METADATA = "metadata"
     PLUGIN = "plugin"
     CORE = "core"
+    AUDIO_ANALYSIS = "audio_analysis"
 
     # fallback
     UNKNOWN = "unknown"
