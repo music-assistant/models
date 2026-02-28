@@ -10,7 +10,7 @@ from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import EXTRA_ATTRIBUTES_TYPES
 from .enums import PlaybackState, RepeatMode
-from .media_items import MediaItemType
+from .media_items import ItemMapping, MediaItemType, media_from_dict
 from .queue_item import QueueItem
 
 
@@ -116,3 +116,13 @@ class PlayerQueue(DataClassDictMixin):
         d["enqueued_media_items"] = [x.to_dict() for x in self.enqueued_media_items]
         d["userid"] = self.userid
         return d
+
+    def from_cache(self, data: dict[str, Any]) -> PlayerQueue:
+        """Update the PlayerQueue from the dict stored in the cache db."""
+        self.enqueued_media_items = [
+            item
+            for x in data.get("enqueued_media_items", [])
+            if isinstance(x, dict) and not isinstance(item := media_from_dict(x), ItemMapping)
+        ]
+        self.userid = data.get("userid")
+        return self
