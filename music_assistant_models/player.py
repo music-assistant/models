@@ -359,6 +359,9 @@ class Player(DataClassDictMixin):
     # None means no playback in progress or native playback without explicit selection
     active_output_protocol: str | None = None
 
+    # needs_setup: if True, the player needs to be set up before it can be used
+    needs_setup: bool = False
+
     #############################################################################
     # helper methods and properties                                             #
     #############################################################################
