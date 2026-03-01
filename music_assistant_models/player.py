@@ -417,6 +417,10 @@ class Player(DataClassDictMixin):
                 "when_synced",
                 "when_group_active",
             ]
+        # TEMP: ensure group_volume is not None for backwards
+        # compatibility with older versions of the HA integration
+        if d.get("group_volume") is None:
+            d["group_volume"] = 0
         return d
 
     @classmethod
