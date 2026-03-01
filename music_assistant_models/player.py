@@ -332,6 +332,11 @@ class Player(DataClassDictMixin):
     # if not a group player, this is just the player's volume
     group_volume: int = 100
 
+    # group_volume_muted: if the player is a player group or syncgroup master,
+    # this will return True if all child players are muted, False if at least one is
+    # not muted
+    group_volume_muted: bool = False
+
     # extra_attributes: additional (player specific) attributes for this player
     extra_attributes: dict[str, EXTRA_ATTRIBUTES_TYPES] = field(default_factory=dict)
 
