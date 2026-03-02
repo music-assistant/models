@@ -389,7 +389,6 @@ class IdentifierType(StrEnum):
     UUID = "uuid"  # Universal unique identifier
     CAST_UUID = "cast_uuid"  # Chromecast device UUID (for cross-protocol matching)
     AIRPLAY_ID = "airplay_id"  # AirPlay device identifier (for cross-protocol matching)
-    SLIMPROTO_ID = "slimproto_id"  # slimproto protocol ID (for cross-protocol matching)
     IP_ADDRESS = "ip_address"  # Less reliable (DHCP) but useful for fallback
     UNKNOWN = "unknown"
 

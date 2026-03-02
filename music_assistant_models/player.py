@@ -330,7 +330,13 @@ class Player(DataClassDictMixin):
     # group_volume: if the player is a player group or syncgroup master,
     # this will return the average volume of all child players
     # if not a group player, this is just the player's volume
-    group_volume: int = 100
+    # None if no child players support volume control
+    group_volume: int | None = None
+
+    # group_volume_muted: if the player is a player group or syncgroup master,
+    # this will return True if all child players are muted.
+    # None if no child players support mute control.
+    group_volume_muted: bool | None = None
 
     # extra_attributes: additional (player specific) attributes for this player
     extra_attributes: dict[str, EXTRA_ATTRIBUTES_TYPES] = field(default_factory=dict)
@@ -353,6 +359,9 @@ class Player(DataClassDictMixin):
     # Can be "native" or a protocol player_id
     # None means no playback in progress or native playback without explicit selection
     active_output_protocol: str | None = None
+
+    # needs_setup: if True, the player needs to be set up before it can be used
+    needs_setup: bool = False
 
     #############################################################################
     # helper methods and properties                                             #
@@ -408,6 +417,10 @@ class Player(DataClassDictMixin):
                 "when_synced",
                 "when_group_active",
             ]
+        # TEMP: ensure group_volume is not None for backwards
+        # compatibility with older versions of the HA integration
+        if d.get("group_volume") is None:
+            d["group_volume"] = 0
         return d
 
     @classmethod
