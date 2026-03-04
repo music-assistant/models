@@ -623,6 +623,9 @@ class StreamType(StrEnum):
     # shoutcast: legacy shoutcast stream - url provided in path
     SHOUTCAST = "shoutcast"
 
+    # ogg: ogg/vorbis or ogg/opus stream with metadata in vorbis comments
+    OGG = "ogg"
+
     # local_file: local file which is accessible by the MA server process
     LOCAL_FILE = "local_file"
 
