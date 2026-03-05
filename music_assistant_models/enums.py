@@ -623,7 +623,8 @@ class StreamType(StrEnum):
     # shoutcast: legacy shoutcast stream - url provided in path
     SHOUTCAST = "shoutcast"
 
-    # in_band: stream with in-band metadata (e.g. ogg vorbis comments, flac metadata blocks, opus tags)
+    # in_band: radio stream with in-band metadata 
+    # (e.g. ogg vorbis comments, flac metadata blocks, opus tags)
     IN_BAND = "in_band"
 
     # local_file: local file which is accessible by the MA server process
