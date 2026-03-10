@@ -468,6 +468,7 @@ class EventType(StrEnum):
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     AUTH_SESSION = "auth_session"
     CORE_STATE_UPDATED = "core_state_updated"
+    PARTY_MODE_UPDATED = "party_mode_updated"
     SHUTDOWN = "application_shutdown"  # deprecated: replaced by "core_state_updated"
     UNKNOWN = "unknown"
 
