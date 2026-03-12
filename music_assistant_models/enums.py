@@ -520,6 +520,11 @@ class ProviderFeature(StrEnum):
     FAVORITE_AUDIOBOOKS_EDIT = "favorite_audiobooks_edit"
     FAVORITE_PODCASTS_EDIT = "favorite_podcasts_edit"
 
+    # rating editing per mediatype
+    RATING_ARTISTS_EDIT = "rating_artists_edit"
+    RATING_ALBUMS_EDIT = "rating_albums_edit"
+    RATING_TRACKS_EDIT = "rating_tracks_edit"
+
     # if we can grab 'similar tracks' from the music provider
     # used to generate dynamic playlists
     SIMILAR_TRACKS = "similar_tracks"
