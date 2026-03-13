@@ -90,6 +90,7 @@ class MediaItemMetadata(DataClassDictMixin):
     performers: set[str] | None = None
     preview: str | None = None
     popularity: int | None = None
+    rating: int | None = None
     release_date: datetime | None = None
     languages: UniqueList[str] | None = None
     # chapters is a list of available chapters, sorted by position
