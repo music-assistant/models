@@ -54,6 +54,8 @@ class ProviderManifest(DataClassORJSONMixin):
     icon_svg_monochrome: str | None = None
     # mdns_discovery: list of mdns types to discover
     mdns_discovery: list[str] | None = None
+    # upnp_discovery: list of SSDP search targets to discover
+    upnp_discovery: list[str] | None = None
 
     # credits: list of credits/attributions
     # e.g. for libraries used, icons, etc.
