@@ -53,24 +53,14 @@ class MultiPartPath:
     Model for a multipart path.
 
     Used when a stream is split into multiple parts, e.g. chapters.
+    Each part's ``path`` may be a single URL/path or a list of strings: in that
+    case the list is ordered by priority (mirrors / failover for the same part)
     """
 
-    path: str
+    path: str | list[str]
     # use the duration field to specify the duration of this part
     # for more efficient seeking
     duration: float | None = None
-
-
-@dataclass
-class StreamMirror(DataClassDictMixin):
-    """Represents an alternate/mirror URL for the same stream.
-
-    Mirror priorities can be set with :attr:`priority`.
-    """
-
-    path: str
-    # Set the priority of this mirror (lower is higher priority)
-    priority: int = 0
 
 
 @dataclass(kw_only=True)
@@ -112,9 +102,11 @@ class StreamDetails(DataClassDictMixin):
     # path: url or (local accessible) path to the stream (if not custom stream)
     # this field should be set by the provider when creating the streamdetails
     # unless the stream is a custom stream
-    # if the stream consists of multiple parts, this may also be a list of MultiPartPath
-    # or a list of StreamMirror for mirror URLs
-    path: str | list[MultiPartPath] | list[StreamMirror] | None = field(
+    # - str: single path
+    # - list[MultiPartPath]: one or more sequential parts (e.g. chapters). Each part's
+    #   path may be str or list[str]; a list is ordered mirror/failover URLs for that part.
+    #   A single-part stream with mirrors: [MultiPartPath(path=["primary", "backup"])].
+    path: str | list[MultiPartPath] | None = field(
         default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
