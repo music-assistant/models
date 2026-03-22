@@ -357,18 +357,43 @@ PlayerState = PlaybackState
 class PlayerType(StrEnum):
     """Enum with possible Player Types.
 
-    player: A regular player.
+    player: A regular player with native (vendor-specific) support.
     stereo_pair: Same as player but a dedicated stereo pair of 2 speakers.
     group: A (dedicated) (sync)group player or (universal) playergroup.
+    protocol: A generic protocol player (e.g. AirPlay/Chromecast/DLNA) without native support.
+              These are wrapped by a Universal Player and hidden from the UI.
     """
 
     PLAYER = "player"
     STEREO_PAIR = "stereo_pair"
     GROUP = "group"
+    PROTOCOL = "protocol"
     UNKNOWN = "unknown"
 
     @classmethod
     def _missing_(cls, value: object) -> PlayerType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class IdentifierType(StrEnum):
+    """
+    Types of identifiers/connections for a device.
+
+    Also used to match protocol players to their parent device.
+    Ordered by reliability (MAC_ADDRESS most reliable).
+    """
+
+    MAC_ADDRESS = "mac_address"  # Most reliable - e.g., "AA:BB:CC:DD:EE:FF"
+    SERIAL_NUMBER = "serial_number"  # Device serial number
+    UUID = "uuid"  # Universal unique identifier
+    CAST_UUID = "cast_uuid"  # Chromecast device UUID (for cross-protocol matching)
+    AIRPLAY_ID = "airplay_id"  # AirPlay device identifier (for cross-protocol matching)
+    IP_ADDRESS = "ip_address"  # Less reliable (DHCP) but useful for fallback
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> IdentifierType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
@@ -385,6 +410,8 @@ class PlayerFeature(StrEnum):
     seek: The player supports seeking to a specific.
     enqueue: The player supports (en)queuing of media items natively.
     select_source: The player has native support for selecting a source.
+    select_sound_mode: The player has native support for selecting a sound mode.
+    options: The player supports getting/setting additional options.
     gapless_playback: The player supports gapless playback.
     gapless_different_samplerate: Supports gapless playback between different samplerates.
     """
@@ -399,9 +426,15 @@ class PlayerFeature(StrEnum):
     NEXT_PREVIOUS = "next_previous"
     PLAY_ANNOUNCEMENT = "play_announcement"
     ENQUEUE = "enqueue"
+    SELECT_SOUND_MODE = "select_sound_mode"
     SELECT_SOURCE = "select_source"
+    OPTIONS = "options"
     GAPLESS_PLAYBACK = "gapless_playback"
     GAPLESS_DIFFERENT_SAMPLERATE = "gapless_different_samplerate"
+    # Play media: indicates the player can handle play_media commands directly
+    # If not present, play_media will be routed through linked protocol players
+    PLAY_MEDIA = "play_media"
+
     UNKNOWN = "unknown"
 
     @classmethod
@@ -413,6 +446,42 @@ class PlayerFeature(StrEnum):
         return cls.UNKNOWN
 
 
+class TaskScheduleType(StrEnum):
+    """Enumeration of supported task schedule types."""
+
+    HOURLY = "hourly"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> TaskScheduleType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class TaskStatus(StrEnum):
+    """Enumeration of background task states.
+
+    `PARTIAL_SUCCESS` means the task completed without a fatal exception, but one or more
+    non-fatal issues were reported during the run.
+    """
+
+    IDLE = "idle"
+    PENDING = "pending"
+    RUNNING = "running"
+    SUCCESS = "success"
+    PARTIAL_SUCCESS = "partial_success"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> TaskStatus:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class EventType(StrEnum):
     """Enum with possible Events."""
 
@@ -421,19 +490,23 @@ class EventType(StrEnum):
     PLAYER_REMOVED = "player_removed"
     PLAYER_CONFIG_UPDATED = "player_config_updated"
     PLAYER_DSP_CONFIG_UPDATED = "player_dsp_config_updated"
+    PLAYER_OPTIONS_UPDATED = "player_options_updated"
     DSP_PRESETS_UPDATED = "dsp_presets_updated"
     QUEUE_ADDED = "queue_added"
     QUEUE_UPDATED = "queue_updated"
     QUEUE_ITEMS_UPDATED = "queue_items_updated"
     QUEUE_TIME_UPDATED = "queue_time_updated"
     MEDIA_ITEM_PLAYED = "media_item_played"
-    SHUTDOWN = "application_shutdown"
     MEDIA_ITEM_ADDED = "media_item_added"
     MEDIA_ITEM_UPDATED = "media_item_updated"
     MEDIA_ITEM_DELETED = "media_item_deleted"
     PROVIDERS_UPDATED = "providers_updated"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
+    TASKS_UPDATED = "tasks_updated"
+    MUSIC_SYNC_COMPLETED = "music_sync_completed"
     AUTH_SESSION = "auth_session"
+    CORE_STATE_UPDATED = "core_state_updated"
+    SHUTDOWN = "application_shutdown"  # deprecated: replaced by "core_state_updated"
     UNKNOWN = "unknown"
 
     @classmethod
@@ -491,7 +564,14 @@ class ProviderFeature(StrEnum):
 
     # playlist-specific features
     PLAYLIST_TRACKS_EDIT = "playlist_tracks_edit"
+    # PLAYLIST_CREATE is deprecated: replaced by PLAYLIST_CREATE_TRACKS (and others)
+    # TODO: remove this after 2.8 release
     PLAYLIST_CREATE = "playlist_create"
+    PLAYLIST_CREATE_TRACKS = "playlist_create_tracks"  # creation of playlist with tracks supported
+    PLAYLIST_CREATE_AUDIOBOOKS = "playlist_create_audiobooks"  # with audiobooks
+    PLAYLIST_CREATE_PODCAST_EPISODES = "playlist_create_podcast_episodes"  # with podcast episodes
+    PLAYLIST_CREATE_RADIOS = "playlist_create_radios"  # with radios
+    PLAYLIST_CREATE_MIXED = "playlist_create_mixed"  # media types of created playlist may be mixed
 
     #
     # PLAYERPROVIDER FEATURES
@@ -575,8 +655,15 @@ class StreamType(StrEnum):
     # hls: http HLS stream - url provided in path
     HLS = "hls"
 
-    # icy: http stream with icy metadata - url provided in path
+    # icy: http/1.1 stream with icy metadata - url provided in path
     ICY = "icy"
+
+    # shoutcast: legacy shoutcast stream - url provided in path
+    SHOUTCAST = "shoutcast"
+
+    # in_band: radio stream with in-band metadata
+    # (e.g. ogg vorbis comments, flac metadata blocks, opus tags)
+    IN_BAND = "in_band"
 
     # local_file: local file which is accessible by the MA server process
     LOCAL_FILE = "local_file"
@@ -672,3 +759,12 @@ class ProviderStage(StrEnum):
     def _missing_(cls, value: object) -> ProviderStage:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.STABLE
+
+
+class CoreState(StrEnum):
+    """Enum representing the core state of the Music Assistant server."""
+
+    STARTING = "starting"
+    RUNNING = "running"
+    STOPPING = "stopping"
+    STOPPED = "stopped"

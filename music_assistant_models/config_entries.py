@@ -12,7 +12,7 @@ from typing import Any, Final, cast
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import SECURE_STRING_SUBSTITUTE
-from .enums import ConfigEntryType, ProviderType
+from .enums import ConfigEntryType, PlayerType, ProviderType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -112,8 +112,20 @@ class ConfigEntry(DataClassDictMixin):
     action_label: str | None = None
     # immediate_apply: apply changes immediately when changed in the UI
     immediate_apply: bool = False
-    # value: set by the config manager/flow (or in rare cases by the provider itself)
-    value: ConfigValueType = None
+    # requires_reload: indicates that a reload of the provider (or player playback)
+    # is required when this setting is changed
+    requires_reload: bool = False
+    # translation_key: optional translation key for this entry (defaults to settings.{key})
+    translation_key: str | None = None
+    # translation_params: optional parameters for the translation key
+    translation_params: list[str] | None = None
+    # category_translation_key: optional translation key for the category
+    category_translation_key: str | None = None
+    # category_translation_params: optional parameters for the category translation key
+    category_translation_params: list[str] | None = None
+    # advanced: mark this setting as advanced (e.g. hide behind an advanced toggle in frontend)
+    advanced: bool = False
+
     # validate: an optional custom validation callback
     validate: Callable[[ConfigValueType], bool] | None = field(
         default=None,
@@ -122,10 +134,18 @@ class ConfigEntry(DataClassDictMixin):
         repr=False,
     )
 
+    # value: set by the config manager/flow
+    # (or in rare cases by the provider itself during action flows)
+    value: ConfigValueType = None
+
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
         if self.type in UI_ONLY:
             self.required = False
+        if self.translation_key is None:
+            self.translation_key = f"settings.{self.key}"
+        if self.category_translation_key is None:
+            self.category_translation_key = f"settings.category.{self.category}"
 
     def parse_value(
         self,
@@ -313,6 +333,8 @@ class ProviderConfig(Config):
     enabled: bool = True
     # name: an (optional) custom name for this provider instance/config
     name: str | None = None
+    # default_name: default name to use/persist when there is no name set by the user
+    default_name: str | None = None
     # last_error: an optional error message if the provider could not be setup with this config
     last_error: str | None = None
 
@@ -327,10 +349,10 @@ class PlayerConfig(Config):
     enabled: bool = True
     # name: an (optional) custom name for this player
     name: str | None = None
-    # available: boolean to indicate if the player is available
-    available: bool = True
-    # default_name: default name to use when there is no name available
+    # default_name: default name to use/persist when there is no name set by the user
     default_name: str | None = None
+    # player_type: type of player (player, protocol, group etc.)
+    player_type: PlayerType = PlayerType.PLAYER
 
 
 @dataclass

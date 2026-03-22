@@ -7,6 +7,8 @@ from typing import Any
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
+from music_assistant_models.enums import CoreState
+
 from .event import MassEvent
 from .helpers import get_serializable_value
 
@@ -58,6 +60,8 @@ class ServerInfoMessage(DataClassORJSONMixin):
     base_url: str
     homeassistant_addon: bool = False
     onboard_done: bool = False
+    name: str | None = None  # added in schema version 29 (MA v2.8)
+    status: CoreState = CoreState.RUNNING  # added in schema version 29 (MA v2.8)
 
 
 MessageType = (

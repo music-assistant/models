@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Self
 from uuid import uuid4
 
 from mashumaro import DataClassDictMixin
 
+from .constants import EXTRA_ATTRIBUTES_TYPES
 from .enums import MediaType
 from .media_items import (
     ItemMapping,
@@ -35,6 +36,11 @@ class QueueItem(DataClassDictMixin):
     index: int = 0
     # the available flag can be used to mark items that are not available/playable anymore
     available: bool = True
+
+    # extra_attributes: additional attributes for this QueueItem to store/forward
+    # additional data that is not part of the standard model
+    # must be serializable types only
+    extra_attributes: dict[str, EXTRA_ATTRIBUTES_TYPES] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Set default values."""
