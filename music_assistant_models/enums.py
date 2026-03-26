@@ -446,6 +446,42 @@ class PlayerFeature(StrEnum):
         return cls.UNKNOWN
 
 
+class TaskScheduleType(StrEnum):
+    """Enumeration of supported task schedule types."""
+
+    HOURLY = "hourly"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> TaskScheduleType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class TaskStatus(StrEnum):
+    """Enumeration of background task states.
+
+    `PARTIAL_SUCCESS` means the task completed without a fatal exception, but one or more
+    non-fatal issues were reported during the run.
+    """
+
+    IDLE = "idle"
+    PENDING = "pending"
+    RUNNING = "running"
+    SUCCESS = "success"
+    PARTIAL_SUCCESS = "partial_success"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> TaskStatus:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class EventType(StrEnum):
     """Enum with possible Events."""
 
@@ -466,6 +502,8 @@ class EventType(StrEnum):
     MEDIA_ITEM_DELETED = "media_item_deleted"
     PROVIDERS_UPDATED = "providers_updated"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
+    TASKS_UPDATED = "tasks_updated"
+    MUSIC_SYNC_COMPLETED = "music_sync_completed"
     AUTH_SESSION = "auth_session"
     CORE_STATE_UPDATED = "core_state_updated"
     SHUTDOWN = "application_shutdown"  # deprecated: replaced by "core_state_updated"
@@ -623,6 +661,10 @@ class StreamType(StrEnum):
 
     # shoutcast: legacy shoutcast stream - url provided in path
     SHOUTCAST = "shoutcast"
+
+    # in_band: radio stream with in-band metadata
+    # (e.g. ogg vorbis comments, flac metadata blocks, opus tags)
+    IN_BAND = "in_band"
 
     # local_file: local file which is accessible by the MA server process
     LOCAL_FILE = "local_file"
