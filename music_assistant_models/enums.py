@@ -17,7 +17,6 @@ class MediaTypeMeta(EnumType):
             MediaType.ALBUM,
             MediaType.TRACK,
             MediaType.PLAYLIST,
-            MediaType.DYNAMIC_PLAYLIST,
             MediaType.RADIO,
             MediaType.AUDIOBOOK,
             MediaType.PODCAST,
@@ -32,7 +31,6 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     ALBUM = "album"
     TRACK = "track"
     PLAYLIST = "playlist"
-    DYNAMIC_PLAYLIST = "dynamic_playlist"
     RADIO = "radio"
     AUDIOBOOK = "audiobook"
     PODCAST = "podcast"
