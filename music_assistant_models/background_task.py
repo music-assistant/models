@@ -12,7 +12,13 @@ from mashumaro import DataClassDictMixin
 from .enums import TaskScheduleType, TaskStatus
 
 type TaskMetadataValue = (
-    None | bool | int | float | str | list[TaskMetadataValue] | dict[str, TaskMetadataValue]
+    None
+    | bool
+    | int
+    | float
+    | str
+    | list[TaskMetadataValue]
+    | dict[str, TaskMetadataValue]
 )
 type TaskMetadata = dict[str, TaskMetadataValue]
 
