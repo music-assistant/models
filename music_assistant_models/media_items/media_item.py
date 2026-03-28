@@ -279,6 +279,24 @@ class Playlist(MediaItem):
 
 
 @dataclass(kw_only=True)
+class DynamicPlaylist(MediaItem):
+    """Model for a provider-driven dynamic playlist (endless, track-based station).
+
+    Unlike a regular Playlist (finite, pre-loaded), a DynamicPlaylist yields
+    tracks on demand via the provider's ``get_dynamic_playlist_tracks`` method.
+    The queue controller fetches the next track at runtime; the full track list
+    is never expanded upfront.
+
+    Examples: Apple Music Artist Stations, Deezer Flow, Spotify Radio.
+    """
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    media_type: MediaType = MediaType.DYNAMIC_PLAYLIST
+
+
+@dataclass(kw_only=True)
 class Radio(MediaItem):
     """Model for a radio station."""
 
@@ -404,6 +422,15 @@ class RecommendationFolder(BrowseFolder):
 # NOTE: BrowseFolder is not part of the MediaItemType alias, as it lacks
 # provider mappings, i.e. we do not map a provider item to a BrowseFolder.
 MediaItemType = (
-    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | Genre
+    Artist
+    | Album
+    | Track
+    | Radio
+    | Playlist
+    | DynamicPlaylist
+    | Audiobook
+    | Podcast
+    | PodcastEpisode
+    | Genre
 )
 PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
