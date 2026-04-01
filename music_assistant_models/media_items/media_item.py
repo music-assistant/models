@@ -260,6 +260,10 @@ class Playlist(MediaItem):
     media_type: MediaType = MediaType.PLAYLIST
     owner: str = ""
     is_editable: bool = False
+    # When True, the playlist is provider-driven and endless: tracks are yielded on demand
+    # via the provider's get_dynamic_playlist_tracks method instead of being pre-loaded.
+    # Examples: Apple Music Artist Stations, Deezer Flow.
+    is_dynamic: bool = False
 
     # The playlist may support only a single, or a mix of multiple media types. Allowed entries:
     # MediaType.AUDIOBOOK, MediaType.PODCAST_EPISODE, MediaType.RADIO, MediaType.TRACK
