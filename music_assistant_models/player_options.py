@@ -211,3 +211,34 @@ class PlayerOptionTreble(TranslatedPlayerOption):
     """PlayerOptionTreble."""
 
     _translation_key: str = "treble"
+
+
+TRANSLATED_PLAYER_OPTIONS = (
+    PlayerOptionAdaptiveDrc,
+    PlayerOptionBass,
+    PlayerOptionBassExtension,
+    PlayerOptionClearVoice,
+    PlayerOptionDtsDialogueControl,
+    PlayerOptionDialogueLevel,
+    PlayerOptionDialogueLift,
+    PlayerOptionDimmer,
+    PlayerOptionEnhancer,
+    PlayerOptionEqualizerHigh,
+    PlayerOptionEqualizerLow,
+    PlayerOptionEqualizerMid,
+    PlayerOptionEqualizerMode,
+    PlayerOptionExtraBass,
+    PlayerOptionLinkAudioDelay,
+    PlayerOptionLinkControl,
+    PlayerOptionLinkAudioQuality,
+    PlayerOptionPartyMode,
+    PlayerOptionPureDirect,
+    PlayerOptionSleep,
+    PlayerOptionSpeakerA,
+    PlayerOptionSpeakerB,
+    PlayerOptionSubwooferVolume,
+    PlayerOptionSurround3D,
+    PlayerOptionSurroundDecoderType,
+    PlayerOptionToneControlMode,
+    PlayerOptionTreble,
+)
