@@ -10,14 +10,7 @@ from typing import Any
 from mashumaro import DataClassDictMixin
 
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
-from .enums import (
-    IdentifierType,
-    MediaType,
-    PlaybackState,
-    PlayerFeature,
-    PlayerOptionTranslationKey,
-    PlayerType,
-)
+from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
 from .unique_list import UniqueList
 
 
@@ -221,9 +214,7 @@ class PlayerOption(DataClassDictMixin):
 
     # translation_key: optional translation key for this PlayerOption
     # (defaults to player_options.{id})
-    # if a string from PlayerOptionTranslationKey is used, the option is translated
-    # in both MA and HA
-    translation_key: PlayerOptionTranslationKey | str | None = None
+    translation_key: str | None = None
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
 
