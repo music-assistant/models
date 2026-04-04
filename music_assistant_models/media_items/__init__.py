@@ -28,6 +28,7 @@ from .media_item import (
     PodcastEpisode,
     Radio,
     RecommendationFolder,
+    Series,
     Track,
 )
 from .metadata import MediaItemChapter, MediaItemImage, MediaItemLink, MediaItemMetadata
@@ -59,6 +60,7 @@ __all__ = [
     "ProviderMapping",
     "Radio",
     "RecommendationFolder",
+    "Series",
     "Track",
     "UniqueList",
 ]
@@ -75,6 +77,7 @@ class SearchResults(DataClassDictMixin):
     playlists: Sequence[Playlist | ItemMapping] = field(default_factory=list)
     radio: Sequence[Radio | ItemMapping] = field(default_factory=list)
     audiobooks: Sequence[Audiobook | ItemMapping] = field(default_factory=list)
+    series: Sequence[Series | ItemMapping] = field(default_factory=list)
     podcasts: Sequence[Podcast | ItemMapping] = field(default_factory=list)
 
 
@@ -96,6 +99,8 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return Radio.from_dict(media_item)
     if media_item["media_type"] == "audiobook":
         return Audiobook.from_dict(media_item)
+    if media_item["media_type"] == "series":
+        return Series.from_dict(media_item)
     if media_item["media_type"] == "podcast":
         return Podcast.from_dict(media_item)
     if media_item["media_type"] == "podcast_episode":
