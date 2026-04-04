@@ -320,6 +320,21 @@ class Audiobook(MediaItem):
 
 
 @dataclass(kw_only=True)
+class Series(MediaItem):
+    """Model for an Audiobook Series."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    # if progress_percent goes by book, in_progress can be True while
+    # progress_percent is still zero (since we are listening to the first book still)
+    in_progress: bool | None = None  # if the series is in progress
+    progress_percent: int | None = None  # progress between 0 and 100
+
+    media_type: MediaType = MediaType.SERIES
+
+
+@dataclass(kw_only=True)
 class Podcast(MediaItem):
     """Model for a Podcast."""
 
@@ -408,6 +423,15 @@ class RecommendationFolder(BrowseFolder):
 # NOTE: BrowseFolder is not part of the MediaItemType alias, as it lacks
 # provider mappings, i.e. we do not map a provider item to a BrowseFolder.
 MediaItemType = (
-    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | Genre
+    Artist
+    | Album
+    | Track
+    | Radio
+    | Playlist
+    | Audiobook
+    | Series
+    | Podcast
+    | PodcastEpisode
+    | Genre
 )
 PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
