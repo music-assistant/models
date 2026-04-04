@@ -326,9 +326,10 @@ class Series(MediaItem):
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
-    name: str
-    # will be set automatically
-    fully_played: bool = False
+    # if progress_percent goes by book, in_progress can be True while
+    # progress_percent is still zero (since we are listening to the first book still)
+    in_progress: bool | None = None  # if the series is in progress
+    progress_percent: int | None = None  # progress between 0 and 100
 
     media_type: MediaType = MediaType.SERIES
 
