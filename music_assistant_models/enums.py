@@ -558,9 +558,13 @@ class ProviderFeature(StrEnum):
     FAVORITE_AUDIOBOOKS_EDIT = "favorite_audiobooks_edit"
     FAVORITE_PODCASTS_EDIT = "favorite_podcasts_edit"
 
-    # if we can grab 'similar tracks' from the music provider
+    # if we can grab 'similar tracks' from the music provider or plugin
     # used to generate dynamic playlists
     SIMILAR_TRACKS = "similar_tracks"
+
+    # Plugins or Music sources can provide a list of similar artists we
+    # can show in the UI.
+    SIMILAR_ARTISTS = "similar_artists"
 
     # playlist-specific features
     PLAYLIST_TRACKS_EDIT = "playlist_tracks_edit"
@@ -593,6 +597,12 @@ class ProviderFeature(StrEnum):
     # PLUGIN FEATURES
     #
     AUDIO_SOURCE = "audio_source"
+
+    #
+    # OTHER FEATURES (plugin-only)
+    #
+    AI_QUERY = "ai_query"  # provider can handle AI queries (e.g. by calling an LLM)
+    TTS = "tts"  # provider can handle text-to-speech requests
 
     # fallback
     UNKNOWN = "unknown"
