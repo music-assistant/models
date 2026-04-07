@@ -599,7 +599,7 @@ class ProviderFeature(StrEnum):
     AUDIO_SOURCE = "audio_source"
 
     #
-    # OTHER FEATURES
+    # OTHER FEATURES (plugin-only)
     #
     AI_QUERY = "ai_query"  # provider can handle AI queries (e.g. by calling an LLM)
     TTS = "tts"  # provider can handle text-to-speech requests
