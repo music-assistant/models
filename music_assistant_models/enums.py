@@ -558,7 +558,7 @@ class ProviderFeature(StrEnum):
     FAVORITE_AUDIOBOOKS_EDIT = "favorite_audiobooks_edit"
     FAVORITE_PODCASTS_EDIT = "favorite_podcasts_edit"
 
-    # if we can grab 'similar tracks' from the music provider
+    # if we can grab 'similar tracks' from the music provider or plugin
     # used to generate dynamic playlists
     SIMILAR_TRACKS = "similar_tracks"
 
