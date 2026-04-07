@@ -564,7 +564,7 @@ class ProviderFeature(StrEnum):
     # used to generate dynamic playlists
     SIMILAR_TRACKS = "similar_tracks"
 
-    # Plugins or Music sources can provider a list of similar artists we
+    # Plugins or Music sources can provide a list of similar artists we
     # can show in the UI.
     SIMILAR_ARTISTS = "similar_artists"
 
