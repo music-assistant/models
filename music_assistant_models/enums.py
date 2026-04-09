@@ -362,12 +362,19 @@ class PlayerType(StrEnum):
     group: A (dedicated) (sync)group player or (universal) playergroup.
     protocol: A generic protocol player (e.g. AirPlay/Chromecast/DLNA) without native support.
               These are wrapped by a Universal Player and hidden from the UI.
+    display: A display-only device that shows metadata (e.g. album art, track info)
+             but does not play audio.
+    visualizer: A device that visualizes music on a screen (e.g. animations, LED matrices).
+    light: A device that visualizes music through lighting (e.g. Hue sync, WLED).
     """
 
     PLAYER = "player"
     STEREO_PAIR = "stereo_pair"
     GROUP = "group"
     PROTOCOL = "protocol"
+    DISPLAY = "display"
+    VISUALIZER = "visualizer"
+    LIGHT = "light"
     UNKNOWN = "unknown"
 
     @classmethod
