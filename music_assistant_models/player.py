@@ -156,7 +156,7 @@ class PlayerSoundMode(DataClassDictMixin):
 
     # optional translation key
     # defaults to id
-    translation_key: str | None = None
+    translation_key: str = ""
 
     def __hash__(self) -> int:
         """Return custom hash."""
@@ -164,7 +164,7 @@ class PlayerSoundMode(DataClassDictMixin):
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
-        if self.translation_key is None:
+        if not self.translation_key:
             self.translation_key = self.id
 
 
@@ -198,7 +198,7 @@ class PlayerOptionEntry(DataClassDictMixin):
     value: PlayerOptionValueType
     # translation_key: optional translation key for this PlayerOptionEntry
     # defaults to key
-    translation_key: str | None = None
+    translation_key: str = ""
 
     def __hash__(self) -> int:
         """Return custom hash."""
@@ -206,7 +206,7 @@ class PlayerOptionEntry(DataClassDictMixin):
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
-        if self.translation_key is None:
+        if not self.translation_key:
             self.translation_key = self.key
 
 
@@ -224,7 +224,7 @@ class PlayerOption(DataClassDictMixin):
 
     # translation_key: optional translation key for this PlayerOption
     # defaults to key
-    translation_key: str | None = None
+    translation_key: str = ""
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
 
@@ -245,7 +245,7 @@ class PlayerOption(DataClassDictMixin):
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
-        if self.translation_key is None:
+        if not self.translation_key:
             self.translation_key = self.key
 
         # Basic type checks
