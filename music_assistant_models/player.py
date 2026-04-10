@@ -9,7 +9,13 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin
 
-from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
+from .constants import (
+    EXTRA_ATTRIBUTES_TYPES,
+    PLAYER_CONTROL_NONE,
+    TRANSLATION_PREFIX_PLAYER_OPTION_ENTRIES,
+    TRANSLATION_PREFIX_PLAYER_OPTIONS,
+    TRANSLATION_PREFIX_SOUND_MODES,
+)
 from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
 from .unique_list import UniqueList
 
@@ -156,14 +162,23 @@ class PlayerSoundMode(DataClassDictMixin):
 
     translation_key: str | None = None
 
+    # set automatically, do not overwrite
+    ha_translation_key: str = ""
+
     def __hash__(self) -> int:
         """Return custom hash."""
         return hash(self.id)
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
-        if self.translation_key is None:
-            self.translation_key = f"player_sound_mode.{self.id}"
+        if not self.translation_key:
+            self.translation_key = f"{TRANSLATION_PREFIX_SOUND_MODES}{self.id}"
+        elif not self.translation_key.startswith(TRANSLATION_PREFIX_SOUND_MODES):
+            raise ValueError(TRANSLATION_PREFIX_SOUND_MODES)
+
+        if self.ha_translation_key:
+            raise ValueError("Home Assistant translation key must not be set.")
+        self.ha_translation_key = self.translation_key[len(TRANSLATION_PREFIX_SOUND_MODES) :]
 
 
 class PlayerOptionType(StrEnum):
@@ -194,10 +209,29 @@ class PlayerOptionEntry(DataClassDictMixin):
     type: PlayerOptionType
 
     value: PlayerOptionValueType
+    translation_key: str | None = None
+
+    # set automatically, do not set.
+    ha_translation_key: str = ""
 
     def __hash__(self) -> int:
         """Return custom hash."""
         return hash(self.key)
+
+    def __post_init__(self) -> None:
+        """Post init."""
+        if not self.translation_key:
+            self.translation_key = f"{TRANSLATION_PREFIX_PLAYER_OPTION_ENTRIES}{self.key}"
+        elif not self.translation_key.startswith(TRANSLATION_PREFIX_PLAYER_OPTION_ENTRIES):
+            raise ValueError(
+                f"Translation key must start with {TRANSLATION_PREFIX_PLAYER_OPTION_ENTRIES}."
+            )
+
+        if self.ha_translation_key:
+            raise ValueError("Home Assistant translation key must not be set.")
+        self.ha_translation_key = self.translation_key[
+            len(TRANSLATION_PREFIX_PLAYER_OPTION_ENTRIES) :
+        ]
 
 
 @dataclass(kw_only=True)
@@ -217,6 +251,8 @@ class PlayerOption(DataClassDictMixin):
     translation_key: str | None = None
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
+    # set automatically, do not overwrite
+    ha_translation_key: str = ""
 
     # current value of the option, see PlayerOptionValueType for serialization order.
     value: PlayerOptionValueType
@@ -235,8 +271,16 @@ class PlayerOption(DataClassDictMixin):
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
-        if self.translation_key is None:
-            self.translation_key = f"player_options.{self.key}"
+        if not self.translation_key:
+            self.translation_key = f"{TRANSLATION_PREFIX_PLAYER_OPTIONS}{self.key}"
+        elif not self.translation_key.startswith(TRANSLATION_PREFIX_PLAYER_OPTIONS):
+            raise ValueError(
+                f'Translation key must start with "{TRANSLATION_PREFIX_PLAYER_OPTIONS}"!'
+            )
+
+        if self.ha_translation_key:
+            raise ValueError("Home Assistant translation key must not be set.")
+        self.ha_translation_key = self.translation_key[len(TRANSLATION_PREFIX_PLAYER_OPTIONS) :]
 
         # Basic type checks
         if not isinstance(self.value, PlayerOptionTypeMap[self.type]):
