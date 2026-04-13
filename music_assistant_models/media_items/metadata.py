@@ -69,6 +69,20 @@ class MediaItemChapter(DataClassDictMixin):
         return hash(self.position)
 
 
+@dataclass(frozen=True, kw_only=True)
+class MediaItemSeries(DataClassDictMixin):
+    """Model for a MediaItem's series."""
+
+    title: str
+    # sequence is used for sorting
+    # we will first sort by number, and then by alphabet
+    sequence: str | None = None
+
+    def __hash__(self) -> int:
+        """Return custom hash."""
+        return hash(self.title)
+
+
 @dataclass(kw_only=True)
 class MediaItemMetadata(DataClassDictMixin):
     """Model for a MediaItem's metadata."""
@@ -95,10 +109,8 @@ class MediaItemMetadata(DataClassDictMixin):
     # chapters is a list of available chapters, sorted by position
     # most commonly used for audiobooks and podcast episodes
     chapters: list[MediaItemChapter] | None = None
-    # the title of an (audio)book series
-    series: str | None = None
-    # the position the audiobook has in that series
-    series_position: int | None = None
+    # series information
+    series: UniqueList[MediaItemSeries] | None = None
     # last_refresh: timestamp the (full) metadata was last collected
     last_refresh: int | None = None
 
