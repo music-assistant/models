@@ -19,7 +19,6 @@ class MediaTypeMeta(EnumType):
             MediaType.PLAYLIST,
             MediaType.RADIO,
             MediaType.AUDIOBOOK,
-            MediaType.SERIES,
             MediaType.PODCAST,
             MediaType.GENRE,
         ]
@@ -34,7 +33,6 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     PLAYLIST = "playlist"
     RADIO = "radio"
     AUDIOBOOK = "audiobook"
-    SERIES = "series"
     PODCAST = "podcast"
     PODCAST_EPISODE = "podcast_episode"
     FOLDER = "folder"
@@ -536,7 +534,6 @@ class ProviderFeature(StrEnum):
     LIBRARY_PLAYLISTS = "library_playlists"
     LIBRARY_RADIOS = "library_radios"
     LIBRARY_AUDIOBOOKS = "library_audiobooks"
-    LIBRARY_SERIES = "library_series"
     LIBRARY_PODCASTS = "library_podcasts"
 
     # additional library features
