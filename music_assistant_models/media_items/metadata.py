@@ -95,6 +95,10 @@ class MediaItemMetadata(DataClassDictMixin):
     # chapters is a list of available chapters, sorted by position
     # most commonly used for audiobooks and podcast episodes
     chapters: list[MediaItemChapter] | None = None
+    # the title of an (audio)book series
+    series: str | None = None
+    # the position the audiobook has in that series
+    series_position: int | None = None
     # last_refresh: timestamp the (full) metadata was last collected
     last_refresh: int | None = None
 
