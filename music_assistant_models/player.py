@@ -154,7 +154,9 @@ class PlayerSoundMode(DataClassDictMixin):
     # passive: this sound mode can not be selected/activated by MA/the user
     passive: bool = False
 
-    translation_key: str | None = None
+    # optional translation key
+    # defaults to id
+    translation_key: str = ""
 
     def __hash__(self) -> int:
         """Return custom hash."""
@@ -162,8 +164,8 @@ class PlayerSoundMode(DataClassDictMixin):
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
-        if self.translation_key is None:
-            self.translation_key = f"player_sound_mode.{self.id}"
+        if not self.translation_key:
+            self.translation_key = self.id
 
 
 class PlayerOptionType(StrEnum):
@@ -194,10 +196,18 @@ class PlayerOptionEntry(DataClassDictMixin):
     type: PlayerOptionType
 
     value: PlayerOptionValueType
+    # translation_key: optional translation key for this PlayerOptionEntry
+    # defaults to key
+    translation_key: str = ""
 
     def __hash__(self) -> int:
         """Return custom hash."""
         return hash(self.key)
+
+    def __post_init__(self) -> None:
+        """Run some basic sanity checks after init."""
+        if not self.translation_key:
+            self.translation_key = self.key
 
 
 @dataclass(kw_only=True)
@@ -213,8 +223,8 @@ class PlayerOption(DataClassDictMixin):
     type: PlayerOptionType
 
     # translation_key: optional translation key for this PlayerOption
-    # (defaults to player_options.{id})
-    translation_key: str | None = None
+    # defaults to key
+    translation_key: str = ""
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
 
@@ -235,8 +245,8 @@ class PlayerOption(DataClassDictMixin):
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
-        if self.translation_key is None:
-            self.translation_key = f"player_options.{self.key}"
+        if not self.translation_key:
+            self.translation_key = self.key
 
         # Basic type checks
         if not isinstance(self.value, PlayerOptionTypeMap[self.type]):
