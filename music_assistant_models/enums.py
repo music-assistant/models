@@ -151,6 +151,20 @@ class AlbumType(StrEnum):
         return cls.UNKNOWN
 
 
+class ArtistType(StrEnum):
+    """Enum for Artist type."""
+
+    ARTIST = "artist"  # regular music artist
+    AUTHOR = "author"  # author of an audiobook
+    NARRATOR = "narrator"  # narrator of an audiobook
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ArtistType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class ContentType(StrEnum):
     """Enum with audio content/container types supported by ffmpeg."""
 
