@@ -76,7 +76,7 @@ class MediaItemSeries(DataClassDictMixin):
     title: str
     # sequence is used for sorting
     # we will first sort by number, and then by alphabet
-    sequence: str | None = None
+    sequence: float | str | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""
