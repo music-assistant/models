@@ -75,7 +75,7 @@ class MediaItemSeries(DataClassDictMixin):
 
     title: str
     # sequence is used for sorting
-    # we will first sort by number, and then by alphabet
+    # we will first sort by number, and then alphabetically
     sequence: float | str | None = None
 
     def __hash__(self) -> int:
@@ -109,7 +109,6 @@ class MediaItemMetadata(DataClassDictMixin):
     # chapters is a list of available chapters, sorted by position
     # most commonly used for audiobooks and podcast episodes
     chapters: list[MediaItemChapter] | None = None
-    # series information
     series: UniqueList[MediaItemSeries] | None = None
     # last_refresh: timestamp the (full) metadata was last collected
     last_refresh: int | None = None
