@@ -308,8 +308,8 @@ class Audiobook(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     publisher: str | None = None
-    authors: UniqueList[str] = field(default_factory=UniqueList)
-    narrators: UniqueList[str] = field(default_factory=UniqueList)
+    authors: UniqueList[str | Artist] = field(default_factory=UniqueList)
+    narrators: UniqueList[str | Artist] = field(default_factory=UniqueList)
     duration: int = 0
     # resume point info
     # set to None if unknown/unsupported by provider
