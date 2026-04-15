@@ -560,6 +560,8 @@ class ProviderFeature(StrEnum):
     # additional library features
     ARTIST_ALBUMS = "artist_albums"
     ARTIST_TOPTRACKS = "artist_toptracks"
+    AUTHOR_AUDIOBOOKS = "author_audiobooks"
+    NARRATOR_AUDIOBOOKS = "narrator_audiobooks"
 
     # library edit (=add/remove) feature per mediatype
     LIBRARY_ARTISTS_EDIT = "library_artists_edit"
