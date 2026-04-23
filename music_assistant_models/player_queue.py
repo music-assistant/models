@@ -124,5 +124,10 @@ class PlayerQueue(DataClassDictMixin):
             for x in data.get("enqueued_media_items", [])
             if isinstance(x, dict) and not isinstance(item := media_from_dict(x), ItemMapping)
         ]
+        self.radio_source = [
+            item
+            for x in data.get("radio_source", [])
+            if isinstance(x, dict) and not isinstance(item := media_from_dict(x), ItemMapping)
+        ]
         self.userid = data.get("userid")
         return self
