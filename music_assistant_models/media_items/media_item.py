@@ -202,7 +202,7 @@ class Artist(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     media_type: MediaType = MediaType.ARTIST
-    artist_type: ArtistType = ArtistType.ARTIST
+    artist_type: ArtistType = ArtistType.SINGER
 
 
 @dataclass(kw_only=True)

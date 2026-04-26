@@ -154,7 +154,7 @@ class AlbumType(StrEnum):
 class ArtistType(StrEnum):
     """Enum for Artist type."""
 
-    ARTIST = "artist"  # regular music artist
+    SINGER = "singer"  # regular music artist
     AUTHOR = "author"  # author of an audiobook
     NARRATOR = "narrator"  # narrator of an audiobook
     UNKNOWN = "unknown"
