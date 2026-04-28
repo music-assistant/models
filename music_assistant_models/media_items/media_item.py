@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from mashumaro import DataClassDictMixin
 
-from music_assistant_models.enums import AlbumType, ExternalID, ImageType, MediaType
+from music_assistant_models.enums import AlbumType, ArtistType, ExternalID, ImageType, MediaType
 from music_assistant_models.errors import InvalidDataError
 from music_assistant_models.helpers import (
     create_sort_name,
@@ -202,6 +202,7 @@ class Artist(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     media_type: MediaType = MediaType.ARTIST
+    artist_type: ArtistType = ArtistType.SINGER
 
 
 @dataclass(kw_only=True)
@@ -307,8 +308,8 @@ class Audiobook(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     publisher: str | None = None
-    authors: UniqueList[str] = field(default_factory=UniqueList)
-    narrators: UniqueList[str] = field(default_factory=UniqueList)
+    authors: UniqueList[str | Artist] = field(default_factory=UniqueList)
+    narrators: UniqueList[str | Artist] = field(default_factory=UniqueList)
     duration: int = 0
     # resume point info
     # set to None if unknown/unsupported by provider
