@@ -528,6 +528,7 @@ class EventType(StrEnum):
     AUTH_SESSION = "auth_session"
     CORE_STATE_UPDATED = "core_state_updated"
     SHUTDOWN = "application_shutdown"  # deprecated: replaced by "core_state_updated"
+    RECOMMENDATIONS_UPDATED = "recommendations_updated"
     UNKNOWN = "unknown"
 
     @classmethod
