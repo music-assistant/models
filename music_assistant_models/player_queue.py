@@ -21,7 +21,6 @@ class PlayLogEntry:
     queue_item_id: str
     duration: int | None = None
     seconds_streamed: float | None = None
-    playback_speed: float = 1.0
 
 
 @dataclass
