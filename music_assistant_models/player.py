@@ -51,6 +51,14 @@ class DeviceInfo(DataClassDictMixin):
     # Maps IdentifierType to value (e.g., MAC_ADDRESS -> "AA:BB:CC:DD:EE:FF")
     identifiers: dict[IdentifierType, str] = field(default_factory=dict)
 
+    # Hardware connections mirroring HA's device_registry shape — a set of
+    # (connection_type, value) tuples. Provider-defined; HA's MA integration
+    # forwards verbatim into device_registry. Standard HA connection types
+    # ("mac", "bluetooth", "zigbee", "upnp", "cast") are recommended but
+    # not enforced — any string is accepted so new transports work without
+    # taxonomy changes.
+    connections: set[tuple[str, str]] = field(default_factory=set)
+
     @property
     def ip_address(self) -> str | None:
         """Get IP address from identifiers."""
@@ -96,6 +104,30 @@ class DeviceInfo(DataClassDictMixin):
         if identifier_type == IdentifierType.MAC_ADDRESS:
             value = value.upper().replace("-", ":")
         self.identifiers[identifier_type] = value
+
+    def add_connection(self, connection_type: str, value: str) -> None:
+        """Add a hardware connection tuple, normalizing MAC-shaped values.
+
+        Mirrors Home Assistant's ``device_registry.DeviceInfo.connections``
+        shape so MA's HA integration can forward the set verbatim. MAC-shaped
+        values are normalized to HA's canonical ``aa:bb:cc:dd:ee:ff`` form
+        regardless of input separator (``AA:BB``, ``aa-bb``, ``AABBCC``);
+        all other connection types are stored as-is so future transports
+        (zigbee EUI-64, Matter device-id, Thread MLE, …) work without
+        taxonomy changes.
+
+        :param connection_type: HA-style connection type — ``"mac"``,
+            ``"bluetooth"``, ``"zigbee"``, ``"upnp"``, ``"cast"`` or any
+            provider-defined string.
+        :param value: The address; empty values are silently ignored.
+        """
+        if not value:
+            return
+        if connection_type in {"mac", "bluetooth"}:
+            cleaned = value.replace(":", "").replace("-", "").lower()
+            if len(cleaned) == 12 and all(ch in "0123456789abcdef" for ch in cleaned):
+                value = ":".join(cleaned[i : i + 2] for i in range(0, 12, 2))
+        self.connections.add((connection_type, value))
 
 
 @dataclass(kw_only=True)
