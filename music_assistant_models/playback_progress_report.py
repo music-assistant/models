@@ -38,3 +38,4 @@ class MediaItemPlaybackProgressReport(DataClassDictMixin):
     image_url: str | None = None
     version: str | None = None
     userid: str | None = None  # the user(id) that initiated the playback
+    playerid: str | None = None  # the playerid that is playing the media
