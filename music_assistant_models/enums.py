@@ -620,6 +620,7 @@ class ProviderFeature(StrEnum):
     # PLUGIN FEATURES
     #
     AUDIO_SOURCE = "audio_source"
+    AUDIO_OVERLAY = "audio_overlay"  # plugin can mix an audio overlay into queue playback
 
     #
     # OTHER FEATURES (plugin-only)
