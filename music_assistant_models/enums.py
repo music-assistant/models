@@ -30,6 +30,7 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     ARTIST = "artist"
     ALBUM = "album"
     TRACK = "track"
+    WORK = "work"  # a musical composition (classical etc.), distinct from any specific recording
     PLAYLIST = "playlist"
     RADIO = "radio"
     AUDIOBOOK = "audiobook"
@@ -75,6 +76,7 @@ class ExternalID(StrEnum):
     MB_RELEASEGROUP = "musicbrainz_releasegroupid"  # MusicBrainz ReleaseGroupID
     MB_TRACK = "musicbrainz_trackid"  # MusicBrainz Track ID
     MB_RECORDING = "musicbrainz_recordingid"  # MusicBrainz Recording ID
+    MB_WORK = "musicbrainz_workid"
 
     ISRC = "isrc"  # used to identify unique recordings
     BARCODE = "barcode"  # EAN-13 barcode for identifying albums
@@ -107,6 +109,7 @@ class ExternalID(StrEnum):
             ExternalID.MB_TRACK,
             ExternalID.MB_ARTIST,
             ExternalID.MB_RECORDING,
+            ExternalID.MB_WORK,
         )
 
 
@@ -193,6 +196,49 @@ class ArtistType(StrEnum):
     def _missing_(cls, value: object) -> ArtistType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
+
+
+class ArtistRole(StrEnum):
+    """Role an artist plays on a track or album credit."""
+
+    MAIN_ARTIST = "main_artist"  # headline credit; equivalent to existing `artists` list
+    COMPOSER = "composer"
+    LYRICIST = "lyricist"
+    ARRANGER = "arranger"
+    CONDUCTOR = "conductor"
+    ORCHESTRA = "orchestra"  # whole-orchestra credit
+    ENSEMBLE = "ensemble"  # chamber group, band, etc.
+    CHOIR = "choir"
+    SOLOIST = "soloist"  # featured performer (usually with an instrument)
+    PERFORMER = "performer"  # any other performing musician
+
+    @classmethod
+    def _missing_(cls, value: object) -> ArtistRole:  # noqa: ARG003
+        """Fall back to PERFORMER for unknown values added in future versions."""
+        return cls.PERFORMER
+
+
+class WorkType(StrEnum):
+    """High-level work classification, mirrors the MusicBrainz Work `type` field."""
+
+    SYMPHONY = "symphony"
+    CONCERTO = "concerto"
+    SONATA = "sonata"
+    SUITE = "suite"
+    OPERA = "opera"
+    ORATORIO = "oratorio"
+    CANTATA = "cantata"
+    MASS = "mass"
+    SONG_CYCLE = "song_cycle"
+    QUARTET = "quartet"  # string quartet, etc.
+    OVERTURE = "overture"
+    BALLET = "ballet"
+    OTHER = "other"
+
+    @classmethod
+    def _missing_(cls, value: object) -> WorkType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.OTHER
 
 
 class ContentType(StrEnum):
