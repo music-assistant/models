@@ -18,6 +18,7 @@ from .media_item import (
     Artist,
     Audiobook,
     BrowseFolder,
+    Credit,
     Genre,
     ItemMapping,
     MediaItem,
@@ -29,6 +30,7 @@ from .media_item import (
     Radio,
     RecommendationFolder,
     Track,
+    Work,
 )
 from .metadata import MediaItemChapter, MediaItemImage, MediaItemLink, MediaItemMetadata
 from .provider_mapping import ProviderMapping
@@ -39,6 +41,7 @@ __all__ = [
     "AudioFormat",
     "Audiobook",
     "BrowseFolder",
+    "Credit",
     "Genre",
     "ItemMapping",
     "MediaItem",
@@ -61,6 +64,7 @@ __all__ = [
     "RecommendationFolder",
     "Track",
     "UniqueList",
+    "Work",
 ]
 
 
@@ -90,6 +94,8 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return Genre.from_dict(media_item)
     if media_item["media_type"] == "track":
         return Track.from_dict(media_item)
+    if media_item["media_type"] == "work":
+        return Work.from_dict(media_item)
     if media_item["media_type"] == "playlist":
         return Playlist.from_dict(media_item)
     if media_item["media_type"] == "radio":

@@ -9,7 +9,15 @@ from typing import TYPE_CHECKING, Any, cast
 
 from mashumaro import DataClassDictMixin
 
-from music_assistant_models.enums import AlbumType, ArtistType, ExternalID, ImageType, MediaType
+from music_assistant_models.enums import (
+    AlbumType,
+    ArtistRole,
+    ArtistType,
+    ExternalID,
+    ImageType,
+    MediaType,
+    WorkType,
+)
 from music_assistant_models.errors import InvalidDataError
 from music_assistant_models.helpers import (
     create_sort_name,
@@ -79,6 +87,8 @@ class _MediaItemBase(DataClassDictMixin):
             return self.get_external_id(ExternalID.MB_ALBUM)
         if self.media_type == MediaType.TRACK:
             return self.get_external_id(ExternalID.MB_RECORDING)
+        if self.media_type == MediaType.WORK:
+            return self.get_external_id(ExternalID.MB_WORK)
         return None
 
     @mbid.setter
@@ -94,6 +104,8 @@ class _MediaItemBase(DataClassDictMixin):
             # and not the track id (as that is just the reference
             #  of the recording on a specific album)
             self.add_external_id(ExternalID.MB_RECORDING, value)
+        elif self.media_type == MediaType.WORK:
+            self.add_external_id(ExternalID.MB_WORK, value)
             return
 
     def __hash__(self) -> int:
@@ -206,6 +218,16 @@ class Artist(MediaItem):
 
 
 @dataclass(kw_only=True)
+class Credit(DataClassDictMixin):
+    """A single role-tagged artist credit on a track or album."""
+
+    artist: Artist | ItemMapping
+    role: ArtistRole
+    instrument: str | None = None  # only meaningful for SOLOIST / PERFORMER
+    position: int = 0  # ordering within a role group; lower first
+
+
+@dataclass(kw_only=True)
 class Album(MediaItem):
     """Model for an album."""
 
@@ -216,11 +238,30 @@ class Album(MediaItem):
     year: int | None = None
     artists: UniqueList[Artist | ItemMapping] = field(default_factory=UniqueList)
     album_type: AlbumType = AlbumType.UNKNOWN
+    credits: list[Credit] = field(default_factory=list)
 
     @property
     def artist_str(self) -> str:
         """Return (combined) artist string for track."""
         return "/".join(x.name for x in self.artists)
+
+    @property
+    def composers(self) -> list[Artist | ItemMapping]:
+        """Return artists credited as composers, in tagged order."""
+        return [
+            c.artist
+            for c in sorted(self.credits, key=lambda x: x.position)
+            if c.role == ArtistRole.COMPOSER
+        ]
+
+    @property
+    def conductors(self) -> list[Artist | ItemMapping]:
+        """Return artists credited as conductors, in tagged order."""
+        return [
+            c.artist
+            for c in sorted(self.credits, key=lambda x: x.position)
+            if c.role == ArtistRole.CONDUCTOR
+        ]
 
 
 @dataclass(kw_only=True)
@@ -237,6 +278,11 @@ class Track(MediaItem):
     album: Album | ItemMapping | None = None  # required for album tracks
     disc_number: int = 0  # required for album tracks
     track_number: int = 0  # required for album tracks
+    credits: list[Credit] = field(default_factory=list)
+    work: ItemMapping | None = None
+    movement_number: int | None = None
+    movement_total: int | None = None
+    movement_name: str | None = None  # e.g. "I. Allegro con brio"
 
     @property
     def image(self) -> MediaItemImage | None:
@@ -249,6 +295,55 @@ class Track(MediaItem):
     def artist_str(self) -> str:
         """Return (combined) artist string for track."""
         return "/".join(x.name for x in self.artists)
+
+    @property
+    def composers(self) -> list[Artist | ItemMapping]:
+        """Return artists credited as composers, in tagged order."""
+        return [
+            c.artist
+            for c in sorted(self.credits, key=lambda x: x.position)
+            if c.role == ArtistRole.COMPOSER
+        ]
+
+    @property
+    def conductors(self) -> list[Artist | ItemMapping]:
+        """Return artists credited as conductors, in tagged order."""
+        return [
+            c.artist
+            for c in sorted(self.credits, key=lambda x: x.position)
+            if c.role == ArtistRole.CONDUCTOR
+        ]
+
+    @property
+    def performers_with_instruments(self) -> list[tuple[Artist | ItemMapping, str | None]]:
+        """Return performers and soloists with their instrument, in tagged order."""
+        return [
+            (c.artist, c.instrument)
+            for c in sorted(self.credits, key=lambda x: x.position)
+            if c.role in (ArtistRole.PERFORMER, ArtistRole.SOLOIST)
+        ]
+
+
+@dataclass(kw_only=True)
+class Work(MediaItem):
+    """
+    Model for a musical Work (composition).
+
+    A Work is a composition — distinct from any specific recording of it.
+    Multiple recordings of the same work share a Work entity (matched by
+    MusicBrainz Work MBID where available). Movements of a multi-part
+    work link to the parent Work via parent_work.
+    """
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    media_type: MediaType = MediaType.WORK
+    composers: UniqueList[Artist | ItemMapping] = field(default_factory=UniqueList)
+    catalog_numbers: list[str] = field(default_factory=list)  # ["Op. 67", "BWV 1041", "K. 525"]
+    work_type: WorkType | None = None
+    parent_work: ItemMapping | None = None  # for movements / sub-works
+    arrangement_of: UniqueList[ItemMapping] = field(default_factory=UniqueList)
 
 
 @dataclass(kw_only=True)
@@ -409,6 +504,6 @@ class RecommendationFolder(BrowseFolder):
 # NOTE: BrowseFolder is not part of the MediaItemType alias, as it lacks
 # provider mappings, i.e. we do not map a provider item to a BrowseFolder.
 MediaItemType = (
-    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | Genre
+    Artist | Album | Track | Work | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | Genre
 )
 PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
