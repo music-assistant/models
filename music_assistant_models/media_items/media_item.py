@@ -324,6 +324,7 @@ class Artist(MediaItem):
 
     media_type: MediaType = MediaType.ARTIST
     artist_type: ArtistType = ArtistType.SINGER
+    is_classical: bool = False
 
 
 @dataclass(kw_only=True)
@@ -348,6 +349,7 @@ class Album(MediaItem):
     artists: UniqueList[Artist | ItemMapping] = field(default_factory=UniqueList)
     album_type: AlbumType = AlbumType.UNKNOWN
     credits: list[Credit] = field(default_factory=list)
+    is_classical: bool = False
 
     @property
     def artist_str(self) -> str:
@@ -394,6 +396,7 @@ class Track(MediaItem):
     movement_number: int | None = None
     movement_total: int | None = None
     movement_name: str | None = None  # e.g. "I. Allegro con brio"
+    is_classical: bool = False
 
     @property
     def image(self) -> MediaItemImage | None:
