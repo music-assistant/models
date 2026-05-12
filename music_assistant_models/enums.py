@@ -211,6 +211,18 @@ class WorkType(StrEnum):
         return cls.OTHER
 
 
+class Period(StrEnum):
+    """Classical music period / era."""
+
+    MEDIEVAL = "medieval"
+    RENAISSANCE = "renaissance"
+    BAROQUE = "baroque"
+    CLASSICAL = "classical"
+    ROMANTIC = "romantic"
+    MODERN = "modern"
+    CONTEMPORARY = "contemporary"
+
+
 class ContentType(StrEnum):
     """Enum with audio content/container types supported by ffmpeg."""
 
