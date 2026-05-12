@@ -16,6 +16,7 @@ from music_assistant_models.enums import (
     ExternalID,
     ImageType,
     MediaType,
+    Period,
     WorkType,
 )
 from music_assistant_models.errors import InvalidDataError
@@ -215,6 +216,7 @@ class Artist(MediaItem):
 
     media_type: MediaType = MediaType.ARTIST
     artist_type: ArtistType = ArtistType.SINGER
+    period: Period | None = None
     is_classical: bool = False
 
 
