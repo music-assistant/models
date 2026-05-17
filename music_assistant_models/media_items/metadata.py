@@ -74,6 +74,8 @@ class MediaItemMetadata(DataClassDictMixin):
     """Model for a MediaItem's metadata."""
 
     description: str | None = None
+    # ISO 639-1 language code for `description`
+    description_language: str | None = None
     review: str | None = None
     explicit: bool | None = None
     # NOTE: images is a list of available images, sorted by preference
