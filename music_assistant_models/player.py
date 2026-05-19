@@ -11,7 +11,7 @@ from mashumaro import DataClassDictMixin
 
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
 from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
-from .media_items.metadata import MediaItemPalette
+from .media_items import MediaItemPalette
 from .unique_list import UniqueList
 
 
