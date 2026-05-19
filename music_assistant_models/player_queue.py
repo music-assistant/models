@@ -50,8 +50,7 @@ class PlayerQueue(DataClassDictMixin):
 
     flow_mode: bool = False
     resume_pos: int = 0
-    # True when a single dynamic playlist (Playlist.is_dynamic) is the active radio source.
-    # Set by the server on every radio_source update so clients can read this directly.
+    # True if exactly one playlist in the queue is dynamic; set by the server.
     is_dynamic: bool = False
 
     # extra_attributes: additional attributes for this player_queue to store/forward
