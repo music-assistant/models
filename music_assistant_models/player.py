@@ -11,6 +11,7 @@ from mashumaro import DataClassDictMixin
 
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
 from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
+from .media_items import MediaItemPalette
 from .unique_list import UniqueList
 
 
@@ -108,6 +109,7 @@ class PlayerMedia(DataClassDictMixin):
     artist: str | None = None  # optional
     album: str | None = None  # optional
     image_url: str | None = None  # optional
+    palette: MediaItemPalette | None = None  # optional
     duration: int | None = None  # optional
     source_id: str | None = None  # optional (ID of the source, may be a queue id)
     queue_item_id: str | None = None  # only present for requests from queue controller

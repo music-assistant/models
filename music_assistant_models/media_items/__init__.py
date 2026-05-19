@@ -30,7 +30,13 @@ from .media_item import (
     RecommendationFolder,
     Track,
 )
-from .metadata import MediaItemChapter, MediaItemImage, MediaItemLink, MediaItemMetadata
+from .metadata import (
+    MediaItemChapter,
+    MediaItemImage,
+    MediaItemLink,
+    MediaItemMetadata,
+    MediaItemPalette,
+)
 from .provider_mapping import ProviderMapping
 
 __all__ = [
@@ -46,6 +52,7 @@ __all__ = [
     "MediaItemImage",
     "MediaItemLink",
     "MediaItemMetadata",
+    "MediaItemPalette",
     "MediaItemType",
     "Metadata",
     "MetadataProvider",
