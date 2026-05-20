@@ -123,6 +123,17 @@ class ResourceTemporarilyUnavailable(MusicAssistantError):
     error_code = 17
 
 
+class ResourceBusyError(MusicAssistantError):
+    """
+    Raised when an exclusive resource is already in use.
+
+    Used by plugin providers when an exclusive AudioSource is requested
+    while it is already streaming to another player/queue.
+    """
+
+    error_code = 24
+
+
 class ProviderPermissionDenied(MusicAssistantError):
     """Error thrown when a provider action is denied because of permissions."""
 

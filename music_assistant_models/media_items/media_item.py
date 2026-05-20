@@ -364,6 +364,43 @@ class SoundEffect(MediaItem):
 
 
 @dataclass(kw_only=True)
+class AudioSource(MediaItem):
+    """
+    Model for a live audio source provided by a plugin.
+
+    Examples include an AirPlay receiver, Spotify Connect device,
+    DLNA renderer, VBAN receiver, or a hardware bridge favorite.
+
+    Conceptually behaves like a live media item (similar to Radio):
+    enqueued as a single queue item, streamed continuously, with
+    optional metadata updates pushed by the owning plugin.
+    """
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    media_type: MediaType = MediaType.AUDIO_SOURCE
+
+    # a live source has no fixed duration; kept for QueueItem compatibility
+    duration: int | None = None
+
+    # capability flags drive which control buttons the UI shows
+    # and which commands the player controller proxies to the plugin
+    can_play_pause: bool = False
+    can_seek: bool = False
+    can_next_previous: bool = False
+
+    # whether the same source can stream to >1 player concurrently
+    # False = MA fans the single stream out via sync-group machinery (default)
+    # True = plugin is responsible for serving independent streams per consumer
+    exclusive: bool = True
+
+    # whether the plugin can initiate playback itself
+    # (e.g. the Spotify app picking MA as a device)
+    allow_external_trigger: bool = False
+
+
+@dataclass(kw_only=True)
 class BrowseFolder(_MediaItemBase):
     """Representation of a Folder used in Browse (which contains media items)."""
 
@@ -409,6 +446,15 @@ class RecommendationFolder(BrowseFolder):
 # NOTE: BrowseFolder is not part of the MediaItemType alias, as it lacks
 # provider mappings, i.e. we do not map a provider item to a BrowseFolder.
 MediaItemType = (
-    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | Genre
+    Artist
+    | Album
+    | Track
+    | Radio
+    | Playlist
+    | Audiobook
+    | Podcast
+    | PodcastEpisode
+    | Genre
+    | AudioSource
 )
-PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
+PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode | AudioSource
