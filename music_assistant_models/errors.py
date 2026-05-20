@@ -127,8 +127,10 @@ class ResourceBusyError(MusicAssistantError):
     """
     Raised when an exclusive resource is already in use.
 
-    Used by plugin providers when an exclusive AudioSource is requested
-    while it is already streaming to another player/queue.
+    Used by providers when a resource that only allows a single
+    concurrent consumer (e.g. an exclusive AudioSource, a hardware
+    bridge, or any other single-stream media item) is requested
+    while it is already in use elsewhere.
     """
 
     error_code = 24
