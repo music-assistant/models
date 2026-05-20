@@ -123,19 +123,6 @@ class ResourceTemporarilyUnavailable(MusicAssistantError):
     error_code = 17
 
 
-class ResourceBusyError(MusicAssistantError):
-    """
-    Raised when an exclusive resource is already in use.
-
-    Used by providers when a resource that only allows a single
-    concurrent consumer (e.g. an exclusive AudioSource, a hardware
-    bridge, or any other single-stream media item) is requested
-    while it is already in use elsewhere.
-    """
-
-    error_code = 24
-
-
 class ProviderPermissionDenied(MusicAssistantError):
     """Error thrown when a provider action is denied because of permissions."""
 
@@ -170,3 +157,16 @@ class InvalidToken(MusicAssistantError):
     """Error raised when an access token is invalid or expired."""
 
     error_code = 23
+
+
+class ResourceBusyError(MusicAssistantError):
+    """
+    Raised when an exclusive resource is already in use.
+
+    Used by providers when a resource that only allows a single
+    concurrent consumer (e.g. an exclusive AudioSource, a hardware
+    bridge, or any other single-stream media item) is requested
+    while it is already in use elsewhere.
+    """
+
+    error_code = 24

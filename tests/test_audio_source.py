@@ -62,11 +62,11 @@ def test_audio_source_defaults() -> None:
 def test_audio_source_serialize_roundtrip() -> None:
     """AudioSource survives a to_dict -> from_dict round-trip."""
     original = _make_audio_source()
-    restored = AudioSource.from_dict(original.to_dict())
-    assert restored == original
-    assert restored.can_play_pause is True
-    assert restored.exclusive is False
-    assert restored.allow_external_trigger is True
+    data = original.to_dict()
+    restored = AudioSource.from_dict(data)
+    # MediaItem.__eq__ only checks the URI, so compare the serialized form to
+    # verify the full payload (capability flags, exclusivity, provider mappings, ...)
+    assert restored.to_dict() == data
 
 
 def test_media_from_dict_returns_audio_source() -> None:

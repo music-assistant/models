@@ -390,9 +390,10 @@ class AudioSource(MediaItem):
     can_seek: bool = False
     can_next_previous: bool = False
 
-    # whether the same source can stream to >1 player concurrently
-    # False = MA fans the single stream out via sync-group machinery (default)
-    # True = plugin is responsible for serving independent streams per consumer
+    # whether this source allows only a single concurrent consumer
+    # True (default) = MA fans the single stream out via sync-group machinery
+    # when multiple players target the same source
+    # False = plugin is responsible for serving independent streams per consumer
     exclusive: bool = True
 
     # whether the plugin can initiate playback itself
