@@ -43,6 +43,9 @@ class PlayerQueue(DataClassDictMixin):
 
     elapsed_time: float = 0
     elapsed_time_last_updated: float = field(default_factory=time.time)
+    # playback_speed in effect at elapsed_time_last_updated
+    # Used to calculate the corrected elapsed time to advance the wallcloack delta in media-time
+    playback_speed: float = 1.0
     state: PlaybackState = PlaybackState.IDLE
     current_item: QueueItem | None = None
     next_item: QueueItem | None = None
@@ -103,7 +106,9 @@ class PlayerQueue(DataClassDictMixin):
     def corrected_elapsed_time(self) -> float:
         """Return the corrected/realtime elapsed time."""
         if self.state == PlaybackState.PLAYING:
-            return self.elapsed_time + (time.time() - self.elapsed_time_last_updated)
+            return self.elapsed_time + (
+                (time.time() - self.elapsed_time_last_updated) * self.playback_speed
+            )
         return self.elapsed_time
 
     def to_cache(self) -> dict[str, Any]:
