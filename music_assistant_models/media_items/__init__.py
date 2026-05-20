@@ -17,6 +17,7 @@ from .media_item import (
     Album,
     Artist,
     Audiobook,
+    AudioSource,
     BrowseFolder,
     Genre,
     ItemMapping,
@@ -43,6 +44,7 @@ __all__ = [
     "Album",
     "Artist",
     "AudioFormat",
+    "AudioSource",
     "Audiobook",
     "BrowseFolder",
     "Genre",
@@ -107,9 +109,16 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return Podcast.from_dict(media_item)
     if media_item["media_type"] == "podcast_episode":
         return PodcastEpisode.from_dict(media_item)
+    if media_item["media_type"] == "audio_source":
+        return AudioSource.from_dict(media_item)
     raise InvalidDataError("Unknown media type")
 
 
 def is_track(val: MediaItem) -> TypeGuard[Track]:
     """Return true if this MediaItem is a track."""
     return val.media_type == MediaType.TRACK
+
+
+def is_audio_source(val: MediaItem) -> TypeGuard[AudioSource]:
+    """Return true if this MediaItem is an AudioSource."""
+    return val.media_type == MediaType.AUDIO_SOURCE

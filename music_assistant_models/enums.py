@@ -38,13 +38,39 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     FOLDER = "folder"
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
+    # deprecated: replaced by AUDIO_SOURCE, kept for one release for backwards compatibility
     PLUGIN_SOURCE = "plugin_source"
+    AUDIO_SOURCE = "audio_source"
     SOUND_EFFECT = "sound_effect"
     GENRE = "genre"
     UNKNOWN = "unknown"
 
     @classmethod
     def _missing_(cls, value: object) -> MediaType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class SourceControl(StrEnum):
+    """
+    Control actions that can be issued to a live AudioSource.
+
+    Used by the player controller when proxying playback control
+    commands to the plugin that owns the active AudioSource.
+    """
+
+    PLAY = "play"
+    PAUSE = "pause"
+    STOP = "stop"
+    NEXT = "next"
+    PREVIOUS = "previous"
+    SEEK = "seek"
+    VOLUME = "volume"
+    SELECT = "select"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> SourceControl:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
