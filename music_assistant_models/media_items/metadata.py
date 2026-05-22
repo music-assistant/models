@@ -113,40 +113,42 @@ class MediaItemMetadata(DataClassDictMixin):
     last_refresh: int | None = None
 
     def update(
-      self,
-      new_values: MediaItemMetadata,
+        self,
+        new_values: MediaItemMetadata,
     ) -> MediaItemMetadata:
-      """Update metadata (in-place) with new values."""
-      if not new_values:
-          return self
-      # description paired with description_language: overwrite on language change,
-      # otherwise fill-the-gap (preserves higher-priority provider's bio)
-      if new_values.description is not None:
-          new_lang = new_values.description_language
-          lang_changed = new_lang is not None and new_lang != self.description_language
-          if lang_changed or self.description is None:
-              self.description = new_values.description
-              self.description_language = new_lang
-      for fld in fields(self):
-          if fld.name in ("description", "description_language"):
-              continue
-          new_val = getattr(new_values, fld.name)
-          if new_val is None:
-              continue
-          cur_val = getattr(self, fld.name)
-          if isinstance(cur_val, list) and isinstance(new_val, list):
-              new_val = UniqueList(merge_lists(cur_val, new_val))
-              setattr(self, fld.name, new_val)
-          elif isinstance(cur_val, set) and isinstance(new_val, set | list | tuple):
-              cur_val.update(new_val)
-          elif new_val and fld.name in (
-              "popularity",
-              "last_refresh",
-          ):
-              setattr(self, fld.name, new_val)
-          elif cur_val is None:
-              setattr(self, fld.name, new_val)
-      return self
+        """Update metadata (in-place) with new values."""
+        if not new_values:
+            return self
+        # description paired with description_language: overwrite on language change,
+        # otherwise fill-the-gap (preserves higher-priority provider's bio)
+        if new_values.description is not None:
+            new_lang = new_values.description_language
+            lang_changed = new_lang is not None and new_lang != self.description_language
+            if lang_changed or self.description is None:
+                self.description = new_values.description
+                self.description_language = new_lang
+        for fld in fields(self):
+            if fld.name in ("description", "description_language"):
+                continue
+            new_val = getattr(new_values, fld.name)
+            if new_val is None:
+                continue
+            cur_val = getattr(self, fld.name)
+            if isinstance(cur_val, list) and isinstance(new_val, list):
+                new_val = UniqueList(merge_lists(cur_val, new_val))
+                setattr(self, fld.name, new_val)
+            elif isinstance(cur_val, set) and isinstance(new_val, set | list | tuple):
+                cur_val.update(new_val)
+            elif (
+                new_val
+                and fld.name
+                in (
+                    "popularity",
+                    "last_refresh",
+                )
+            ) or cur_val is None:
+                setattr(self, fld.name, new_val)
+        return self
 
     def add_image(self, image: MediaItemImage) -> None:
         """Add an image to the list."""
