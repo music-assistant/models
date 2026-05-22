@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from mashumaro import DataClassDictMixin
 
-from music_assistant_models.enums import AlbumType, ExternalID, ImageType, MediaType
+from music_assistant_models.enums import AlbumType, ArtistType, ExternalID, ImageType, MediaType
 from music_assistant_models.errors import InvalidDataError
 from music_assistant_models.helpers import (
     create_sort_name,
@@ -202,6 +202,7 @@ class Artist(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     media_type: MediaType = MediaType.ARTIST
+    artist_type: ArtistType = ArtistType.SINGER
 
 
 @dataclass(kw_only=True)
@@ -307,8 +308,8 @@ class Audiobook(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     publisher: str | None = None
-    authors: UniqueList[str] = field(default_factory=UniqueList)
-    narrators: UniqueList[str] = field(default_factory=UniqueList)
+    authors: UniqueList[str | Artist] = field(default_factory=UniqueList)
+    narrators: UniqueList[str | Artist] = field(default_factory=UniqueList)
     duration: int = 0
     # resume point info
     # set to None if unknown/unsupported by provider
@@ -363,6 +364,44 @@ class SoundEffect(MediaItem):
 
 
 @dataclass(kw_only=True)
+class AudioSource(MediaItem):
+    """
+    Model for a live audio source provided by a plugin.
+
+    Examples include an AirPlay receiver, Spotify Connect device,
+    DLNA renderer, VBAN receiver, or a hardware bridge favorite.
+
+    Conceptually behaves like a live media item (similar to Radio):
+    enqueued as a single queue item, streamed continuously, with
+    optional metadata updates pushed by the owning plugin.
+    """
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    media_type: MediaType = MediaType.AUDIO_SOURCE
+
+    # a live source has no fixed duration; kept for QueueItem compatibility
+    duration: int | None = None
+
+    # capability flags drive which control buttons the UI shows
+    # and which commands the player controller proxies to the plugin
+    can_play_pause: bool = False
+    can_seek: bool = False
+    can_next_previous: bool = False
+
+    # whether this source allows only a single concurrent consumer
+    # True (default) = MA fans the single stream out via sync-group machinery
+    # when multiple players target the same source
+    # False = plugin is responsible for serving independent streams per consumer
+    exclusive: bool = True
+
+    # whether the plugin can initiate playback itself
+    # (e.g. the Spotify app picking MA as a device)
+    allow_external_trigger: bool = False
+
+
+@dataclass(kw_only=True)
 class BrowseFolder(_MediaItemBase):
     """Representation of a Folder used in Browse (which contains media items)."""
 
@@ -408,6 +447,15 @@ class RecommendationFolder(BrowseFolder):
 # NOTE: BrowseFolder is not part of the MediaItemType alias, as it lacks
 # provider mappings, i.e. we do not map a provider item to a BrowseFolder.
 MediaItemType = (
-    Artist | Album | Track | Radio | Playlist | Audiobook | Podcast | PodcastEpisode | Genre
+    Artist
+    | Album
+    | Track
+    | Radio
+    | Playlist
+    | Audiobook
+    | Podcast
+    | PodcastEpisode
+    | Genre
+    | AudioSource
 )
-PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode
+PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode | AudioSource

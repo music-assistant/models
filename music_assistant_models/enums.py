@@ -38,7 +38,9 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     FOLDER = "folder"
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
+    # deprecated: replaced by AUDIO_SOURCE, kept for one release for backwards compatibility
     PLUGIN_SOURCE = "plugin_source"
+    AUDIO_SOURCE = "audio_source"
     SOUND_EFFECT = "sound_effect"
     GENRE = "genre"
     UNKNOWN = "unknown"
@@ -46,6 +48,22 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     @classmethod
     def _missing_(cls, value: object) -> MediaType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class SourceControl(StrEnum):
+    """Control actions issued to a live AudioSource by the player controller."""
+
+    PLAY = "play"
+    PAUSE = "pause"
+    NEXT = "next"
+    PREVIOUS = "previous"
+    SEEK = "seek"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> SourceControl:  # noqa: ARG003
+        """Return UNKNOWN if an unknown value is provided."""
         return cls.UNKNOWN
 
 
@@ -147,6 +165,20 @@ class AlbumType(StrEnum):
 
     @classmethod
     def _missing_(cls, value: object) -> AlbumType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class ArtistType(StrEnum):
+    """Enum for Artist type."""
+
+    SINGER = "singer"  # regular music artist
+    AUTHOR = "author"  # author of an audiobook
+    NARRATOR = "narrator"  # narrator of an audiobook
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ArtistType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
@@ -546,6 +578,8 @@ class ProviderFeature(StrEnum):
     # additional library features
     ARTIST_ALBUMS = "artist_albums"
     ARTIST_TOPTRACKS = "artist_toptracks"
+    AUTHOR_AUDIOBOOKS = "author_audiobooks"
+    NARRATOR_AUDIOBOOKS = "narrator_audiobooks"
 
     # library edit (=add/remove) feature per mediatype
     LIBRARY_ARTISTS_EDIT = "library_artists_edit"
@@ -604,6 +638,7 @@ class ProviderFeature(StrEnum):
     # PLUGIN FEATURES
     #
     AUDIO_SOURCE = "audio_source"
+    AUDIO_OVERLAY = "audio_overlay"  # plugin can mix an audio overlay into queue playback
 
     #
     # OTHER FEATURES (plugin-only)

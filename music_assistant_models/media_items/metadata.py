@@ -51,6 +51,18 @@ class MediaItemImage(DataClassDictMixin):
 
 
 @dataclass(frozen=True, kw_only=True)
+class MediaItemPalette(DataClassDictMixin):
+    """Color palette derived from a MediaItem's artwork. Mirrors the Sendspin color@v1 spec."""
+
+    background_dark: tuple[int, int, int] | None = None
+    background_light: tuple[int, int, int] | None = None
+    primary: tuple[int, int, int] | None = None
+    accent: tuple[int, int, int] | None = None
+    on_dark: tuple[int, int, int] | None = None
+    on_light: tuple[int, int, int] | None = None
+
+
+@dataclass(frozen=True, kw_only=True)
 class MediaItemChapter(DataClassDictMixin):
     """Model for a MediaItem's chapter/bookmark."""
 
@@ -88,6 +100,8 @@ class MediaItemMetadata(DataClassDictMixin):
     """Model for a MediaItem's metadata."""
 
     description: str | None = None
+    # ISO 639-1 language code for `description`
+    description_language: str | None = None
     review: str | None = None
     explicit: bool | None = None
     # NOTE: images is a list of available images, sorted by preference
