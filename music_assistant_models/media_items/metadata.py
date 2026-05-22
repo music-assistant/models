@@ -132,6 +132,8 @@ class MediaItemMetadata(DataClassDictMixin):
             elif new_val and fld.name in (
                 "popularity",
                 "last_refresh",
+                "description",
+                "description_language",
             ):
                 # some fields are always allowed to be overwritten
                 # (such as popularity and last_refresh)
