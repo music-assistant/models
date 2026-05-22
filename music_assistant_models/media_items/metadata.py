@@ -123,10 +123,8 @@ class MediaItemMetadata(DataClassDictMixin):
       # otherwise fill-the-gap (preserves higher-priority provider's bio)
       if new_values.description is not None:
           new_lang = new_values.description_language
-          if new_lang is not None and new_lang != self.description_language:
-              self.description = new_values.description
-              self.description_language = new_lang
-          elif self.description is None:
+          lang_changed = new_lang is not None and new_lang != self.description_language
+          if lang_changed or self.description is None:
               self.description = new_values.description
               self.description_language = new_lang
       for fld in fields(self):
