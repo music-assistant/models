@@ -400,6 +400,15 @@ class AudioSource(MediaItem):
     # (e.g. the Spotify app picking MA as a device)
     allow_external_trigger: bool = False
 
+    # whether MA can initiate playback of this source on demand
+    # (e.g. user selects the source from the UI / Live Inputs).
+    # False = source is only reachable via external trigger (passive receivers
+    # like a microphone or AirPlay-receiver target). The streams controller
+    # filters user-initiated browse listings on this flag, and the owning
+    # plugin's get_stream_details must raise (AudioError) when it cannot
+    # actually acquire the upstream producer.
+    can_initiate: bool = False
+
 
 @dataclass(kw_only=True)
 class BrowseFolder(_MediaItemBase):
