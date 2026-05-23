@@ -55,3 +55,19 @@ def test_proxy_id_round_trips_through_from_dict() -> None:
     }
     image = MediaItemImage.from_dict(raw)
     assert image.proxy_id == "abc123"
+
+
+def test_existing_proxy_id_is_not_overwritten_by_resolver() -> None:
+    """A pre-set proxy_id must survive serialization even when a resolver is active."""
+    image = MediaItemImage(
+        type=ImageType.THUMB,
+        path="/local/cover.jpg",
+        provider="filesystem",
+        proxy_id="pre-existing-id",
+    )
+    token = IMAGE_PROXY_ID_RESOLVER.set(_resolver)
+    try:
+        d = image.to_dict()
+    finally:
+        IMAGE_PROXY_ID_RESOLVER.reset(token)
+    assert d["proxy_id"] == "pre-existing-id"

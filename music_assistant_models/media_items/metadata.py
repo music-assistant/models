@@ -19,7 +19,7 @@ from music_assistant_models.unique_list import UniqueList
 # on the serialized dict, so clients can build the imageproxy URL by appending
 # the id to their own connection's base URL — no need to construct the long
 # legacy `/imageproxy?provider=…&path=…` form themselves. The resolver receives
-# (provider, path) and returns the opaque image id (a 64-hex sha256 hash).
+# (provider, path) and returns an opaque, server-defined image id.
 IMAGE_PROXY_ID_RESOLVER: ContextVar[Callable[[str, str], str] | None] = ContextVar(
     "image_proxy_id_resolver", default=None
 )
@@ -69,6 +69,10 @@ class MediaItemImage(DataClassDictMixin):
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Inject `proxy_id` when a resolver is set on the current context."""
         if self.remotely_accessible:
+            return d
+        # only inject when proxy_id was not already provided so that values
+        # round-tripped via from_dict (or set explicitly by the caller) survive
+        if d.get("proxy_id") is not None:
             return d
         resolver = IMAGE_PROXY_ID_RESOLVER.get()
         if resolver is not None:
