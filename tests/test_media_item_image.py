@@ -1,0 +1,57 @@
+"""Tests for MediaItemImage serialization and proxy id injection."""
+
+from music_assistant_models.enums import ImageType
+from music_assistant_models.media_items.metadata import (
+    IMAGE_PROXY_ID_RESOLVER,
+    MediaItemImage,
+)
+
+
+def _resolver(provider: str, path: str) -> str:
+    return f"id-for-{provider}-{path}"
+
+
+def test_image_without_resolver_leaves_proxy_id_none() -> None:
+    """When no resolver is set on the context, proxy_id stays None."""
+    image = MediaItemImage(type=ImageType.THUMB, path="/local/cover.jpg", provider="filesystem")
+    assert image.to_dict()["proxy_id"] is None
+
+
+def test_image_with_resolver_injects_proxy_id() -> None:
+    """When a resolver is set, proxy_id is filled for non-public images."""
+    image = MediaItemImage(type=ImageType.THUMB, path="/local/cover.jpg", provider="filesystem")
+    token = IMAGE_PROXY_ID_RESOLVER.set(_resolver)
+    try:
+        d = image.to_dict()
+    finally:
+        IMAGE_PROXY_ID_RESOLVER.reset(token)
+    assert d["proxy_id"] == "id-for-filesystem-/local/cover.jpg"
+
+
+def test_remotely_accessible_image_skips_injection() -> None:
+    """Public images that clients can fetch directly must not get a proxy_id."""
+    image = MediaItemImage(
+        type=ImageType.THUMB,
+        path="https://cdn.example.com/a.jpg",
+        provider="spotify",
+        remotely_accessible=True,
+    )
+    token = IMAGE_PROXY_ID_RESOLVER.set(_resolver)
+    try:
+        d = image.to_dict()
+    finally:
+        IMAGE_PROXY_ID_RESOLVER.reset(token)
+    assert d["proxy_id"] is None
+
+
+def test_proxy_id_round_trips_through_from_dict() -> None:
+    """Deserializing a dict with a proxy_id preserves it on the instance."""
+    raw = {
+        "type": "thumb",
+        "path": "/local/cover.jpg",
+        "provider": "filesystem",
+        "remotely_accessible": False,
+        "proxy_id": "abc123",
+    }
+    image = MediaItemImage.from_dict(raw)
+    assert image.proxy_id == "abc123"
