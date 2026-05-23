@@ -2,14 +2,30 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from contextvars import ContextVar
 from dataclasses import dataclass, fields
 from datetime import datetime
+from typing import Any
 
 from mashumaro import DataClassDictMixin
 
 from music_assistant_models.enums import ImageType, LinkType
 from music_assistant_models.helpers import merge_lists
 from music_assistant_models.unique_list import UniqueList
+
+# ContextVar set by the Music Assistant server during outbound API serialization.
+# When set, MediaItemImage.__post_serialize__ uses the resolver to fill `proxy_id`
+# on the serialized dict, so clients can build the imageproxy URL by appending
+# the id to their own connection's base URL — no need to construct the long
+# legacy `/imageproxy?provider=…&path=…` form themselves. The resolver receives
+# (provider, path) and must return an opaque, server-defined image id that is
+# safe to embed directly as a single URL path segment (URL-safe, no `/`, `?`,
+# `#`, or whitespace), so clients can build `<api_base>/imageproxy/<proxy_id>`
+# without any extra escaping.
+IMAGE_PROXY_ID_RESOLVER: ContextVar[Callable[[str, str], str] | None] = ContextVar(
+    "image_proxy_id_resolver", default=None
+)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -38,6 +54,10 @@ class MediaItemImage(DataClassDictMixin):
     path: str
     provider: str  # provider lookup key (only use instance id for fileproviders)
     remotely_accessible: bool = False  # url that is accessible from anywhere
+    # Opaque server-side imageproxy id. Populated only by the MA server during
+    # outbound API serialization (via __post_serialize__ + IMAGE_PROXY_ID_RESOLVER).
+    # Clients fetch the image at `<api_base>/imageproxy/<proxy_id>?size=...&fmt=...`.
+    proxy_id: str | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""
@@ -48,6 +68,19 @@ class MediaItemImage(DataClassDictMixin):
         if not isinstance(other, MediaItemImage):
             return False
         return self.__hash__() == other.__hash__()
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Inject `proxy_id` when a resolver is set on the current context."""
+        if self.remotely_accessible:
+            return d
+        # only inject when proxy_id was not already provided so that values
+        # round-tripped via from_dict (or set explicitly by the caller) survive
+        if d.get("proxy_id") is not None:
+            return d
+        resolver = IMAGE_PROXY_ID_RESOLVER.get()
+        if resolver is not None:
+            d["proxy_id"] = resolver(self.provider, self.path)
+        return d
 
 
 @dataclass(frozen=True, kw_only=True)
