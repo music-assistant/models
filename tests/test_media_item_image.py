@@ -1,5 +1,7 @@
 """Tests for MediaItemImage serialization and proxy id injection."""
 
+import hashlib
+
 from music_assistant_models.enums import ImageType
 from music_assistant_models.media_items.metadata import (
     IMAGE_PROXY_ID_RESOLVER,
@@ -8,7 +10,9 @@ from music_assistant_models.media_items.metadata import (
 
 
 def _resolver(provider: str, path: str) -> str:
-    return f"id-for-{provider}-{path}"
+    # url-path-segment-safe synthetic id (no '/', '?', '#') — mirrors the
+    # opaque-id contract the server-side resolver is expected to honor
+    return hashlib.sha256(f"{provider}/{path}".encode()).hexdigest()
 
 
 def test_image_without_resolver_leaves_proxy_id_none() -> None:
@@ -25,7 +29,7 @@ def test_image_with_resolver_injects_proxy_id() -> None:
         d = image.to_dict()
     finally:
         IMAGE_PROXY_ID_RESOLVER.reset(token)
-    assert d["proxy_id"] == "id-for-filesystem-/local/cover.jpg"
+    assert d["proxy_id"] == hashlib.sha256(b"filesystem//local/cover.jpg").hexdigest()
 
 
 def test_remotely_accessible_image_skips_injection() -> None:

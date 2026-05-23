@@ -19,7 +19,10 @@ from music_assistant_models.unique_list import UniqueList
 # on the serialized dict, so clients can build the imageproxy URL by appending
 # the id to their own connection's base URL — no need to construct the long
 # legacy `/imageproxy?provider=…&path=…` form themselves. The resolver receives
-# (provider, path) and returns an opaque, server-defined image id.
+# (provider, path) and must return an opaque, server-defined image id that is
+# safe to embed directly as a single URL path segment (URL-safe, no `/`, `?`,
+# `#`, or whitespace), so clients can build `<api_base>/imageproxy/<proxy_id>`
+# without any extra escaping.
 IMAGE_PROXY_ID_RESOLVER: ContextVar[Callable[[str, str], str] | None] = ContextVar(
     "image_proxy_id_resolver", default=None
 )
