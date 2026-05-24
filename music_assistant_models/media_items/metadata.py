@@ -139,6 +139,8 @@ class MediaItemMetadata(DataClassDictMixin):
                 setattr(self, fld.name, new_val)
             elif isinstance(cur_val, set) and isinstance(new_val, set | list | tuple):
                 cur_val.update(new_val)
+            # some fields are always allowed to be overwritten
+            # (such as popularity and last_refresh)
             elif (
                 new_val
                 and fld.name
