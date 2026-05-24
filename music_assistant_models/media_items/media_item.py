@@ -319,6 +319,11 @@ class Audiobook(MediaItem):
 
     media_type: MediaType = MediaType.AUDIOBOOK
 
+    @property
+    def artist_str(self) -> str:
+        """Return (combined) author string for audiobook."""
+        return "/".join(a.name if isinstance(a, Artist) else a for a in self.authors)
+
 
 @dataclass(kw_only=True)
 class Podcast(MediaItem):
