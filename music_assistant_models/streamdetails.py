@@ -199,7 +199,7 @@ class StreamDetails(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
-    seek_position: int = field(
+    seek_position: float = field(
         default=0,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
