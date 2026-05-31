@@ -56,6 +56,9 @@ def test_audio_source_defaults() -> None:
     # exclusive defaults to True so plugins opt into multi-consumer support explicitly
     assert item.exclusive is True
     assert item.allow_external_trigger is False
+    # can_initiate defaults to False so passive sources don't accidentally
+    # surface in user-initiated browse listings
+    assert item.can_initiate is False
     assert item.uri == "y://audio_source/x"
 
 

@@ -116,6 +116,19 @@ class StreamDetails(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
+    # decoded_audio_format: the format MA actually receives on the input side.
+    # Set this when the upstream provider/daemon decodes the original source
+    # before handing it to MA (e.g. Spotify Connect / AirPlay receivers pipe
+    # raw PCM into MA after their own decode). The streams controller passes
+    # this to ffmpeg so it can read the input correctly, while audio_format
+    # keeps describing the original source for display purposes.
+    # Leave None when the on-the-wire format equals audio_format.
+    decoded_audio_format: AudioFormat | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
     # extra_input_args: any additional input args to pass along to ffmpeg
     # this field may be set by the provider when creating the streamdetails
     extra_input_args: list[str] = field(
@@ -199,7 +212,7 @@ class StreamDetails(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
-    seek_position: int = field(
+    seek_position: float = field(
         default=0,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),

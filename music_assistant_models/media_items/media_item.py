@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, cast
 
-from mashumaro import DataClassDictMixin
+from mashumaro import DataClassDictMixin, field_options
 
 from music_assistant_models.enums import AlbumType, ArtistType, ExternalID, ImageType, MediaType
 from music_assistant_models.errors import InvalidDataError
@@ -319,6 +319,11 @@ class Audiobook(MediaItem):
 
     media_type: MediaType = MediaType.AUDIOBOOK
 
+    @property
+    def artist_str(self) -> str:
+        """Return (combined) author string for audiobook."""
+        return "/".join(a.name if isinstance(a, Artist) else a for a in self.authors)
+
 
 @dataclass(kw_only=True)
 class Podcast(MediaItem):
@@ -400,6 +405,15 @@ class AudioSource(MediaItem):
     # (e.g. the Spotify app picking MA as a device)
     allow_external_trigger: bool = False
 
+    # whether MA can initiate playback of this source on demand
+    # (e.g. user selects the source from the UI / Live Inputs).
+    # False = source is only reachable via external trigger (passive receivers
+    # like a microphone or AirPlay-receiver target). The streams controller
+    # filters user-initiated browse listings on this flag, and the owning
+    # plugin's get_stream_details must raise (AudioError) when it cannot
+    # actually acquire the upstream producer.
+    can_initiate: bool = False
+
 
 @dataclass(kw_only=True)
 class BrowseFolder(_MediaItemBase):
@@ -424,6 +438,36 @@ class BrowseFolder(_MediaItemBase):
             self.path = f"{self.provider}://{self.item_id}"
 
 
+def _deserialize_recommendation_items(
+    raw: list[dict[str, Any]],
+) -> UniqueList[MediaItem | ItemMapping | BrowseFolder]:
+    """Deserialize RecommendationFolder items using media_type discrimination."""
+    media_type_class_map: dict[str, type[MediaItem]] = {
+        MediaType.ARTIST: Artist,
+        MediaType.ALBUM: Album,
+        MediaType.TRACK: Track,
+        MediaType.RADIO: Radio,
+        MediaType.PLAYLIST: Playlist,
+        MediaType.AUDIOBOOK: Audiobook,
+        MediaType.PODCAST: Podcast,
+        MediaType.PODCAST_EPISODE: PodcastEpisode,
+        MediaType.GENRE: Genre,
+        MediaType.AUDIO_SOURCE: AudioSource,
+    }
+    result: list[MediaItem | ItemMapping | BrowseFolder] = []
+    for item in raw:
+        if "provider_mappings" not in item:
+            if item.get("media_type") in (MediaType.FOLDER, "folder"):
+                result.append(BrowseFolder.from_dict(item))
+            else:
+                result.append(ItemMapping.from_dict(item))
+        elif cls := media_type_class_map.get(item.get("media_type", "")):
+            result.append(cls.from_dict(item))
+        else:
+            result.append(ItemMapping.from_dict(item))
+    return UniqueList(result)
+
+
 @dataclass(kw_only=True)
 class RecommendationFolder(BrowseFolder):
     """Representation of a Recommendation folder."""
@@ -438,7 +482,8 @@ class RecommendationFolder(BrowseFolder):
     is_playable: bool = False
     icon: str | None = None  # optional material design icon name
     items: UniqueList[MediaItemType | ItemMapping | BrowseFolder] = field(
-        default_factory=UniqueList
+        default_factory=UniqueList,
+        metadata=field_options(deserialize=_deserialize_recommendation_items),
     )
     subtitle: str | None = None  # optional subtitle for the recommendation
 
