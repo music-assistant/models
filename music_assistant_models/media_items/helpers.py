@@ -8,12 +8,16 @@ from .media_item import Audiobook
 
 
 @dataclass
-class AudiobookSeries(DataClassDictMixin):
-    """An audiobook series as acquired from the database.
+class AudiobookCollection(DataClassDictMixin):
+    """Model for an audiobook collection when gathered by the backend.
 
-    This is used as API response, and not to be used by a provider.
+    A provider may add multiple MediaItemCollection entries to a book, making it part of one or
+    multiple collections. The backend then searches the database for all books of an collection, and
+    uses this model as a response in the API.
+
+    This model is not to be used by a provider.
     """
 
     title: str
-    # sorted list of audiobooks in this series
+    # sorted list of audiobooks in this collection
     audiobooks: list[Audiobook] = field(default_factory=list)

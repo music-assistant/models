@@ -115,8 +115,15 @@ class MediaItemChapter(DataClassDictMixin):
 
 
 @dataclass(frozen=True, kw_only=True)
-class MediaItemSeries(DataClassDictMixin):
-    """Model for a MediaItem's series."""
+class MediaItemCollection(DataClassDictMixin):
+    """Model for a MediaItem's collection.
+
+    A book can be part of one or multiple collections. The backend will collect all books belonging
+    to a series, the provider only needs use this model and add it as often as needed to the
+    audiobooks collections field. One may optionally specify a certain sequence (e.g. for a book
+    series), and the backend will then sort accordingly. Otherwise the collection entries will just
+    be returned alphabetically.
+    """
 
     title: str
     # sequence is used for sorting
@@ -156,7 +163,9 @@ class MediaItemMetadata(DataClassDictMixin):
     # chapters is a list of available chapters, sorted by position
     # most commonly used for audiobooks and podcast episodes
     chapters: list[MediaItemChapter] | None = None
-    series: UniqueList[MediaItemSeries] | None = None
+    # Make the item part of one or multiple collections. Refer to the docstring for
+    # MediaItemCollection.
+    collections: UniqueList[MediaItemCollection] | None = None
     # last_refresh: timestamp the (full) metadata was last collected
     last_refresh: int | None = None
 

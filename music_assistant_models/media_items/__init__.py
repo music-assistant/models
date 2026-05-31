@@ -33,11 +33,11 @@ from .media_item import (
 )
 from .metadata import (
     MediaItemChapter,
+    MediaItemCollection,
     MediaItemImage,
     MediaItemLink,
     MediaItemMetadata,
     MediaItemPalette,
-    MediaItemSeries,
 )
 from .provider_mapping import ProviderMapping
 
@@ -52,11 +52,11 @@ __all__ = [
     "ItemMapping",
     "MediaItem",
     "MediaItemChapter",
+    "MediaItemCollection",
     "MediaItemImage",
     "MediaItemLink",
     "MediaItemMetadata",
     "MediaItemPalette",
-    "MediaItemSeries",
     "MediaItemType",
     "Metadata",
     "MetadataProvider",
