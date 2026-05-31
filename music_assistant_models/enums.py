@@ -576,10 +576,20 @@ class ProviderFeature(StrEnum):
     LIBRARY_PODCASTS = "library_podcasts"
 
     # additional library features
-    ARTIST_ALBUMS = "artist_albums"
-    ARTIST_TOPTRACKS = "artist_toptracks"
     AUTHOR_AUDIOBOOKS = "author_audiobooks"
     NARRATOR_AUDIOBOOKS = "narrator_audiobooks"
+
+    # if we can grab all albums for an artist from the music provider
+    ARTIST_ALBUMS = "artist_albums"
+
+    # if we can grab all tracks for an artist from the music provider
+    ARTIST_TRACKS = "artist_tracks"
+
+    # if we can grab 'top tracks' for an artist from the music/metadata provider
+    ARTIST_TOPTRACKS = "artist_toptracks"
+
+    # if we can grab 'top albums' for an artist from the music/metadata provider
+    ARTIST_TOPALBUMS = "artist_topalbums"
 
     # library edit (=add/remove) feature per mediatype
     LIBRARY_ARTISTS_EDIT = "library_artists_edit"
