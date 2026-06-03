@@ -170,3 +170,14 @@ class ResourceBusyError(MusicAssistantError):
     """
 
     error_code = 24
+
+
+class RateLimited(ResourceTemporarilyUnavailable):
+    """
+    Error thrown when a provider is rate-limiting us (HTTP 429).
+
+    Unlike the base class, ``backoff_time`` (a server ``Retry-After``) is treated
+    as a floor rather than a target: the retry helper backs off exponentially above it.
+    """
+
+    error_code = 25
