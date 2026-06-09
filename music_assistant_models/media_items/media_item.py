@@ -42,6 +42,8 @@ class _MediaItemBase(DataClassDictMixin):
     # translation_key:
     # an optional translation key identifier for the frontend (to use instead of name)
     translation_key: str | None = None
+    # translation_params: optional parameters for the translation key
+    translation_params: list[str] | None = None
     media_type: MediaType = MediaType.UNKNOWN
 
     def __post_init__(self) -> None:
