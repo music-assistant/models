@@ -57,11 +57,36 @@ class ServerInfoMessage(DataClassORJSONMixin):
     server_version: str
     schema_version: int
     min_supported_schema_version: int
-    base_url: str
+    base_url: str | None = None  # deprecated, use internal_url instead
     homeassistant_addon: bool = False
     onboard_done: bool = False
     name: str | None = None  # added in schema version 29 (MA v2.8)
     status: CoreState = CoreState.RUNNING  # added in schema version 29 (MA v2.8)
+    internal_url: str | None = None  # added in schema version 32 (MA v2.10)
+    external_url: str | None = None  # added in schema version 32 (MA v2.10)
+    has_remote_access: bool = False  # added in schema version 32 (MA v2.10)
+
+    @classmethod
+    def __post_serialize__(cls, d: dict[str, Any]) -> dict[str, Any]:
+        """Adjust dict object after it has been serialized."""
+        # add alias for base_url if internal_url is not None, for backwards compatibility
+        if d.get("internal_url") is not None and d.get("base_url") is None:
+            d["base_url"] = d["internal_url"]
+        # add alias for internal_url, for backwards compatibility
+        if d.get("base_url") is not None and d.get("internal_url") is None:
+            d["internal_url"] = d["base_url"]
+        return d
+
+    @classmethod
+    def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
+        """Adjust object before it will be deserialized."""
+        # add alias for base_url if internal_url is not None, for backwards compatibility
+        if d.get("internal_url") is not None and d.get("base_url") is None:
+            d["base_url"] = d["internal_url"]
+        # add alias for internal_url, for backwards compatibility
+        if d.get("base_url") is not None and d.get("internal_url") is None:
+            d["internal_url"] = d["base_url"]
+        return d
 
 
 MessageType = (
