@@ -18,6 +18,7 @@ from music_assistant_models.helpers import (
     is_valid_uuid,
     remove_diacritics,
 )
+from music_assistant_models.translations import resolve_translation, translations_active
 from music_assistant_models.unique_list import UniqueList
 
 from .metadata import MediaItemImage, MediaItemMetadata
@@ -30,6 +31,8 @@ class _MediaItemBase(DataClassDictMixin):
 
     item_id: str
     provider: str  # provider instance id or provider domain
+    # name: the (English) display name; always set. For localizable items also set a
+    # translation_key, which overrides `name` for the connection locale at serialization.
     name: str
     version: str = ""
     # sort_name will be auto generated if omitted
@@ -39,9 +42,12 @@ class _MediaItemBase(DataClassDictMixin):
     external_ids: set[tuple[ExternalID, str]] = field(default_factory=set)
     # is_playable: if the item is playable (can be used in play_media command)
     is_playable: bool = True
-    # translation_key:
-    # an optional translation key identifier for the frontend (to use instead of name)
+    # translation_key: optional key to localize `name` (e.g. for "Your Mixes"); resolved to the
+    # connection locale at serialization, overriding the in-code `name`.
     translation_key: str | None = None
+    # translation_params: optional positional arguments for {0}/{1} placeholders in the
+    # translated string (e.g. "Liked Songs {0}").
+    translation_params: list[str] | None = None
     media_type: MediaType = MediaType.UNKNOWN
 
     def __post_init__(self) -> None:
@@ -50,6 +56,41 @@ class _MediaItemBase(DataClassDictMixin):
             self.uri = create_uri(self.media_type, self.provider, self.item_id)
         if self.sort_name is None:
             self.sort_name = create_sort_name(self.name)
+
+    def _translation_base(self) -> str | None:
+        """Return the translation key base for this item's translation_key (None if unset)."""
+        if self.translation_key is None:
+            return None
+        key = self.translation_key
+        return key if key.startswith(("provider.", "core.", "common.")) else f"media.{key}"
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize the display name (and subtitle) when a translation resolver is set."""
+        self._resolve_translation(d)
+        return d
+
+    def _resolve_translation(self, d: dict[str, Any]) -> None:
+        """
+        Replace name/subtitle in the serialized dict with localized strings.
+
+        When a `translation_key` is set and a resolver is active, name/subtitle are localized for
+        the connection locale; otherwise the in-code values are preserved. On localized API output
+        the internal translation_key/translation_params are stripped; they are retained in plain
+        to_dict() calls used for internal round-tripping (caching, item mappings).
+        """
+        base = self._translation_base()
+        if base is not None:
+            for field_name in ("name", "subtitle"):
+                if field_name not in d:
+                    continue
+                localized = resolve_translation(
+                    f"{base}.{field_name}", owner=self.provider, params=self.translation_params
+                )
+                if localized is not None:
+                    d[field_name] = localized
+        if translations_active():
+            d.pop("translation_key", None)
+            d.pop("translation_params", None)
 
     def get_external_id(self, external_id_type: ExternalID) -> str | None:
         """Get (the first instance) of given External ID or None if not found."""
@@ -295,6 +336,7 @@ class Radio(MediaItem):
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Adjust dict object after it has been serialized."""
+        self._resolve_translation(d)
         # TEMP 2025-03-14: convert None duration to fake number for backwards compatibility
         d["duration"] = 0 if d["duration"] is None else d["duration"]
         return d
