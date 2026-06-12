@@ -60,9 +60,10 @@ UI_ONLY = (
 class ConfigValueOption(DataClassDictMixin):
     """Model for a value with separated name/value."""
 
-    # value: the stored value identifying this option (the natural first positional argument,
-    # so a value-only option can be written as ConfigValueOption("the_value")).
-    value: ConfigValueType = None
+    # value: the stored value identifying this option, and the first positional argument so a
+    # value-only option can be written as ConfigValueOption("the_value"). Required (pass None
+    # explicitly only when None is a meaningful sentinel).
+    value: ConfigValueType
     # title: display title for the option. Optional: when omitted it is resolved from the
     # catalog at serialization (keyed by the owning entry + this option's value). Dynamic,
     # data-driven options (player names, sample rates, ...) still pass a title directly.
