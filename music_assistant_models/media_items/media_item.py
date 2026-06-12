@@ -58,7 +58,7 @@ class _MediaItemBase(DataClassDictMixin):
             self.sort_name = create_sort_name(self.name)
 
     def _translation_base(self) -> str | None:
-        """Return the catalog key base for this item's translation_key (None if unset)."""
+        """Return the translation key base for this item's translation_key (None if unset)."""
         if self.translation_key is None:
             return None
         key = self.translation_key

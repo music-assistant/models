@@ -65,7 +65,7 @@ class ConfigValueOption(DataClassDictMixin):
     # explicitly only when None is a meaningful sentinel).
     value: ConfigValueType
     # title: display title for the option. Optional: when omitted it is resolved from the
-    # catalog at serialization (keyed by the owning entry + this option's value). Dynamic,
+    # translations at serialization (keyed by the owning entry + this option's value). Dynamic,
     # data-driven options (player names, sample rates, ...) still pass a title directly.
     title: str | None = None
 
@@ -145,10 +145,10 @@ class ConfigEntry(DataClassDictMixin):
     # should NOT set these; they are filled in by Music Assistant.
     # ----------------------------------------------------------------------------------
 
-    # label: localized display label, resolved from the catalog at serialization.
+    # label: localized display label, resolved from the translations at serialization.
     label: str | None = None
-    # category_label: localized category display name, resolved from the catalog at serialization.
-    # The stable `category` value is still used for grouping.
+    # category_label: localized category display name, resolved from the translations at
+    # serialization. The stable `category` value is still used for grouping.
     category_label: str | None = None
     # translation_owner: the namespace ("provider.<domain>"/"core.<domain>") this entry's strings
     # are resolved under; stamped by the config controller when the entry is served. Not serialized.
@@ -156,8 +156,8 @@ class ConfigEntry(DataClassDictMixin):
         default=None, metadata=field_options(serialize="omit"), repr=False
     )
 
-    # translation_key / category_translation_key: server-set catalog-key overrides (e.g. the
-    # protocol-output block re-keys copied entries to keep their original catalog key). Not
+    # translation_key / category_translation_key: server-set translation-key overrides (e.g. the
+    # protocol-output block re-keys copied entries to keep their original translation key). Not
     # author-facing and not serialized; the structural defaults are config_entries.<key> /
     # config_categories.<category>.
     translation_key: str | None = field(
@@ -178,7 +178,7 @@ class ConfigEntry(DataClassDictMixin):
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """
-        Localize human-readable fields from the catalog for the connection locale.
+        Localize human-readable fields from the translations for the connection locale.
 
         Resolves label/description/option titles and the category name under this entry's owner
         namespace (keyed by config_entries.<key> / config_categories.<category>, or a server-set
@@ -323,7 +323,7 @@ class Config(DataClassDictMixin):
         return conf
 
     def _translation_owner(self) -> str | None:
-        """Return the catalog owner namespace for this config's entries (None = common only)."""
+        """Return the translations owner namespace for this config's entries (None = common)."""
         return None
 
     def to_raw(self) -> dict[str, Any]:
