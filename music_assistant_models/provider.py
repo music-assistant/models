@@ -10,6 +10,7 @@ from typing import Any
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from .enums import MediaType, ProviderFeature, ProviderStage, ProviderType
+from .translations import resolve_translation
 
 
 @dataclass
@@ -67,6 +68,16 @@ class ProviderManifest(DataClassORJSONMixin):
         """Parse ProviderManifest from file."""
         file_contents = await asyncio.to_thread(Path(manifest_file).read_text)
         return cls.from_json(file_contents)
+
+    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
+        """Localize name/description when a translation resolver is set (no-op otherwise)."""
+        if (value := resolve_translation(f"provider.{self.domain}.manifest.name")) is not None:
+            d["name"] = value
+        if (
+            value := resolve_translation(f"provider.{self.domain}.manifest.description")
+        ) is not None:
+            d["description"] = value
+        return d
 
 
 @dataclass
