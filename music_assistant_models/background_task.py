@@ -10,6 +10,7 @@ from uuid import uuid4
 from mashumaro import DataClassDictMixin
 
 from .enums import TaskScheduleType, TaskStatus
+from .translations import resolve_translation, translations_active
 
 type TaskMetadataValue = (
     None | bool | int | float | str | list[TaskMetadataValue] | dict[str, TaskMetadataValue]
@@ -172,3 +173,15 @@ class BackgroundTask(DataClassDictMixin):
             raise ValueError("BackgroundTask progress must be between 0 and 100")
         if self.failure_count < 0:
             raise ValueError("BackgroundTask failure_count must be >= 0")
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize the task name from its translation_key when a resolver is active."""
+        if self.translation_key:
+            params = [str(a) for a in self.translation_args] if self.translation_args else None
+            localized = resolve_translation(self.translation_key, params=params)
+            if localized is not None:
+                d["name"] = localized
+        if translations_active():
+            d.pop("translation_key", None)
+            d.pop("translation_args", None)
+        return d
