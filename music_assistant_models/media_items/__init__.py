@@ -33,6 +33,7 @@ from .media_item import (
 )
 from .metadata import (
     MediaItemChapter,
+    MediaItemCollection,
     MediaItemImage,
     MediaItemLink,
     MediaItemMetadata,
@@ -51,6 +52,7 @@ __all__ = [
     "ItemMapping",
     "MediaItem",
     "MediaItemChapter",
+    "MediaItemCollection",
     "MediaItemImage",
     "MediaItemLink",
     "MediaItemMetadata",
