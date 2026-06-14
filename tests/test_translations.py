@@ -7,7 +7,7 @@ from typing import Any
 from music_assistant_models.background_task import BackgroundTask
 from music_assistant_models.config_entries import ConfigEntry, ConfigValueOption
 from music_assistant_models.enums import ConfigEntryType, ProviderType
-from music_assistant_models.media_items import RecommendationFolder
+from music_assistant_models.media_items import BrowseFolder, RecommendationFolder
 from music_assistant_models.provider import ProviderManifest
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
@@ -15,8 +15,9 @@ from music_assistant_models.translations import TRANSLATION_RESOLVER
 _CATALOG = {
     "config_entries.log_level.label": "Logniveau",
     "config_categories.generic": "Algemeen",
-    "media.recently_played.name": "Onlangs afgespeeld",
-    "media.recently_played.subtitle": "Ga verder waar je gebleven was",
+    "media.recommendations.recently_played.name": "Onlangs afgespeeld",
+    "media.recommendations.recently_played.subtitle": "Ga verder waar je gebleven was",
+    "media.folder.libraries.name": "Bibliotheken",
     "provider.demo.manifest.name": "Demo-muziekprovider",
     "provider.demo.manifest.description": "Een demoprovider.",
     "background_task.database_cleanup": "Database opschonen",
@@ -76,6 +77,24 @@ def test_media_item_resolves_name_subtitle_and_strips_machinery() -> None:
     assert localized["subtitle"] == "Ga verder waar je gebleven was"
     assert "translation_key" not in localized
     assert "translation_params" not in localized
+
+
+def test_browse_and_recommendation_folders_use_distinct_namespaces() -> None:
+    """Folder names key by media type; recommendation folders override to recommendations.*."""
+    browse = BrowseFolder(
+        item_id="libraries", provider="library", name="Libraries", translation_key="libraries"
+    )
+    rec = RecommendationFolder(
+        item_id="recently_played",
+        provider="library",
+        name="Recently played",
+        translation_key="recently_played",
+    )
+    with _resolver_active():
+        # browse folder (media_type FOLDER) reads media.folder.libraries.name
+        assert browse.to_dict()["name"] == "Bibliotheken"
+        # recommendation folder overrides its group -> media.recommendations.* (not media.folder.*)
+        assert rec.to_dict()["name"] == "Onlangs afgespeeld"
 
 
 def test_provider_manifest_resolves_name_and_description() -> None:

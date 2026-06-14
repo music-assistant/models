@@ -50,6 +50,17 @@ class _MediaItemBase(DataClassDictMixin):
     translation_params: list[str] | None = None
     media_type: MediaType = MediaType.UNKNOWN
 
+    @property
+    def _translation_group(self) -> str:
+        """
+        Namespace segment for a bare translation_key (defaults to the media type).
+
+        Keyed by media type so names group as ``media.<type>.<key>`` (e.g. ``media.genre.jazz``).
+        Special subclasses override this when their media_type doesn't capture the distinction
+        (e.g. recommendation folders, which share ``MediaType.FOLDER`` with browse folders).
+        """
+        return self.media_type.value
+
     def __post_init__(self) -> None:
         """Call after init."""
         if self.uri is None:
@@ -62,7 +73,11 @@ class _MediaItemBase(DataClassDictMixin):
         if self.translation_key is None:
             return None
         key = self.translation_key
-        return key if key.startswith(("provider.", "core.", "common.")) else f"media.{key}"
+        return (
+            key
+            if key.startswith(("provider.", "core.", "common."))
+            else f"media.{self._translation_group}.{key}"
+        )
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize the display name (and subtitle) when a translation resolver is set."""
@@ -528,6 +543,11 @@ class RecommendationFolder(BrowseFolder):
         metadata=field_options(deserialize=_deserialize_recommendation_items),
     )
     subtitle: str | None = None  # optional subtitle for the recommendation
+
+    @property
+    def _translation_group(self) -> str:
+        """Own namespace: media_type is FOLDER (shared with BrowseFolder), so override it."""
+        return "recommendations"
 
 
 # some type aliases
