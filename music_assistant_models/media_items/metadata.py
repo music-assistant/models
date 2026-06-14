@@ -116,7 +116,8 @@ class MediaItemChapter(DataClassDictMixin):
 
 @dataclass(frozen=True, kw_only=True)
 class MediaItemCollection(DataClassDictMixin):
-    """Model for a MediaItem's collection.
+    """
+    Model for a MediaItem's collection.
 
     A book can be part of one or multiple collections. The backend will collect all books belonging
     to a series, the provider only needs use this model and add it as often as needed to the

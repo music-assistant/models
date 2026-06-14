@@ -9,7 +9,8 @@ from .media_item import Audiobook
 
 @dataclass
 class AudiobookCollection(DataClassDictMixin):
-    """Model for an audiobook collection when gathered by the backend.
+    """
+    Model for an audiobook collection when gathered by the backend.
 
     A provider may add multiple MediaItemCollection entries to a book, making it part of one or
     multiple collections. The backend then searches the database for all books of an collection, and
