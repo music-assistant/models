@@ -12,7 +12,7 @@ from typing import Any, Final, cast
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import SECURE_STRING_SUBSTITUTE
-from .enums import ConfigEntryType, PlayerType, ProviderType
+from .enums import ConfigEntryType, PlayerType, ProviderStatus, ProviderType
 from .translations import resolve_translation
 
 LOGGER = logging.getLogger(__name__)
@@ -394,6 +394,25 @@ class Config(DataClassDictMixin):
 
 
 @dataclass
+class ProviderError(DataClassDictMixin):
+    """
+    Structured, localizable error describing why a provider failed to load.
+
+    Clients localize the message via translation_key/translation_args, falling back to
+    the (untranslated) message. error_code maps to a MusicAssistantError via ERROR_MAP.
+    """
+
+    # error_code: the MusicAssistantError.error_code (999 for non-MusicAssistant exceptions)
+    error_code: int
+    # message: untranslated fallback message (str(exc))
+    message: str
+    # translation_key: optional key to localize the message client-side
+    translation_key: str | None = None
+    # translation_args: positional arguments for {0}/{1} placeholders in the translated message
+    translation_args: list[Any] = field(default_factory=list)
+
+
+@dataclass
 class ProviderConfig(Config):
     """Provider(instance) Configuration."""
 
@@ -406,8 +425,25 @@ class ProviderConfig(Config):
     name: str | None = None
     # default_name: default name to use/persist when there is no name set by the user
     default_name: str | None = None
-    # last_error: an optional error message if the provider could not be setup with this config
-    last_error: str | None = None
+    # last_error: structured error if the provider could not be setup with this config
+    last_error: ProviderError | None = None
+    # status: load/lifecycle status, derived and stamped server-side on the api read path.
+    # Never persisted (see to_raw) and not set during normal config save/load.
+    status: ProviderStatus | None = None
+
+    @classmethod
+    def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
+        """Coerce a legacy string last_error (from older settings.json) into a ProviderError."""
+        last_error = d.get("last_error")
+        if isinstance(last_error, str):
+            d["last_error"] = {"error_code": 999, "message": last_error}
+        return d
+
+    def to_raw(self) -> dict[str, Any]:
+        """Return minimized/raw dict to store; the derived `status` is never persisted."""
+        res = super().to_raw()
+        res.pop("status", None)
+        return res
 
     def _translation_owner(self) -> str | None:
         return f"provider.{self.domain}"
