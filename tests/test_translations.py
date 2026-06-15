@@ -7,7 +7,7 @@ from typing import Any
 from music_assistant_models.background_task import BackgroundTask
 from music_assistant_models.config_entries import ConfigEntry, ConfigValueOption
 from music_assistant_models.enums import ConfigEntryType, ProviderType
-from music_assistant_models.media_items import BrowseFolder, RecommendationFolder
+from music_assistant_models.media_items import BrowseFolder, Genre, RecommendationFolder
 from music_assistant_models.provider import ProviderManifest
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
@@ -18,6 +18,8 @@ _CATALOG = {
     "media.recommendations.recently_played.name": "Onlangs afgespeeld",
     "media.recommendations.recently_played.subtitle": "Ga verder waar je gebleven was",
     "media.folder.libraries.name": "Bibliotheken",
+    "media.genre.jazz.name": "Jazz (NL)",
+    "media.genre.jazz.description": "Jazz is een Amerikaans muziekgenre.",
     "provider.demo.manifest.name": "Demo-muziekprovider",
     "provider.demo.manifest.description": "Een demoprovider.",
     "background_task.database_cleanup": "Database opschonen",
@@ -77,6 +79,27 @@ def test_media_item_resolves_name_subtitle_and_strips_machinery() -> None:
     assert localized["subtitle"] == "Ga verder waar je gebleven was"
     assert "translation_key" not in localized
     assert "translation_params" not in localized
+
+
+def test_genre_resolves_nested_metadata_description() -> None:
+    """A Genre localizes its name and its nested metadata.description from media.genre.<key>.*."""
+    genre = Genre(
+        item_id="jazz",
+        provider="library",
+        name="Jazz",
+        translation_key="jazz",
+        provider_mappings=set(),
+    )
+    # plain to_dict keeps the in-code values (no description authored in code)
+    plain = genre.to_dict()
+    assert plain["name"] == "Jazz"
+    assert plain["metadata"]["description"] is None
+    # resolver bound -> localized name + nested metadata.description, machinery stripped
+    with _resolver_active():
+        localized = genre.to_dict()
+    assert localized["name"] == "Jazz (NL)"
+    assert localized["metadata"]["description"] == "Jazz is een Amerikaans muziekgenre."
+    assert "translation_key" not in localized
 
 
 def test_browse_and_recommendation_folders_use_distinct_namespaces() -> None:
