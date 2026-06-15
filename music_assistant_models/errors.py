@@ -232,3 +232,16 @@ class RateLimited(ResourceTemporarilyUnavailable):
 
     error_code = 25
     translation_key = "errors.rate_limited"
+
+
+class UnsupportedSystemError(SetupFailedError):
+    """
+    Raised when the host does not meet a provider's minimum requirements.
+
+    Subclass of SetupFailedError so existing setup handling still applies, but it
+    marks a permanent condition (RAM, CPU cores, CPU capability) that will not
+    resolve at runtime, so the provider load must not be retried.
+    """
+
+    error_code = 26
+    translation_key = "errors.unsupported_system"

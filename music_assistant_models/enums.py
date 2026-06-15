@@ -831,3 +831,25 @@ class CoreState(StrEnum):
     RUNNING = "running"
     STOPPING = "stopping"
     STOPPED = "stopped"
+
+
+class ProviderStatus(StrEnum):
+    """
+    Enum representing the load/lifecycle status of a provider (instance).
+
+    Derived server-side from the provider's config and (when present) its loaded instance.
+    Runtime reachability of a loaded provider is conveyed separately by ProviderInstance.available.
+    """
+
+    # loaded: setup succeeded; a live instance exists
+    LOADED = "loaded"
+    # loading: enabled and being (re)loaded, or waiting on a dependency; no instance yet, no error
+    LOADING = "loading"
+    # disabled: provider config exists but is disabled by the user
+    DISABLED = "disabled"
+    # auth_required: setup failed because (re)authentication is needed
+    AUTH_REQUIRED = "auth_required"
+    # incompatible: the host does not meet the provider's requirements (permanent)
+    INCOMPATIBLE = "incompatible"
+    # error: setup failed for any other reason (see the provider's last_error)
+    ERROR = "error"
