@@ -80,18 +80,19 @@ class _MediaItemBase(DataClassDictMixin):
         )
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
-        """Localize the display name (and subtitle) when a translation resolver is set."""
+        """Localize name/subtitle/description when a translation resolver is set."""
         self._resolve_translation(d)
         return d
 
     def _resolve_translation(self, d: dict[str, Any]) -> None:
         """
-        Replace name/subtitle in the serialized dict with localized strings.
+        Replace name/subtitle/description in the serialized dict with localized strings.
 
-        When a `translation_key` is set and a resolver is active, name/subtitle are localized for
-        the connection locale; otherwise the in-code values are preserved. On localized API output
-        the internal translation_key/translation_params are stripped; they are retained in plain
-        to_dict() calls used for internal round-tripping (caching, item mappings).
+        When a `translation_key` is set and a resolver is active, the top-level name/subtitle and
+        the nested metadata.description are localized for the connection locale; otherwise the
+        in-code values are preserved. On localized API output the internal
+        translation_key/translation_params are stripped; they are retained in plain to_dict()
+        calls used for internal round-tripping (caching, item mappings).
         """
         base = self._translation_base()
         if base is not None:
@@ -103,6 +104,13 @@ class _MediaItemBase(DataClassDictMixin):
                 )
                 if localized is not None:
                     d[field_name] = localized
+            # description lives on the nested metadata object (MediaItemMetadata), not top-level
+            if isinstance(metadata := d.get("metadata"), dict):
+                localized = resolve_translation(
+                    f"{base}.description", owner=self.provider, params=self.translation_params
+                )
+                if localized is not None:
+                    metadata["description"] = localized
         if translations_active():
             d.pop("translation_key", None)
             d.pop("translation_params", None)
