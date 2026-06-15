@@ -11,6 +11,7 @@ from music_assistant_models.enums import CoreState
 
 from .event import MassEvent
 from .helpers import get_serializable_value
+from .translations import resolve_translation, translations_active
 
 
 @dataclass
@@ -43,6 +44,23 @@ class ErrorResultMessage(ResultMessageBase):
 
     error_code: int
     details: str | None = None
+    # translation_key + translation_args localize `details` for the connection's locale during
+    # outbound API serialization (resolved in __post_serialize__); both are stripped from the
+    # client payload when a resolver is active.
+    translation_key: str | None = None
+    translation_args: list[Any] = field(default_factory=list)
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize `details` from the translation_key when a resolver is active."""
+        if self.translation_key:
+            params = [str(a) for a in self.translation_args] if self.translation_args else None
+            localized = resolve_translation(self.translation_key, params=params)
+            if localized is not None:
+                d["details"] = localized
+        if translations_active():
+            d.pop("translation_key", None)
+            d.pop("translation_args", None)
+        return d
 
 
 # EventMessage is the same as MassEvent, this is just a alias.
