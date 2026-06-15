@@ -90,11 +90,6 @@ class ProviderInstance(DataClassORJSONMixin):
     instance_id: str
     supported_features: set[ProviderFeature]
     available: bool
-    icon: str | None = None
     is_streaming_provider: bool | None = None  # music providers only
-
-    def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
-        """Execute action(s) on serialization."""
-        # add lookup_key for backwards compatibility
-        d["lookup_key"] = self.domain if self.is_streaming_provider else self.instance_id
-        return d
+    # lookup_key: kept for backwards compatibility; mirrors the server wire value (== instance_id)
+    lookup_key: str | None = None
