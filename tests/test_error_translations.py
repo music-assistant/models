@@ -13,6 +13,7 @@ from music_assistant_models.errors import (
     ProviderUnavailableError,
     RateLimited,
     ResourceTemporarilyUnavailable,
+    UnsupportedSystemError,
 )
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
@@ -48,6 +49,8 @@ def test_error_subclasses_expose_default_translation_key() -> None:
     assert InvalidToken.translation_key == "errors.invalid_token"
     # RateLimited subclasses ResourceTemporarilyUnavailable but defines its own key
     assert RateLimited.translation_key == "errors.rate_limited"
+    # UnsupportedSystemError subclasses SetupFailedError but defines its own key
+    assert UnsupportedSystemError.translation_key == "errors.unsupported_system"
     # default key is readable on an instance too
     assert ProviderUnavailableError("boom").translation_key == "errors.provider_unavailable"
 
@@ -126,3 +129,4 @@ def test_error_map_still_registers_all_subclasses() -> None:
     """Adding the translation key does not disturb error_code registration."""
     assert ERROR_MAP[1] is ProviderUnavailableError
     assert ERROR_MAP[25] is RateLimited
+    assert ERROR_MAP[26] is UnsupportedSystemError
