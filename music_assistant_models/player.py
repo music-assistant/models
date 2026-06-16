@@ -12,6 +12,7 @@ from mashumaro import DataClassDictMixin
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
 from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
 from .media_items import MediaItemPalette
+from .translations import resolve_translation, translations_active
 from .unique_list import UniqueList
 
 
@@ -169,6 +170,15 @@ class PlayerSoundMode(DataClassDictMixin):
         if not self.translation_key:
             self.translation_key = self.id
 
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize the sound mode name from its translation_key when a resolver is active."""
+        localized = resolve_translation(f"sound_mode.{self.translation_key}.name")
+        if localized is not None:
+            d["name"] = localized
+        # translation_key is kept on the wire: the Home Assistant integration relies on it
+        # as a stable identifier, so (unlike other models) it is not stripped here.
+        return d
+
 
 class PlayerOptionType(StrEnum):
     """Enum for the type of a Player Option."""
@@ -256,6 +266,22 @@ class PlayerOption(DataClassDictMixin):
                 f"Value {self.value} must be of type {PlayerOptionTypeMap[self.type]} "
                 "if type is {self.type}"
             )
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize the option name and option titles when a resolver is active."""
+        base = f"player_options.{self.translation_key}"
+        localized = resolve_translation(f"{base}.name", params=self.translation_params)
+        if localized is not None:
+            d["name"] = localized
+        for option_dict, option in zip(d.get("options") or [], self.options or [], strict=False):
+            option_name = resolve_translation(f"{base}.options.{option.translation_key}")
+            if option_name is not None:
+                option_dict["name"] = option_name
+        # translation_key is kept on the wire (the Home Assistant integration relies on it as a
+        # stable identifier); only the resolution input is stripped from localized API output.
+        if translations_active():
+            d.pop("translation_params", None)
+        return d
 
 
 @dataclass
