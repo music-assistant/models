@@ -8,6 +8,12 @@ from music_assistant_models.background_task import BackgroundTask
 from music_assistant_models.config_entries import ConfigEntry, ConfigValueOption
 from music_assistant_models.enums import ConfigEntryType, ProviderType
 from music_assistant_models.media_items import BrowseFolder, Genre, RecommendationFolder
+from music_assistant_models.player import (
+    PlayerOption,
+    PlayerOptionEntry,
+    PlayerOptionType,
+    PlayerSoundMode,
+)
 from music_assistant_models.provider import ProviderManifest
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
@@ -26,6 +32,10 @@ _CATALOG = {
     "core.cache.manifest.description": "Cache-configuratie.",
     "background_task.database_cleanup": "Database opschonen",
     "background_task.update_metadata": "Metadata bijwerken voor {0}",
+    "player_options.surround_decoder_type.name": "Type surround-decoder",
+    "player_options.surround_decoder_type.options.auto": "Automatisch",
+    "player_options.sleep.name": "Slaaptimer na {0} minuten",
+    "sound_mode.stereo.name": "Stereo (NL)",
 }
 
 
@@ -181,6 +191,59 @@ def test_background_task_interpolates_translation_args() -> None:
     with _resolver_active():
         localized = task.to_dict()
     assert localized["name"] == "Metadata bijwerken voor My Playlist"
+
+
+def test_player_option_resolves_name_and_titles_keeps_translation_key() -> None:
+    """A PlayerOption localizes its name + option titles but keeps translation_key for HA."""
+    option = PlayerOption(
+        key="surround_decoder_type",
+        name="Surround decoder type",
+        type=PlayerOptionType.STRING,
+        value="auto",
+        options=[
+            PlayerOptionEntry(key="auto", name="Auto", type=PlayerOptionType.STRING, value="auto"),
+        ],
+    )
+    # plain to_dict keeps the in-code values and the translation machinery
+    plain = option.to_dict()
+    assert plain["name"] == "Surround decoder type"
+    assert plain["translation_key"] == "surround_decoder_type"
+    assert plain["options"][0]["name"] == "Auto"
+    assert "translation_params" in plain
+    # resolver bound -> localized name + option title; translation_key kept (HA depends on it)
+    with _resolver_active():
+        localized = option.to_dict()
+    assert localized["name"] == "Type surround-decoder"
+    assert localized["options"][0]["name"] == "Automatisch"
+    assert localized["translation_key"] == "surround_decoder_type"
+    assert localized["options"][0]["translation_key"] == "auto"
+    assert "translation_params" not in localized
+
+
+def test_player_option_interpolates_translation_params() -> None:
+    """translation_params fill positional placeholders in the resolved option name."""
+    option = PlayerOption(
+        key="sleep",
+        name="Sleep timer",
+        type=PlayerOptionType.INTEGER,
+        value=30,
+        translation_params=["30"],
+    )
+    with _resolver_active():
+        assert option.to_dict()["name"] == "Slaaptimer na 30 minuten"
+
+
+def test_player_sound_mode_resolves_name_and_keeps_translation_key() -> None:
+    """A PlayerSoundMode localizes its name but keeps translation_key for the HA integration."""
+    sound_mode = PlayerSoundMode(id="stereo", name="Stereo", translation_key="stereo")
+    plain = sound_mode.to_dict()
+    assert plain["name"] == "Stereo"
+    assert plain["translation_key"] == "stereo"
+    with _resolver_active():
+        localized = sound_mode.to_dict()
+    assert localized["name"] == "Stereo (NL)"
+    # translation_key is kept on the wire for the HA integration
+    assert localized["translation_key"] == "stereo"
 
 
 def test_config_value_option_value_first() -> None:
