@@ -13,7 +13,7 @@ from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import SECURE_STRING_SUBSTITUTE
 from .enums import ConfigEntryType, PlayerType, ProviderStatus, ProviderType
-from .translations import resolve_translation
+from .translations import resolve_translation, translations_active
 
 LOGGER = logging.getLogger(__name__)
 
@@ -395,21 +395,24 @@ class Config(DataClassDictMixin):
 
 @dataclass
 class ProviderError(DataClassDictMixin):
-    """
-    Structured, localizable error describing why a provider failed to load.
+    """Structured, localizable error describing why a provider failed to load."""
 
-    Clients localize the message via translation_key/translation_args, falling back to
-    the (untranslated) message. error_code maps to a MusicAssistantError via ERROR_MAP.
-    """
-
-    # error_code: the MusicAssistantError.error_code (999 for non-MusicAssistant exceptions)
-    error_code: int
-    # message: untranslated fallback message (str(exc))
+    error_code: int  # MusicAssistantError.error_code; 999 for non-MusicAssistant exceptions
     message: str
-    # translation_key: optional key to localize the message client-side
     translation_key: str | None = None
-    # translation_args: positional arguments for {0}/{1} placeholders in the translated message
     translation_args: list[Any] = field(default_factory=list)
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize `message` from translation_key when a resolver is active; strip machinery."""
+        if self.translation_key:
+            params = [str(a) for a in self.translation_args] if self.translation_args else None
+            localized = resolve_translation(self.translation_key, params=params)
+            if localized is not None:
+                d["message"] = localized
+        if translations_active():
+            d.pop("translation_key", None)
+            d.pop("translation_args", None)
+        return d
 
 
 @dataclass
