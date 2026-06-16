@@ -71,10 +71,12 @@ class ProviderManifest(DataClassORJSONMixin):
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Localize name/description when a translation resolver is set (no-op otherwise)."""
-        if (value := resolve_translation(f"provider.{self.domain}.manifest.name")) is not None:
+        # core controllers use the core.<domain> namespace, providers use provider.<domain>
+        namespace = "core" if self.type == ProviderType.CORE else "provider"
+        if (value := resolve_translation(f"{namespace}.{self.domain}.manifest.name")) is not None:
             d["name"] = value
         if (
-            value := resolve_translation(f"provider.{self.domain}.manifest.description")
+            value := resolve_translation(f"{namespace}.{self.domain}.manifest.description")
         ) is not None:
             d["description"] = value
         return d

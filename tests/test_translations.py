@@ -22,6 +22,8 @@ _CATALOG = {
     "media.genre.jazz.description": "Jazz is een Amerikaans muziekgenre.",
     "provider.demo.manifest.name": "Demo-muziekprovider",
     "provider.demo.manifest.description": "Een demoprovider.",
+    "core.cache.manifest.name": "Cache (NL)",
+    "core.cache.manifest.description": "Cache-configuratie.",
     "background_task.database_cleanup": "Database opschonen",
     "background_task.update_metadata": "Metadata bijwerken voor {0}",
 }
@@ -134,6 +136,22 @@ def test_provider_manifest_resolves_name_and_description() -> None:
         localized = manifest.to_dict()
     assert localized["name"] == "Demo-muziekprovider"
     assert localized["description"] == "Een demoprovider."
+
+
+def test_core_manifest_resolves_under_core_namespace() -> None:
+    """A CORE manifest resolves name/description from core.<domain>.manifest.*."""
+    manifest = ProviderManifest(
+        type=ProviderType.CORE,
+        domain="cache",
+        name="Cache",
+        description="Cache configuration.",
+        codeowners=[],
+    )
+    assert manifest.to_dict()["name"] == "Cache"
+    with _resolver_active():
+        localized = manifest.to_dict()
+    assert localized["name"] == "Cache (NL)"
+    assert localized["description"] == "Cache-configuratie."
 
 
 def test_background_task_resolves_name_and_strips_machinery() -> None:
