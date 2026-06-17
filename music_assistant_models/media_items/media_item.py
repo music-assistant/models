@@ -373,8 +373,8 @@ class Audiobook(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     publisher: str | None = None
-    authors: UniqueList[str | Artist] = field(default_factory=UniqueList)
-    narrators: UniqueList[str | Artist] = field(default_factory=UniqueList)
+    authors: UniqueList[str | Artist | ItemMapping] = field(default_factory=UniqueList)
+    narrators: UniqueList[str | Artist | ItemMapping] = field(default_factory=UniqueList)
     duration: int = 0
     # resume point info
     # set to None if unknown/unsupported by provider
@@ -387,7 +387,7 @@ class Audiobook(MediaItem):
     @property
     def artist_str(self) -> str:
         """Return (combined) author string for audiobook."""
-        return "/".join(a.name if isinstance(a, Artist) else a for a in self.authors)
+        return "/".join(a.name if isinstance(a, Artist | ItemMapping) else a for a in self.authors)
 
 
 @dataclass(kw_only=True)
