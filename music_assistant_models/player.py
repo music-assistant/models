@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
-from mashumaro import DataClassDictMixin
+from mashumaro import DataClassDictMixin, field_options
 
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
 from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
@@ -160,6 +160,11 @@ class PlayerSoundMode(DataClassDictMixin):
     # optional translation key
     # defaults to id
     translation_key: str = ""
+    # translation_owner: namespace ("provider.<domain>"/"core.<domain>") the sound mode's
+    # strings resolve under; stamped by the player provider/controller. Not serialized.
+    translation_owner: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
 
     def __hash__(self) -> int:
         """Return custom hash."""
@@ -172,7 +177,9 @@ class PlayerSoundMode(DataClassDictMixin):
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize the sound mode name from its translation_key when a resolver is active."""
-        localized = resolve_translation(f"sound_mode.{self.translation_key}.name")
+        localized = resolve_translation(
+            f"sound_mode.{self.translation_key}.name", owner=self.translation_owner
+        )
         if localized is not None:
             d["name"] = localized
         # translation_key is kept on the wire: the Home Assistant integration relies on it
@@ -239,6 +246,11 @@ class PlayerOption(DataClassDictMixin):
     translation_key: str = ""
     # translation_params: optional parameters for the translation key
     translation_params: list[str] | None = None
+    # translation_owner: namespace ("provider.<domain>"/"core.<domain>") the option's
+    # strings resolve under; stamped by the player provider/controller. Not serialized.
+    translation_owner: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
 
     # current value of the option, see PlayerOptionValueType for serialization order.
     value: PlayerOptionValueType
@@ -270,11 +282,15 @@ class PlayerOption(DataClassDictMixin):
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize the option name and option titles when a resolver is active."""
         base = f"player_options.{self.translation_key}"
-        localized = resolve_translation(f"{base}.name", params=self.translation_params)
+        localized = resolve_translation(
+            f"{base}.name", owner=self.translation_owner, params=self.translation_params
+        )
         if localized is not None:
             d["name"] = localized
         for option_dict, option in zip(d.get("options") or [], self.options or [], strict=False):
-            option_name = resolve_translation(f"{base}.options.{option.translation_key}")
+            option_name = resolve_translation(
+                f"{base}.options.{option.translation_key}", owner=self.translation_owner
+            )
             if option_name is not None:
                 option_dict["name"] = option_name
         # translation_key is kept on the wire (the Home Assistant integration relies on it as a
