@@ -20,6 +20,7 @@ from music_assistant_models.translations import TRANSLATION_RESOLVER
 # the strings a bound resolver would return for the keys the models look up
 _CATALOG = {
     "config_entries.log_level.label": "Logniveau",
+    "config_entries.preset.label": "Preset",
     "config_categories.generic": "Algemeen",
     "media.recommendations.recently_played.name": "Onlangs afgespeeld",
     "media.recommendations.recently_played.subtitle": "Ga verder waar je gebleven was",
@@ -69,6 +70,14 @@ def test_config_entry_resolves_label_and_omits_machinery() -> None:
         localized = entry.to_dict()
     assert localized["label"] == "Logniveau"
     assert localized["category_label"] == "Algemeen"
+
+
+def test_config_entry_explicit_translation_key_is_a_bare_slug() -> None:
+    """An explicit translation_key is a bare slug; the model derives config_entries.<slug>."""
+    # e.g. a shared key for a dynamic config key (preset_1, preset_2, ...) -> config_entries.preset
+    entry = ConfigEntry(key="preset_1", type=ConfigEntryType.STRING, translation_key="preset")
+    with _resolver_active():
+        assert entry.to_dict()["label"] == "Preset"
 
 
 def test_media_item_resolves_name_subtitle_and_strips_machinery() -> None:

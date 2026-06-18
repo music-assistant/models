@@ -21,6 +21,20 @@ ENCRYPT_CALLBACK: Callable[[str], str] | None = None
 DECRYPT_CALLBACK: Callable[[str], str] | None = None
 
 
+def _localized_base(override: str | None, key: str, group: str) -> str:
+    """
+    Return the translations base ``<group>.<slug>`` for a localized config field.
+
+    The slug is the explicit ``override`` (a bare key, never a group-qualified path) or, by
+    default, the entry's own ``key``/category — the group is always derived from the model.
+
+    :param override: Optional caller-supplied key (a bare slug).
+    :param key: The entry's own key (or category) used when no override is given.
+    :param group: The localization group the slug lives under (e.g. ``config_entries``).
+    """
+    return f"{group}.{override if override is not None else key}"
+
+
 _ConfigValueTypeSingle = (
     # order is important here for the (de)serialization!
     # https://github.com/Fatal1ty/mashumaro/pull/256
@@ -181,12 +195,13 @@ class ConfigEntry(DataClassDictMixin):
         Localize human-readable fields from the translations for the connection locale.
 
         Resolves label/description/option titles and the category name under this entry's owner
-        namespace (keyed by config_entries.<key> / config_categories.<category>, or a server-set
-        translation_key/category_translation_key override). No-op when nothing matches, so the
-        in-code values are kept. The translation machinery fields are not serialized.
+        namespace (keyed by config_entries.<key> / config_categories.<category>). A server-set
+        translation_key/category_translation_key override is the bare slug under that same group,
+        unless it is fully qualified. No-op when nothing matches, so the in-code values are kept.
+        The translation machinery fields are not serialized.
         """
         owner = self.translation_owner
-        base = self.translation_key or f"config_entries.{self.key}"
+        base = _localized_base(self.translation_key, self.key, "config_entries")
         label = resolve_translation(f"{base}.label", owner=owner, params=self.translation_params)
         if label is not None:
             d["label"] = label
@@ -203,7 +218,9 @@ class ConfigEntry(DataClassDictMixin):
             title = resolve_translation(f"{base}.options.{option.value}", owner=owner)
             if title is not None:
                 option_dict["title"] = title
-        category_key = self.category_translation_key or f"config_categories.{self.category}"
+        category_key = _localized_base(
+            self.category_translation_key, self.category, "config_categories"
+        )
         category_label = resolve_translation(
             category_key, owner=owner, params=self.category_translation_params
         )
@@ -399,19 +416,27 @@ class ProviderError(DataClassDictMixin):
 
     error_code: int  # MusicAssistantError.error_code; 999 for non-MusicAssistant exceptions
     message: str
+    # translation_key: optional bare slug to localize the message; __post_serialize__ derives the
+    # errors.<slug> group and resolves it owner-first then common (mirrors ErrorResultMessage)
     translation_key: str | None = None
     translation_args: list[Any] = field(default_factory=list)
+    # translation_owner: owning namespace ("provider.<domain>"/"core.<domain>") consulted before
+    # common — set when a provider/controller defines its own message for the key
+    translation_owner: str | None = None
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize `message` from translation_key when a resolver is active; strip machinery."""
         if self.translation_key:
             params = [str(a) for a in self.translation_args] if self.translation_args else None
-            localized = resolve_translation(self.translation_key, params=params)
+            localized = resolve_translation(
+                f"errors.{self.translation_key}", owner=self.translation_owner, params=params
+            )
             if localized is not None:
                 d["message"] = localized
         if translations_active():
             d.pop("translation_key", None)
             d.pop("translation_args", None)
+            d.pop("translation_owner", None)
         return d
 
 

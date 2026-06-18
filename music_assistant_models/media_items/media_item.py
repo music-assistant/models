@@ -72,12 +72,8 @@ class _MediaItemBase(DataClassDictMixin):
         """Return the translation key base for this item's translation_key (None if unset)."""
         if self.translation_key is None:
             return None
-        key = self.translation_key
-        return (
-            key
-            if key.startswith(("provider.", "core.", "common."))
-            else f"media.{self._translation_group}.{key}"
-        )
+        # the group is always derived from the media type; translation_key is just the slug
+        return f"media.{self._translation_group}.{self.translation_key}"
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize name/subtitle/description when a translation resolver is set."""

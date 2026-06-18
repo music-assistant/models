@@ -44,22 +44,27 @@ class ErrorResultMessage(ResultMessageBase):
 
     error_code: int
     details: str | None = None
-    # translation_key + translation_args localize `details` for the connection's locale during
-    # outbound API serialization (resolved in __post_serialize__); both are stripped from the
-    # client payload when a resolver is active.
+    # translation_key (a bare slug) + translation_args + translation_owner localize `details` for
+    # the connection's locale during outbound API serialization: __post_serialize__ derives the
+    # `errors.<slug>` group and resolves it owner-first then against common. All three are stripped
+    # from the client payload when a resolver is active.
     translation_key: str | None = None
     translation_args: list[Any] = field(default_factory=list)
+    translation_owner: str | None = None
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize `details` from the translation_key when a resolver is active."""
         if self.translation_key:
             params = [str(a) for a in self.translation_args] if self.translation_args else None
-            localized = resolve_translation(self.translation_key, params=params)
+            localized = resolve_translation(
+                f"errors.{self.translation_key}", owner=self.translation_owner, params=params
+            )
             if localized is not None:
                 d["details"] = localized
         if translations_active():
             d.pop("translation_key", None)
             d.pop("translation_args", None)
+            d.pop("translation_owner", None)
         return d
 
 
