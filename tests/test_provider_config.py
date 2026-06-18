@@ -45,12 +45,30 @@ def test_legacy_string_last_error_is_coerced() -> None:
 
 def test_structured_last_error_roundtrips() -> None:
     """A structured last_error survives a from_dict/to_dict round-trip."""
-    err = ProviderError(
-        error_code=21, message="auth", translation_key="errors.authentication_failed"
-    )
+    err = ProviderError(error_code=21, message="auth", translation_key="authentication_failed")
     conf = ProviderConfig.from_dict(_raw(last_error=err.to_dict()))
     assert conf.last_error == err
     assert conf.to_dict()["last_error"] == err.to_dict()
+
+
+def test_last_error_localizes_message_owner_first() -> None:
+    """A bare key resolves under errors.<slug>, owner-first then common."""
+    catalog = {
+        "errors.login_failed": "Inloggen mislukt.",
+        "provider.demo.errors.login_failed": "Demo-login mislukt.",
+    }
+    common = ProviderError(error_code=6, message="login", translation_key="login_failed")
+    with _resolver_active(catalog):
+        assert common.to_dict()["message"] == "Inloggen mislukt."
+    # a provider that owns the key resolves its own message before common
+    owned = ProviderError(
+        error_code=6,
+        message="login",
+        translation_key="login_failed",
+        translation_owner="provider.demo",
+    )
+    with _resolver_active(catalog):
+        assert owned.to_dict()["message"] == "Demo-login mislukt."
 
 
 def test_status_is_served_but_never_persisted() -> None:
@@ -66,7 +84,7 @@ def test_last_error_localized_on_serialize_with_resolver() -> None:
     err = ProviderError(
         error_code=26,
         message="raw English",
-        translation_key="errors.unsupported_system_cpu",
+        translation_key="unsupported_system_cpu",
         translation_args=["Smart Fades", 4, 2],
     )
     conf = ProviderConfig.from_dict(_raw(last_error=err.to_dict()))
@@ -82,10 +100,10 @@ def test_last_error_raw_without_resolver() -> None:
     err = ProviderError(
         error_code=26,
         message="raw English",
-        translation_key="errors.unsupported_system_cpu",
+        translation_key="unsupported_system_cpu",
         translation_args=["Smart Fades", 4, 2],
     )
     served = ProviderConfig.from_dict(_raw(last_error=err.to_dict())).to_dict()["last_error"]
     assert served["message"] == "raw English"
-    assert served["translation_key"] == "errors.unsupported_system_cpu"
+    assert served["translation_key"] == "unsupported_system_cpu"
     assert served["translation_args"] == ["Smart Fades", 4, 2]

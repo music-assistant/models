@@ -416,19 +416,27 @@ class ProviderError(DataClassDictMixin):
 
     error_code: int  # MusicAssistantError.error_code; 999 for non-MusicAssistant exceptions
     message: str
+    # translation_key: optional bare slug to localize the message; __post_serialize__ derives the
+    # errors.<slug> group and resolves it owner-first then common (mirrors ErrorResultMessage)
     translation_key: str | None = None
     translation_args: list[Any] = field(default_factory=list)
+    # translation_owner: owning namespace ("provider.<domain>"/"core.<domain>") consulted before
+    # common — set when a provider/controller defines its own message for the key
+    translation_owner: str | None = None
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize `message` from translation_key when a resolver is active; strip machinery."""
         if self.translation_key:
             params = [str(a) for a in self.translation_args] if self.translation_args else None
-            localized = resolve_translation(self.translation_key, params=params)
+            localized = resolve_translation(
+                f"errors.{self.translation_key}", owner=self.translation_owner, params=params
+            )
             if localized is not None:
                 d["message"] = localized
         if translations_active():
             d.pop("translation_key", None)
             d.pop("translation_args", None)
+            d.pop("translation_owner", None)
         return d
 
 
