@@ -21,7 +21,6 @@ from music_assistant_models.translations import TRANSLATION_RESOLVER
 _CATALOG = {
     "config_entries.log_level.label": "Logniveau",
     "config_entries.preset.label": "Preset",
-    "common.config_entries.shared_setting.label": "Gedeeld",
     "config_categories.generic": "Algemeen",
     "media.recommendations.recently_played.name": "Onlangs afgespeeld",
     "media.recommendations.recently_played.subtitle": "Ga verder waar je gebleven was",
@@ -74,19 +73,11 @@ def test_config_entry_resolves_label_and_omits_machinery() -> None:
 
 
 def test_config_entry_explicit_translation_key_is_a_bare_slug() -> None:
-    """An explicit translation_key is a bare slug under config_entries; an FQ one passes through."""
-    # relative override (e.g. a shared key for a dynamic config key) -> config_entries.<slug>
+    """An explicit translation_key is a bare slug; the model derives config_entries.<slug>."""
+    # e.g. a shared key for a dynamic config key (preset_1, preset_2, ...) -> config_entries.preset
     entry = ConfigEntry(key="preset_1", type=ConfigEntryType.STRING, translation_key="preset")
     with _resolver_active():
         assert entry.to_dict()["label"] == "Preset"
-    # a fully-qualified override is used as-is, so it can reuse a shared string elsewhere
-    shared = ConfigEntry(
-        key="x",
-        type=ConfigEntryType.STRING,
-        translation_key="common.config_entries.shared_setting",
-    )
-    with _resolver_active():
-        assert shared.to_dict()["label"] == "Gedeeld"
 
 
 def test_media_item_resolves_name_subtitle_and_strips_machinery() -> None:

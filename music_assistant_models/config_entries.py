@@ -20,24 +20,19 @@ LOGGER = logging.getLogger(__name__)
 ENCRYPT_CALLBACK: Callable[[str], str] | None = None
 DECRYPT_CALLBACK: Callable[[str], str] | None = None
 
-# translation keys/overrides starting with one of these are already fully qualified
-_FQ_TRANSLATION_PREFIXES = ("provider.", "core.", "common.")
-
 
 def _localized_base(override: str | None, key: str, group: str) -> str:
     """
-    Return the translations base for a localized config field.
+    Return the translations base ``<group>.<slug>`` for a localized config field.
 
-    The base is the bare ``key`` (or an explicit ``override``) under ``group`` — e.g.
-    ``config_entries.<key>``. A fully-qualified override (``provider.``/``core.``/``common.``) is
-    used as-is so it can reuse a shared string defined elsewhere.
+    The slug is the explicit ``override`` (a bare key, never a group-qualified path) or, by
+    default, the entry's own ``key``/category — the group is always derived from the model.
 
-    :param override: Optional caller-supplied key; the bare slug, not the group-qualified path.
+    :param override: Optional caller-supplied key (a bare slug).
     :param key: The entry's own key (or category) used when no override is given.
     :param group: The localization group the slug lives under (e.g. ``config_entries``).
     """
-    base = override if override is not None else key
-    return base if base.startswith(_FQ_TRANSLATION_PREFIXES) else f"{group}.{base}"
+    return f"{group}.{override if override is not None else key}"
 
 
 _ConfigValueTypeSingle = (
