@@ -31,9 +31,7 @@ class _MediaItemBase(DataClassDictMixin):
 
     item_id: str
     provider: str  # provider instance id or provider domain
-    # name: the (English) display name; always set. For localizable items also set a
-    # translation_key, which overrides `name` for the connection locale at serialization.
-    name: str
+    name: str  # the (English) display name; always set
     version: str = ""
     # sort_name will be auto generated if omitted
     sort_name: str | None = None
@@ -42,24 +40,7 @@ class _MediaItemBase(DataClassDictMixin):
     external_ids: set[tuple[ExternalID, str]] = field(default_factory=set)
     # is_playable: if the item is playable (can be used in play_media command)
     is_playable: bool = True
-    # translation_key: optional key to localize `name` (e.g. for "Your Mixes"); resolved to the
-    # connection locale at serialization, overriding the in-code `name`.
-    translation_key: str | None = None
-    # translation_params: optional positional arguments for {0}/{1} placeholders in the
-    # translated string (e.g. "Liked Songs {0}").
-    translation_params: list[str] | None = None
     media_type: MediaType = MediaType.UNKNOWN
-
-    @property
-    def _translation_group(self) -> str:
-        """
-        Namespace segment for a bare translation_key (defaults to the media type).
-
-        Keyed by media type so names group as ``media.<type>.<key>`` (e.g. ``media.genre.jazz``).
-        Special subclasses override this when their media_type doesn't capture the distinction
-        (e.g. recommendation folders, which share ``MediaType.FOLDER`` with browse folders).
-        """
-        return self.media_type.value
 
     def __post_init__(self) -> None:
         """Call after init."""
@@ -67,49 +48,6 @@ class _MediaItemBase(DataClassDictMixin):
             self.uri = create_uri(self.media_type, self.provider, self.item_id)
         if self.sort_name is None:
             self.sort_name = create_sort_name(self.name)
-
-    def _translation_base(self) -> str | None:
-        """Return the translation key base for this item's translation_key (None if unset)."""
-        if self.translation_key is None:
-            return None
-        # the group is always derived from the media type; translation_key is just the slug
-        return f"media.{self._translation_group}.{self.translation_key}"
-
-    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
-        """Localize name/subtitle/description when a translation resolver is set."""
-        self._resolve_translation(d)
-        return d
-
-    def _resolve_translation(self, d: dict[str, Any]) -> None:
-        """
-        Replace name/subtitle/description in the serialized dict with localized strings.
-
-        When a `translation_key` is set and a resolver is active, the top-level name/subtitle and
-        the nested metadata.description are localized for the connection locale; otherwise the
-        in-code values are preserved. On localized API output the internal
-        translation_key/translation_params are stripped; they are retained in plain to_dict()
-        calls used for internal round-tripping (caching, item mappings).
-        """
-        base = self._translation_base()
-        if base is not None:
-            for field_name in ("name", "subtitle"):
-                if field_name not in d:
-                    continue
-                localized = resolve_translation(
-                    f"{base}.{field_name}", owner=self.provider, params=self.translation_params
-                )
-                if localized is not None:
-                    d[field_name] = localized
-            # description lives on the nested metadata object (MediaItemMetadata), not top-level
-            if isinstance(metadata := d.get("metadata"), dict):
-                localized = resolve_translation(
-                    f"{base}.description", owner=self.provider, params=self.translation_params
-                )
-                if localized is not None:
-                    metadata["description"] = localized
-        if translations_active():
-            d.pop("translation_key", None)
-            d.pop("translation_params", None)
 
     def get_external_id(self, external_id_type: ExternalID) -> str | None:
         """Get (the first instance) of given External ID or None if not found."""
@@ -167,6 +105,101 @@ class _MediaItemBase(DataClassDictMixin):
         return self.uri == other.uri
 
 
+@dataclass(kw_only=True, eq=False)
+class _LocalizableName:
+    """
+    Mixin for media items whose ``name`` is localizable via a translation key.
+
+    Carries an optional ``translation_key`` that overrides the in-code (English) ``name`` for the
+    connection locale during outbound API serialization, plus the hook that performs it. Mixed
+    into the media item types that actually have a curated, localizable name (genres, and item
+    mappings standing in for them); the everyday media types (artists, albums, tracks, …) carry
+    user/provider data names and never set a key, so they don't get this machinery. Items whose
+    title also takes positional placeholders use ``_LocalizableTitle`` instead.
+    """
+
+    # translation_key: optional key to localize `name` (e.g. for "Your Mixes"); resolved to the
+    # connection locale at serialization, overriding the in-code `name`.
+    translation_key: str | None = None
+
+    if TYPE_CHECKING:
+        # supplied by the _MediaItemBase this mixin is always combined with
+        media_type: MediaType
+        provider: str
+
+    @property
+    def _translation_group(self) -> str:
+        """
+        Namespace segment for a bare translation_key (defaults to the media type).
+
+        Keyed by media type so names group as ``media.<type>.<key>`` (e.g. ``media.genre.jazz``).
+        Special subclasses override this when their media_type doesn't capture the distinction
+        (e.g. recommendation folders, which share ``MediaType.FOLDER`` with browse folders).
+        """
+        return self.media_type.value
+
+    def _translation_base(self) -> str | None:
+        """Return the translation key base for this item's translation_key (None if unset)."""
+        if self.translation_key is None:
+            return None
+        # the group is always derived from the media type; translation_key is just the slug
+        return f"media.{self._translation_group}.{self.translation_key}"
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize name/subtitle/description when a translation resolver is set."""
+        self._resolve_translation(d)
+        return d
+
+    def _resolve_translation(self, d: dict[str, Any]) -> None:
+        """
+        Replace name/subtitle/description in the serialized dict with localized strings.
+
+        When a `translation_key` is set and a resolver is active, the top-level name/subtitle and
+        the nested metadata.description are localized for the connection locale; otherwise the
+        in-code values are preserved. On localized API output the internal
+        translation_key/translation_params are stripped; they are retained in plain to_dict()
+        calls used for internal round-tripping (caching, item mappings).
+        """
+        base = self._translation_base()
+        # translation_params only exists on _LocalizableTitle subclasses
+        params = getattr(self, "translation_params", None)
+        if base is not None:
+            for field_name in ("name", "subtitle"):
+                if field_name not in d:
+                    continue
+                localized = resolve_translation(
+                    f"{base}.{field_name}", owner=self.provider, params=params
+                )
+                if localized is not None:
+                    d[field_name] = localized
+            # description lives on the nested metadata object (MediaItemMetadata), not top-level
+            if isinstance(metadata := d.get("metadata"), dict):
+                localized = resolve_translation(
+                    f"{base}.description", owner=self.provider, params=params
+                )
+                if localized is not None:
+                    metadata["description"] = localized
+        if translations_active():
+            d.pop("translation_key", None)
+            d.pop("translation_params", None)
+
+
+@dataclass(kw_only=True, eq=False)
+class _LocalizableTitle(_LocalizableName):
+    """
+    Mixin for localizable items whose title may also take positional parameters.
+
+    Extends :class:`_LocalizableName` with ``translation_params`` for ``{0}``/``{1}`` placeholders
+    in the translated string (e.g. "Pandora Station {0}", "Flow: {0}"). Mixed into the types that
+    can carry a dynamic, provider-derived title: radio stations, playlists, and the browse /
+    recommendation folders. Plain library item types (genres) never need params.
+    """
+
+    # translation_params: optional positional arguments for {0}/{1} placeholders in the
+    # translated string (e.g. "Pandora Station {0}").
+    translation_params: list[str] | None = None
+
+
 @dataclass(kw_only=True)
 class MediaItem(_MediaItemBase):
     """Base representation of a media item."""
@@ -206,7 +239,7 @@ class MediaItem(_MediaItemBase):
 
 
 @dataclass(kw_only=True)
-class Genre(MediaItem):
+class Genre(_LocalizableName, MediaItem):
     """Model for a Genre."""
 
     __hash__ = _MediaItemBase.__hash__
@@ -227,7 +260,7 @@ class Genre(MediaItem):
 
 
 @dataclass(kw_only=True)
-class ItemMapping(_MediaItemBase):
+class ItemMapping(_LocalizableName, _MediaItemBase):
     """Representation of a minimized item object."""
 
     __hash__ = _MediaItemBase.__hash__
@@ -312,7 +345,7 @@ class Track(MediaItem):
 
 
 @dataclass(kw_only=True)
-class Playlist(MediaItem):
+class Playlist(_LocalizableTitle, MediaItem):
     """Model for a playlist."""
 
     __hash__ = _MediaItemBase.__hash__
@@ -344,7 +377,7 @@ class Playlist(MediaItem):
 
 
 @dataclass(kw_only=True)
-class Radio(MediaItem):
+class Radio(_LocalizableTitle, MediaItem):
     """Model for a radio station."""
 
     __hash__ = _MediaItemBase.__hash__
@@ -477,7 +510,7 @@ class AudioSource(MediaItem):
 
 
 @dataclass(kw_only=True)
-class BrowseFolder(_MediaItemBase):
+class BrowseFolder(_LocalizableTitle, _MediaItemBase):
     """Representation of a Folder used in Browse (which contains media items)."""
 
     __hash__ = _MediaItemBase.__hash__
