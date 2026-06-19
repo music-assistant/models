@@ -10,7 +10,9 @@ from music_assistant_models.enums import ConfigEntryType, ProviderType
 from music_assistant_models.media_items import (
     BrowseFolder,
     Genre,
+    ItemMapping,
     Playlist,
+    Podcast,
     ProviderMapping,
     Radio,
     RecommendationFolder,
@@ -33,6 +35,7 @@ _CATALOG = {
     "media.recommendations.recently_played.name": "Onlangs afgespeeld",
     "media.recommendations.recently_played.subtitle": "Ga verder waar je gebleven was",
     "media.folder.libraries.name": "Bibliotheken",
+    "media.podcast.unknown_podcast.name": "Onbekende podcast",
     "media.genre.jazz.name": "Jazz (NL)",
     "media.genre.jazz.description": "Jazz is een Amerikaans muziekgenre.",
     "media.playlist.infinite_mix.name": "Oneindige mix",
@@ -173,6 +176,26 @@ def test_radio_resolves_name_with_params() -> None:
     )
     with _resolver_active():
         assert radio.to_dict()["name"] == "Pandora-zender 5"
+
+
+def test_podcast_resolves_name() -> None:
+    """A Podcast localizes its name from media.podcast.<key>.name (e.g. an Unknown placeholder)."""
+    podcast = Podcast(
+        item_id="unknown",
+        provider="spotify",
+        name="Unknown Podcast",
+        translation_key="unknown_podcast",
+        provider_mappings=set(),
+    )
+    with _resolver_active():
+        assert podcast.to_dict()["name"] == "Onbekende podcast"
+
+
+def test_item_mapping_media_type_keeps_its_default() -> None:
+    """The mixin must keep ItemMapping.media_type optional (no phantom required field)."""
+    # constructs without media_type; a mixin field lacking a default would break that
+    mapping = ItemMapping(item_id="x", provider="p", name="N")
+    assert mapping.media_type.value == "unknown"
 
 
 def test_plain_media_item_has_no_translation_machinery() -> None:

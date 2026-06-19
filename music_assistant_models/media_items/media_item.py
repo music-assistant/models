@@ -112,20 +112,20 @@ class _LocalizableName:
 
     Carries an optional ``translation_key`` that overrides the in-code (English) ``name`` for the
     connection locale during outbound API serialization, plus the hook that performs it. Mixed
-    into the media item types that actually have a curated, localizable name (genres, and item
-    mappings standing in for them); the everyday media types (artists, albums, tracks, …) carry
-    user/provider data names and never set a key, so they don't get this machinery. Items whose
-    title also takes positional placeholders use ``_LocalizableTitle`` instead.
+    into the media item types that actually have a curated, localizable name (genres, podcasts,
+    and item mappings standing in for them); the everyday media types (artists, albums, tracks, …)
+    carry user/provider data names and never set a key, so they don't get this machinery. Items
+    whose title also takes positional placeholders use ``_LocalizableTitle`` instead.
+
+    ``media_type`` and ``provider`` are always provided by the ``_MediaItemBase`` this mixin is
+    combined with; they're read off ``self`` below (hence the localized ``# type: ignore`` hints).
+    Declaring them here as well would make them look like dataclass fields without a default and
+    break the inherited defaults on subclasses (e.g. ItemMapping's optional ``media_type``).
     """
 
     # translation_key: optional key to localize `name` (e.g. for "Your Mixes"); resolved to the
     # connection locale at serialization, overriding the in-code `name`.
     translation_key: str | None = None
-
-    if TYPE_CHECKING:
-        # supplied by the _MediaItemBase this mixin is always combined with
-        media_type: MediaType
-        provider: str
 
     @property
     def _translation_group(self) -> str:
@@ -136,7 +136,8 @@ class _LocalizableName:
         Special subclasses override this when their media_type doesn't capture the distinction
         (e.g. recommendation folders, which share ``MediaType.FOLDER`` with browse folders).
         """
-        return self.media_type.value
+        media_type: MediaType = self.media_type  # type: ignore[attr-defined]  # from _MediaItemBase
+        return media_type.value
 
     def _translation_base(self) -> str | None:
         """Return the translation key base for this item's translation_key (None if unset)."""
@@ -161,22 +162,20 @@ class _LocalizableName:
         calls used for internal round-tripping (caching, item mappings).
         """
         base = self._translation_base()
-        # translation_params only exists on _LocalizableTitle subclasses
+        # translation_params only exists on _LocalizableTitle subclasses; provider/media_type come
+        # from the _MediaItemBase this mixin is combined with
         params = getattr(self, "translation_params", None)
+        owner: str = self.provider  # type: ignore[attr-defined]
         if base is not None:
             for field_name in ("name", "subtitle"):
                 if field_name not in d:
                     continue
-                localized = resolve_translation(
-                    f"{base}.{field_name}", owner=self.provider, params=params
-                )
+                localized = resolve_translation(f"{base}.{field_name}", owner=owner, params=params)
                 if localized is not None:
                     d[field_name] = localized
             # description lives on the nested metadata object (MediaItemMetadata), not top-level
             if isinstance(metadata := d.get("metadata"), dict):
-                localized = resolve_translation(
-                    f"{base}.description", owner=self.provider, params=params
-                )
+                localized = resolve_translation(f"{base}.description", owner=owner, params=params)
                 if localized is not None:
                     metadata["description"] = localized
         if translations_active():
@@ -420,7 +419,7 @@ class Audiobook(MediaItem):
 
 
 @dataclass(kw_only=True)
-class Podcast(MediaItem):
+class Podcast(_LocalizableName, MediaItem):
     """Model for a Podcast."""
 
     __hash__ = _MediaItemBase.__hash__
