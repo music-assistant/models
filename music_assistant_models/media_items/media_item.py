@@ -401,8 +401,9 @@ class Audiobook(MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     publisher: str | None = None
-    authors: UniqueList[str | Artist | ItemMapping] = field(default_factory=UniqueList)
-    narrators: UniqueList[str | Artist | ItemMapping] = field(default_factory=UniqueList)
+    # type hint order matters below for our get_serializable_value helper
+    authors: UniqueList[Artist | ItemMapping | str] = field(default_factory=UniqueList)
+    narrators: UniqueList[Artist | ItemMapping | str] = field(default_factory=UniqueList)
     duration: int = 0
     # resume point info
     # set to None if unknown/unsupported by provider
