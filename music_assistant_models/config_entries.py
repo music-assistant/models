@@ -497,6 +497,13 @@ class PlayerConfig(Config):
 
 
 @dataclass
+class PlayerQueueConfig(Config):
+    """PlayerQueue Configuration."""
+
+    queue_id: str
+
+
+@dataclass
 class CoreConfig(Config):
     """CoreController Configuration."""
 
