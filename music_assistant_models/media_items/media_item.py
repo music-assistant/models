@@ -9,7 +9,14 @@ from typing import TYPE_CHECKING, Any, cast
 
 from mashumaro import DataClassDictMixin, field_options
 
-from music_assistant_models.enums import AlbumType, ArtistType, ExternalID, ImageType, MediaType
+from music_assistant_models.enums import (
+    AlbumType,
+    ArtistType,
+    BrowseFolderType,
+    ExternalID,
+    ImageType,
+    MediaType,
+)
 from music_assistant_models.errors import InvalidDataError
 from music_assistant_models.helpers import (
     create_sort_name,
@@ -519,6 +526,7 @@ class BrowseFolder(_LocalizableTitle, _MediaItemBase):
     # mediatype is always folder for browse folders
     # independent of the actual content mediatype(s)
     media_type: MediaType = MediaType.FOLDER
+    folder_type: BrowseFolderType = BrowseFolderType.BROWSE
 
     # path: the path (in uri style) to/for this browse folder
     path: str = ""
