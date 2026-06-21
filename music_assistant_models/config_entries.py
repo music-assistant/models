@@ -82,6 +82,12 @@ class ConfigValueOption(DataClassDictMixin):
     # translations at serialization (keyed by the owning entry + this option's value). Dynamic,
     # data-driven options (player names, sample rates, ...) still pass a title directly.
     title: str | None = None
+    # disabled: when True the option is shown but not selectable (e.g. a capability that is
+    # currently unavailable), so clients can surface it greyed-out instead of omitting it.
+    disabled: bool = False
+    # disabled_reason: optional human-readable explanation of why the option is disabled, resolved
+    # from the translations at serialization (keyed by the owning entry: disabled_reasons.<value>).
+    disabled_reason: str | None = None
 
 
 MULTI_VALUE_SPLITTER: Final[str] = "||"
@@ -218,6 +224,10 @@ class ConfigEntry(DataClassDictMixin):
             title = resolve_translation(f"{base}.options.{option.value}", owner=owner)
             if title is not None:
                 option_dict["title"] = title
+            if option.disabled:
+                reason = resolve_translation(f"{base}.disabled_reasons.{option.value}", owner=owner)
+                if reason is not None:
+                    option_dict["disabled_reason"] = reason
         category_key = _localized_base(
             self.category_translation_key, self.category, "config_categories"
         )
@@ -501,6 +511,10 @@ class PlayerQueueConfig(Config):
     """PlayerQueue Configuration."""
 
     queue_id: str
+
+    def _translation_owner(self) -> str | None:
+        # queue config entries are owned by the player_queues core controller's strings
+        return "core.player_queues"
 
 
 @dataclass
