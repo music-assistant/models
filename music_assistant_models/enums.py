@@ -366,6 +366,18 @@ class RepeatMode(StrEnum):
         return cls.UNKNOWN
 
 
+class CrossfadeMode(StrEnum):
+    """Enum with crossfade modes for a queue."""
+
+    SMART_CROSSFADE = "smart_crossfade"  # Use smart crossfade with beat matching and EQ filters
+    STANDARD_CROSSFADE = "standard_crossfade"  # Use standard crossfade only
+    DISABLED = "disabled"  # No crossfade
+
+
+# alias for backwards compatibility
+SmartFadesMode = CrossfadeMode
+
+
 class PlaybackState(StrEnum):
     """Enum for the (playback)state of a player."""
 
