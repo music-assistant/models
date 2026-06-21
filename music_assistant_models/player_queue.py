@@ -9,7 +9,7 @@ from typing import Any
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import EXTRA_ATTRIBUTES_TYPES
-from .enums import CrossfadeMode, PlaybackState, RepeatMode
+from .enums import PlaybackState, RepeatMode
 from .media_items import ItemMapping, MediaItemType, media_from_dict
 from .queue_item import QueueItem
 
@@ -34,11 +34,12 @@ class PlayerQueue(DataClassDictMixin):
     items: int
     shuffle_enabled: bool = False
     repeat_mode: RepeatMode = RepeatMode.OFF
-    crossfade_mode: CrossfadeMode = CrossfadeMode.DISABLED
+    crossfade_enabled: bool = False
     dont_stop_the_music_enabled: bool = False
-    # smart_fades_available: helper for clients to know if the smart_crossfade option can be
-    # selected; derived at runtime by the server (not persisted, recomputed on load)
-    smart_fades_available: bool = False
+    # smart_fades_active: whether the queue's effective crossfade is currently smart crossfade
+    # (i.e. crossfade is on, smart is preferred, and smart fades are available). Derived at runtime
+    # by the server, read-only and not persisted; lets clients show a smart-fades indicator.
+    smart_fades_active: bool = False
 
     # current_index: index that is active (e.g. being played) by the player
     current_index: int | None = None
@@ -122,8 +123,8 @@ class PlayerQueue(DataClassDictMixin):
         d.pop("current_item", None)
         d.pop("next_item", None)
         d.pop("index_in_buffer", None)
-        # smart_fades_available is derived at runtime, never persisted
-        d.pop("smart_fades_available", None)
+        # smart_fades_active is derived at runtime, never persisted (crossfade_enabled is)
+        d.pop("smart_fades_active", None)
         # enqueued_media_items needs to survive a restart
         # otherwise 'dont stop the music' will not work
         d["enqueued_media_items"] = [x.to_dict() for x in self.enqueued_media_items]
