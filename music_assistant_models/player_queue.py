@@ -35,7 +35,7 @@ class PlayerQueue(DataClassDictMixin):
     shuffle_enabled: bool = False
     repeat_mode: RepeatMode = RepeatMode.OFF
     crossfade_enabled: bool = False
-    dont_stop_the_music_enabled: bool = False
+    autoplay_enabled: bool = False
     # smart_fades_active: whether the queue's effective crossfade is currently smart crossfade
     # (i.e. crossfade is on, smart is preferred, and smart fades are available). Derived at runtime
     # by the server, read-only and not persisted; lets clients show a smart-fades indicator.
@@ -107,6 +107,18 @@ class PlayerQueue(DataClassDictMixin):
         repr=False,
     )
 
+    @classmethod
+    def __pre_deserialize__(cls, d: dict[str, Any]) -> dict[str, Any]:
+        """Accept the legacy `dont_stop_the_music_enabled` key from older clients/caches."""
+        if "autoplay_enabled" not in d and "dont_stop_the_music_enabled" in d:
+            d["autoplay_enabled"] = d["dont_stop_the_music_enabled"]
+        return d
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Mirror `autoplay_enabled` to the legacy key for backwards compatibility."""
+        d["dont_stop_the_music_enabled"] = d["autoplay_enabled"]
+        return d
+
     @property
     def corrected_elapsed_time(self) -> float:
         """Return the corrected/realtime elapsed time."""
@@ -126,7 +138,7 @@ class PlayerQueue(DataClassDictMixin):
         # smart_fades_active is derived at runtime, never persisted (crossfade_enabled is)
         d.pop("smart_fades_active", None)
         # enqueued_media_items needs to survive a restart
-        # otherwise 'dont stop the music' will not work
+        # otherwise 'autoplay' will not work
         d["enqueued_media_items"] = [x.to_dict() for x in self.enqueued_media_items]
         d["userid"] = self.userid
         return d
