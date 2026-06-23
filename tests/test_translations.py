@@ -6,7 +6,7 @@ from typing import Any
 
 from music_assistant_models.background_task import BackgroundTask
 from music_assistant_models.config_entries import ConfigEntry, ConfigValueOption
-from music_assistant_models.enums import ConfigEntryType, ProviderType
+from music_assistant_models.enums import ConfigEntryType, MediaType, ProviderType
 from music_assistant_models.media_items import (
     BrowseFolder,
     Genre,
@@ -38,6 +38,9 @@ _CATALOG = {
     "media.podcast.unknown_podcast.name": "Onbekende podcast",
     "media.genre.jazz.name": "Jazz (NL)",
     "media.genre.jazz.description": "Jazz is een Amerikaans muziekgenre.",
+    "media.genre.comedy.name": "Komedie (muziek)",
+    "media.podcast_genre.comedy.name": "Komedie (podcast)",
+    "media.audiobook_genre.history.name": "Geschiedenis (audioboek)",
     "media.playlist.infinite_mix.name": "Oneindige mix",
     "media.playlist.flow.name": "Stroom: {0}",
     "media.radio.pandora_station.name": "Pandora-zender {0}",
@@ -135,6 +138,41 @@ def test_genre_resolves_nested_metadata_description() -> None:
     assert localized["name"] == "Jazz (NL)"
     assert localized["metadata"]["description"] == "Jazz is een Amerikaans muziekgenre."
     assert "translation_key" not in localized
+
+
+def test_genre_content_type_uses_distinct_translation_namespace() -> None:
+    """content_type namespaces a genre's translation group so names don't collide per taxonomy."""
+    # same name + slug across taxonomies: each resolves its own group, no collision
+    music = Genre(
+        item_id="comedy",
+        provider="library",
+        name="Comedy",
+        translation_key="comedy",
+        provider_mappings=set(),
+    )
+    podcast = Genre(
+        item_id="comedy",
+        provider="library",
+        name="Comedy",
+        translation_key="comedy",
+        content_type=MediaType.PODCAST,
+        provider_mappings=set(),
+    )
+    audiobook = Genre(
+        item_id="history",
+        provider="library",
+        name="History",
+        translation_key="history",
+        content_type=MediaType.AUDIOBOOK,
+        provider_mappings=set(),
+    )
+    with _resolver_active():
+        # music genre (content_type None) keeps the bare media.genre.* group
+        assert music.to_dict()["name"] == "Komedie (muziek)"
+        # identical slug under podcast resolves the distinct media.podcast_genre.* key
+        assert podcast.to_dict()["name"] == "Komedie (podcast)"
+        # audiobook gets its own media.audiobook_genre.* namespace
+        assert audiobook.to_dict()["name"] == "Geschiedenis (audioboek)"
 
 
 def test_playlist_resolves_static_name_and_with_params() -> None:
