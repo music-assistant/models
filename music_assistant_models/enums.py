@@ -542,6 +542,7 @@ class EventType(StrEnum):
     PLAYER_CONFIG_UPDATED = "player_config_updated"
     PLAYER_DSP_CONFIG_UPDATED = "player_dsp_config_updated"
     PLAYER_OPTIONS_UPDATED = "player_options_updated"
+    PLAYER_SLEEP_TIMER_UPDATED = "player_sleep_timer_updated"
     DSP_PRESETS_UPDATED = "dsp_presets_updated"
     QUEUE_ADDED = "queue_added"
     QUEUE_UPDATED = "queue_updated"

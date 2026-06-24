@@ -417,6 +417,10 @@ class Player(DataClassDictMixin):
     # needs_setup: if True, the player needs to be set up before it can be used
     needs_setup: bool = False
 
+    # sleep_timer_expires_at: unix (utc) timestamp at which the active sleep timer will
+    # stop playback, or None if no sleep timer is currently set for this player
+    sleep_timer_expires_at: float | None = None
+
     #############################################################################
     # helper methods and properties                                             #
     #############################################################################
