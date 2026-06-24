@@ -245,7 +245,23 @@ class Genre(_LocalizableName, MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     media_type: MediaType = MediaType.GENRE
+    # content_type namespaces the genre's taxonomy: None = music/general (back-compat),
+    # MediaType.PODCAST / MediaType.AUDIOBOOK for the disjoint spoken-word taxonomies.
+    content_type: MediaType | None = None
     genre_aliases: set[str] | None = None
+
+    @property
+    def _translation_group(self) -> str:
+        """
+        Namespace spoken-word genres separately so the same name can exist per taxonomy.
+
+        Music genres (content_type None) keep the bare ``genre`` group (``media.genre.<key>``);
+        podcast/audiobook genres get ``podcast_genre`` / ``audiobook_genre`` so e.g. "History"
+        can exist in both without a translation-key collision.
+        """
+        if self.content_type is not None:
+            return f"{self.content_type.value}_genre"
+        return "genre"
 
     def __post_init__(self) -> None:
         """Call after init."""
