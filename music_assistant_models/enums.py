@@ -39,7 +39,9 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     FOLDER = "folder"
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
+    # deprecated: replaced by AUDIO_SOURCE, kept for one release for backwards compatibility
     PLUGIN_SOURCE = "plugin_source"
+    AUDIO_SOURCE = "audio_source"
     SOUND_EFFECT = "sound_effect"
     GENRE = "genre"
     UNKNOWN = "unknown"
@@ -47,6 +49,22 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     @classmethod
     def _missing_(cls, value: object) -> MediaType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class SourceControl(StrEnum):
+    """Control actions issued to a live AudioSource by the player controller."""
+
+    PLAY = "play"
+    PAUSE = "pause"
+    NEXT = "next"
+    PREVIOUS = "previous"
+    SEEK = "seek"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> SourceControl:  # noqa: ARG003
+        """Return UNKNOWN if an unknown value is provided."""
         return cls.UNKNOWN
 
 
@@ -406,6 +424,18 @@ class RepeatMode(StrEnum):
         return cls.UNKNOWN
 
 
+class CrossfadeMode(StrEnum):
+    """Enum with crossfade modes for a queue."""
+
+    SMART_CROSSFADE = "smart_crossfade"  # Use smart crossfade with beat matching and EQ filters
+    STANDARD_CROSSFADE = "standard_crossfade"  # Use standard crossfade only
+    DISABLED = "disabled"  # No crossfade
+
+
+# alias for backwards compatibility
+SmartFadesMode = CrossfadeMode
+
+
 class PlaybackState(StrEnum):
     """Enum for the (playback)state of a player."""
 
@@ -616,10 +646,20 @@ class ProviderFeature(StrEnum):
     LIBRARY_PODCASTS = "library_podcasts"
 
     # additional library features
-    ARTIST_ALBUMS = "artist_albums"
-    ARTIST_TOPTRACKS = "artist_toptracks"
     AUTHOR_AUDIOBOOKS = "author_audiobooks"
     NARRATOR_AUDIOBOOKS = "narrator_audiobooks"
+
+    # if we can grab all albums for an artist from the music provider
+    ARTIST_ALBUMS = "artist_albums"
+
+    # if we can grab all tracks for an artist from the music provider
+    ARTIST_TRACKS = "artist_tracks"
+
+    # if we can grab 'top tracks' for an artist from the music/metadata provider
+    ARTIST_TOPTRACKS = "artist_toptracks"
+
+    # if we can grab 'top albums' for an artist from the music/metadata provider
+    ARTIST_TOPALBUMS = "artist_topalbums"
 
     # library edit (=add/remove) feature per mediatype
     LIBRARY_ARTISTS_EDIT = "library_artists_edit"
@@ -678,6 +718,7 @@ class ProviderFeature(StrEnum):
     # PLUGIN FEATURES
     #
     AUDIO_SOURCE = "audio_source"
+    AUDIO_OVERLAY = "audio_overlay"  # plugin can mix an audio overlay into queue playback
 
     #
     # OTHER FEATURES (plugin-only)
@@ -860,3 +901,25 @@ class CoreState(StrEnum):
     RUNNING = "running"
     STOPPING = "stopping"
     STOPPED = "stopped"
+
+
+class ProviderStatus(StrEnum):
+    """
+    Enum representing the load/lifecycle status of a provider (instance).
+
+    Derived server-side from the provider's config and (when present) its loaded instance.
+    Runtime reachability of a loaded provider is conveyed separately by ProviderInstance.available.
+    """
+
+    # loaded: setup succeeded; a live instance exists
+    LOADED = "loaded"
+    # loading: enabled and being (re)loaded, or waiting on a dependency; no instance yet, no error
+    LOADING = "loading"
+    # disabled: provider config exists but is disabled by the user
+    DISABLED = "disabled"
+    # auth_required: setup failed because (re)authentication is needed
+    AUTH_REQUIRED = "auth_required"
+    # incompatible: the host does not meet the provider's requirements (permanent)
+    INCOMPATIBLE = "incompatible"
+    # error: setup failed for any other reason (see the provider's last_error)
+    ERROR = "error"

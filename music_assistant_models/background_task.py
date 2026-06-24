@@ -7,9 +7,10 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from mashumaro import DataClassDictMixin
+from mashumaro import DataClassDictMixin, field_options
 
 from .enums import TaskScheduleType, TaskStatus
+from .translations import resolve_translation, translations_active
 
 type TaskMetadataValue = (
     None | bool | int | float | str | list[TaskMetadataValue] | dict[str, TaskMetadataValue]
@@ -165,6 +166,11 @@ class BackgroundTask(DataClassDictMixin):
     allow_retry: bool = False
     # Whether queued/running work can be interrupted from the UI.
     allow_cancel: bool = True
+    # translation_owner: namespace ("provider.<domain>"/"core.<domain>") the task's
+    # translation_key resolves under; stamped by the tasks controller. Not serialized.
+    translation_owner: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
 
     def __post_init__(self) -> None:
         """Validate background task fields."""
@@ -172,3 +178,17 @@ class BackgroundTask(DataClassDictMixin):
             raise ValueError("BackgroundTask progress must be between 0 and 100")
         if self.failure_count < 0:
             raise ValueError("BackgroundTask failure_count must be >= 0")
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize the task name from its translation_key when a resolver is active."""
+        if self.translation_key:
+            params = [str(a) for a in self.translation_args] if self.translation_args else None
+            localized = resolve_translation(
+                self.translation_key, owner=self.translation_owner, params=params
+            )
+            if localized is not None:
+                d["name"] = localized
+        if translations_active():
+            d.pop("translation_key", None)
+            d.pop("translation_args", None)
+        return d

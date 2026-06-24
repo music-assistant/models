@@ -1,0 +1,25 @@
+"""Models for audio analysis results and coverage reporting."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from mashumaro import DataClassDictMixin
+
+
+@dataclass(kw_only=True)
+class AudioAnalysisCoverage(DataClassDictMixin):
+    """
+    Coverage / health counts for an audio analysis provider's analyzed library.
+
+    :param analyzed: Count of unique tracks the provider has stored analysis data for.
+    :param pending: Count of candidate tracks awaiting analysis.
+    :param stale_version: Count of stored rows whose analysis_version is older than
+        the provider's current version.
+    :param analysis_version: The provider's current schema version.
+    """
+
+    analyzed: int
+    pending: int
+    stale_version: int
+    analysis_version: int
