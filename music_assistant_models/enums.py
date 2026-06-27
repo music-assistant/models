@@ -655,6 +655,7 @@ class ProviderFeature(StrEnum):
     ARTIST_METADATA = "artist_metadata"
     ALBUM_METADATA = "album_metadata"
     TRACK_METADATA = "track_metadata"
+    PLAYLIST_METADATA = "playlist_metadata"
     LYRICS = "lyrics"  # lyrics support - can also be provided by a music provider
 
     #
