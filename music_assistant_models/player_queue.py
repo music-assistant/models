@@ -40,6 +40,10 @@ class PlayerQueue(DataClassDictMixin):
     # (i.e. crossfade is on, smart is preferred, and smart fades are available). Derived at runtime
     # by the server, read-only and not persisted; lets clients show a smart-fades indicator.
     smart_fades_active: bool = False
+    # smart_shuffle_active: True when smart shuffle is in effect (enabled and shuffle on, or
+    # radio mode active). Derived at runtime by the server, read-only and not persisted; lets
+    # clients show the indicator and disable the plain shuffle toggle.
+    smart_shuffle_active: bool = False
 
     # current_index: index that is active (e.g. being played) by the player
     current_index: int | None = None
@@ -137,6 +141,8 @@ class PlayerQueue(DataClassDictMixin):
         d.pop("index_in_buffer", None)
         # smart_fades_active is derived at runtime, never persisted (crossfade_enabled is)
         d.pop("smart_fades_active", None)
+        # smart_shuffle_active is derived at runtime, never persisted
+        d.pop("smart_shuffle_active", None)
         # enqueued_media_items needs to survive a restart
         # otherwise 'autoplay' will not work
         d["enqueued_media_items"] = [x.to_dict() for x in self.enqueued_media_items]
