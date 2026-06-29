@@ -60,9 +60,8 @@ class PlayerQueue(DataClassDictMixin):
     next_item: QueueItem | None = None
     # sources: the parent items the queue is playing from — regular media items and/or dynamic
     # playlists (radio playlists, provider stations). When `is_dynamic` the queue dynamically fills
-    # from these. Renamed from the deprecated `radio_source`, still mirrored on the wire for older
-    # clients.
-    sources: list[MediaItemType] = field(default_factory=list)
+    # from these.
+    sources: list[ItemMapping] = field(default_factory=list)
 
     flow_mode: bool = False
     resume_pos: int = 0
@@ -129,7 +128,7 @@ class PlayerQueue(DataClassDictMixin):
         """Mirror the deprecated `dont_stop_the_music_enabled` / `radio_source` keys."""
         d["dont_stop_the_music_enabled"] = d["autoplay_enabled"]
         # temporary back-compat: older clients still read the deprecated `radio_source`
-        d["radio_source"] = d.get("sources", [])
+        d["radio_source"] = d.get("sources", []) if self.is_dynamic else []
         return d
 
     @property
