@@ -58,11 +58,15 @@ class PlayerQueue(DataClassDictMixin):
     state: PlaybackState = PlaybackState.IDLE
     current_item: QueueItem | None = None
     next_item: QueueItem | None = None
-    radio_source: list[MediaItemType] = field(default_factory=list)
+    # sources: the parent items the queue is playing from — regular media items and/or dynamic
+    # playlists (radio playlists, provider stations).
+    # When `is_dynamic` the queue dynamically fills from these.
+    sources: list[ItemMapping] = field(default_factory=list)
 
     flow_mode: bool = False
     resume_pos: int = 0
-    # True if exactly one playlist in the queue is dynamic; set by the server.
+    # True when the queue is in dynamic mode (one or more dynamic sources); set by the server.
+    # Implies autoplay and smart shuffle are active.
     is_dynamic: bool = False
 
     # extra_attributes: additional attributes for this player_queue to store/forward
@@ -113,14 +117,18 @@ class PlayerQueue(DataClassDictMixin):
 
     @classmethod
     def __pre_deserialize__(cls, d: dict[str, Any]) -> dict[str, Any]:
-        """Accept the legacy `dont_stop_the_music_enabled` key from older clients/caches."""
+        """Accept the legacy `dont_stop_the_music_enabled` / `radio_source` keys."""
         if "autoplay_enabled" not in d and "dont_stop_the_music_enabled" in d:
             d["autoplay_enabled"] = d["dont_stop_the_music_enabled"]
+        if "sources" not in d and "radio_source" in d:
+            d["sources"] = d["radio_source"]
         return d
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
-        """Mirror `autoplay_enabled` to the legacy key for backwards compatibility."""
+        """Mirror the deprecated `dont_stop_the_music_enabled` / `radio_source` keys."""
         d["dont_stop_the_music_enabled"] = d["autoplay_enabled"]
+        # temporary back-compat: older clients still read the deprecated `radio_source`
+        d["radio_source"] = d.get("sources", []) if self.is_dynamic else []
         return d
 
     @property
@@ -156,10 +164,10 @@ class PlayerQueue(DataClassDictMixin):
             for x in data.get("enqueued_media_items", [])
             if isinstance(x, dict) and not isinstance(item := media_from_dict(x), ItemMapping)
         ]
-        self.radio_source = [
+        self.sources = [
             item
-            for x in data.get("radio_source", [])
-            if isinstance(x, dict) and not isinstance(item := media_from_dict(x), ItemMapping)
+            for x in data.get("sources", data.get("radio_source", []))
+            if isinstance(x, dict) and isinstance(item := media_from_dict(x), ItemMapping)
         ]
         self.userid = data.get("userid")
         return self
