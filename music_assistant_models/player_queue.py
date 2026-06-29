@@ -59,8 +59,8 @@ class PlayerQueue(DataClassDictMixin):
     current_item: QueueItem | None = None
     next_item: QueueItem | None = None
     # sources: the parent items the queue is playing from — regular media items and/or dynamic
-    # playlists (radio playlists, provider stations). When `is_dynamic` the queue dynamically fills
-    # from these.
+    # playlists (radio playlists, provider stations). 
+    # When `is_dynamic` the queue dynamically fills from these.
     sources: list[ItemMapping] = field(default_factory=list)
 
     flow_mode: bool = False
