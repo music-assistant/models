@@ -32,8 +32,8 @@ def test_image_with_resolver_injects_proxy_id() -> None:
     assert d["proxy_id"] == hashlib.sha256(b"filesystem//local/cover.jpg").hexdigest()
 
 
-def test_remotely_accessible_image_skips_injection() -> None:
-    """Public images that clients can fetch directly must not get a proxy_id."""
+def test_remotely_accessible_image_still_injects_proxy_id() -> None:
+    """Public images also get a proxy_id so clients can request proxied thumbnails."""
     image = MediaItemImage(
         type=ImageType.THUMB,
         path="https://cdn.example.com/a.jpg",
@@ -45,7 +45,7 @@ def test_remotely_accessible_image_skips_injection() -> None:
         d = image.to_dict()
     finally:
         IMAGE_PROXY_ID_RESOLVER.reset(token)
-    assert d["proxy_id"] is None
+    assert d["proxy_id"] == hashlib.sha256(b"spotify/https://cdn.example.com/a.jpg").hexdigest()
 
 
 def test_proxy_id_round_trips_through_from_dict() -> None:
