@@ -71,8 +71,9 @@ class MediaItemImage(DataClassDictMixin):
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Inject `proxy_id` when a resolver is set on the current context."""
-        if self.remotely_accessible:
-            return d
+        # A proxy_id is filled regardless of `remotely_accessible`: even when a
+        # client can fetch the image directly, it still needs the proxy to obtain
+        # a resized/reformatted thumbnail (`?size=...&fmt=...`).
         # only inject when proxy_id was not already provided so that values
         # round-tripped via from_dict (or set explicitly by the caller) survive
         if d.get("proxy_id") is not None:
