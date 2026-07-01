@@ -183,6 +183,19 @@ class ArtistType(StrEnum):
         return cls.UNKNOWN
 
 
+class BrowseFolderType(StrEnum):
+    """Enum for BrowseFolderType."""
+
+    BROWSE = "browse"
+    AUDIOBOOK_COLLECTION = "audiobook_collection"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> BrowseFolderType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class ContentType(StrEnum):
     """Enum with audio content/container types supported by ffmpeg."""
 
