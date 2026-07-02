@@ -6,11 +6,11 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from mashumaro import DataClassDictMixin, field_options, pass_through
+from mashumaro import DataClassDictMixin
 
 from .constants import EXTRA_ATTRIBUTES_TYPES
 from .enums import PlaybackState, RepeatMode
-from .media_items import ItemMapping, MediaItemType, media_from_dict
+from .media_items import ItemMapping
 from .queue_item import QueueItem
 
 
@@ -74,47 +74,6 @@ class PlayerQueue(DataClassDictMixin):
     # must be serializable types only
     extra_attributes: dict[str, EXTRA_ATTRIBUTES_TYPES] = field(default_factory=dict)
 
-    #############################################################################
-    # the fields below will only be used server-side and not sent to the client #
-    #############################################################################
-
-    enqueued_media_items: list[MediaItemType] = field(
-        default_factory=list,
-        compare=False,
-        metadata=field_options(serialize="omit", deserialize=pass_through),
-        repr=False,
-    )
-    flow_mode_stream_log: list[PlayLogEntry] = field(
-        default_factory=list,
-        compare=False,
-        metadata=field_options(serialize="omit", deserialize=pass_through),
-        repr=False,
-    )
-    next_item_id_enqueued: str | None = field(
-        default=None,
-        compare=False,
-        metadata=field_options(serialize="omit", deserialize=pass_through),
-        repr=False,
-    )
-    session_id: str | None = field(
-        default=None,
-        compare=False,
-        metadata=field_options(serialize="omit", deserialize=pass_through),
-        repr=False,
-    )
-    items_last_updated: float = field(
-        default_factory=time.time,
-        compare=False,
-        metadata=field_options(serialize="omit", deserialize=pass_through),
-        repr=False,
-    )
-    userid: str | None = field(
-        default=None,
-        compare=False,
-        metadata=field_options(serialize="omit", deserialize=pass_through),
-        repr=False,
-    )
-
     @classmethod
     def __pre_deserialize__(cls, d: dict[str, Any]) -> dict[str, Any]:
         """Accept the legacy `dont_stop_the_music_enabled` / `radio_source` keys."""
@@ -138,35 +97,3 @@ class PlayerQueue(DataClassDictMixin):
                 (time.time() - self.elapsed_time_last_updated) * self.playback_speed
             )
         return self.elapsed_time
-
-    def to_cache(self) -> dict[str, Any]:
-        """Return the dict that is suitable for storing into the cache db."""
-        d = self.to_dict()
-        d.pop("flow_mode", None)
-        d.pop("current_item", None)
-        d.pop("next_item", None)
-        d.pop("index_in_buffer", None)
-        # smart_fades_active is derived at runtime, never persisted (crossfade_enabled is)
-        d.pop("smart_fades_active", None)
-        # smart_shuffle_active is derived at runtime, never persisted
-        d.pop("smart_shuffle_active", None)
-        # enqueued_media_items needs to survive a restart
-        # otherwise 'autoplay' will not work
-        d["enqueued_media_items"] = [x.to_dict() for x in self.enqueued_media_items]
-        d["userid"] = self.userid
-        return d
-
-    def from_cache(self, data: dict[str, Any]) -> PlayerQueue:
-        """Update the PlayerQueue from the dict stored in the cache db."""
-        self.enqueued_media_items = [
-            item
-            for x in data.get("enqueued_media_items", [])
-            if isinstance(x, dict) and not isinstance(item := media_from_dict(x), ItemMapping)
-        ]
-        self.sources = [
-            item
-            for x in data.get("sources", data.get("radio_source", []))
-            if isinstance(x, dict) and isinstance(item := media_from_dict(x), ItemMapping)
-        ]
-        self.userid = data.get("userid")
-        return self
