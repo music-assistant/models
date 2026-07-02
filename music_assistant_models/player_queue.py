@@ -127,8 +127,7 @@ class PlayerQueue(DataClassDictMixin):
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Mirror the deprecated `dont_stop_the_music_enabled` / `radio_source` keys."""
         d["dont_stop_the_music_enabled"] = d["autoplay_enabled"]
-        # temporary back-compat: older clients still read the deprecated `radio_source`
-        d["radio_source"] = d.get("sources", []) if self.is_dynamic else []
+        d["radio_source"] = []
         return d
 
     @property
