@@ -90,8 +90,7 @@ class ConfigValueOption(DataClassDictMixin):
     disabled_reason: str | None = None
     # description: optional per-option help text, resolved from the translations at serialization
     # (keyed by the owning entry: option_descriptions.<value>). Lets a single option explain itself
-    # (e.g. a "Global" option that means "follow the controller default") instead of cramming the
-    # explanation into the option title or the shared entry description.
+    # instead of cramming the explanation into the option title or the shared entry description.
     description: str | None = None
 
 
