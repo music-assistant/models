@@ -31,6 +31,9 @@ from music_assistant_models.translations import TRANSLATION_RESOLVER
 _CATALOG = {
     "config_entries.log_level.label": "Logniveau",
     "config_entries.preset.label": "Preset",
+    "config_entries.crossfade_mode.options.global": "Globaal",
+    "config_entries.crossfade_mode.option_descriptions.global": "Volg de standaardinstelling.",
+    "config_entries.crossfade_mode.disabled_reasons.smart_crossfade": "Niet beschikbaar.",
     "config_categories.generic": "Algemeen",
     "media.recommendations.recently_played.name": "Onlangs afgespeeld",
     "media.recommendations.recently_played.subtitle": "Ga verder waar je gebleven was",
@@ -95,6 +98,31 @@ def test_config_entry_explicit_translation_key_is_a_bare_slug() -> None:
     entry = ConfigEntry(key="preset_1", type=ConfigEntryType.STRING, translation_key="preset")
     with _resolver_active():
         assert entry.to_dict()["label"] == "Preset"
+
+
+def test_config_entry_resolves_option_title_description_and_disabled_reason() -> None:
+    """An option resolves its title, its own per-option description and its disabled_reason."""
+    entry = ConfigEntry(
+        key="crossfade_mode",
+        type=ConfigEntryType.STRING,
+        options=[
+            ConfigValueOption(value="global"),
+            ConfigValueOption(value="smart_crossfade", disabled=True),
+        ],
+    )
+    # no resolver -> unset option fields stay None (never invented)
+    plain = entry.to_dict()["options"]
+    assert plain[0]["title"] is None
+    assert plain[0]["description"] is None
+    with _resolver_active():
+        options = entry.to_dict()["options"]
+    # the "global" option carries both its title and its own explanatory description
+    assert options[0]["title"] == "Globaal"
+    assert options[0]["description"] == "Volg de standaardinstelling."
+    # a description is only attached when the catalog has one for that option
+    assert options[1]["description"] is None
+    # disabled_reason still resolves for the disabled option
+    assert options[1]["disabled_reason"] == "Niet beschikbaar."
 
 
 def test_media_item_resolves_name_subtitle_and_strips_machinery() -> None:

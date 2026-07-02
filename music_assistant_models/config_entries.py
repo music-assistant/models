@@ -88,6 +88,11 @@ class ConfigValueOption(DataClassDictMixin):
     # disabled_reason: optional human-readable explanation of why the option is disabled, resolved
     # from the translations at serialization (keyed by the owning entry: disabled_reasons.<value>).
     disabled_reason: str | None = None
+    # description: optional per-option help text, resolved from the translations at serialization
+    # (keyed by the owning entry: option_descriptions.<value>). Lets a single option explain itself
+    # (e.g. a "Global" option that means "follow the controller default") instead of cramming the
+    # explanation into the option title or the shared entry description.
+    description: str | None = None
 
 
 MULTI_VALUE_SPLITTER: Final[str] = "||"
@@ -224,6 +229,11 @@ class ConfigEntry(DataClassDictMixin):
             title = resolve_translation(f"{base}.options.{option.value}", owner=owner)
             if title is not None:
                 option_dict["title"] = title
+            option_description = resolve_translation(
+                f"{base}.option_descriptions.{option.value}", owner=owner
+            )
+            if option_description is not None:
+                option_dict["description"] = option_description
             if option.disabled:
                 reason = resolve_translation(f"{base}.disabled_reasons.{option.value}", owner=owner)
                 if reason is not None:
