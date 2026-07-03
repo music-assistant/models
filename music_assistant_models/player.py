@@ -107,7 +107,6 @@ class PlayerMedia(DataClassDictMixin):
     uri: str  # uri or other identifier of the loaded media - mandatory!
     media_type: MediaType = MediaType.UNKNOWN
     title: str | None = None  # optional
-    version: str | None = None  # optional - track version/edit info (e.g. "Remastered")
     artist: str | None = None  # optional
     album: str | None = None  # optional
     album_artist: str | None = None  # optional
