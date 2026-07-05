@@ -24,6 +24,7 @@ class OutputProtocol(DataClassDictMixin):
     This provides a unified view of all ways to play audio to a device:
     - Native output (if player supports PLAY_MEDIA)
     - Protocol outputs (AirPlay, Chromecast, DLNA, etc.)
+    - Derived transports riding on another output (e.g. Sendspin over AirPlay)
     """
 
     output_protocol_id: str  # Unique ID: "native" or protocol player_id
@@ -33,6 +34,7 @@ class OutputProtocol(DataClassDictMixin):
     is_native: bool = False  # True if this is the player's native output
     priority: int = 100  # Lower = more preferred (native = 0 if supported)
     available: bool = True  # Whether this output protocol is currently available
+    derived_from: str | None = None  # output_protocol_id of the base output, if derived
 
 
 @dataclass
