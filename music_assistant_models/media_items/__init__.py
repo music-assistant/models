@@ -32,6 +32,7 @@ from .media_item import (
     Track,
 )
 from .metadata import (
+    AudioMetadata,
     MediaItemChapter,
     MediaItemCollection,
     MediaItemImage,
@@ -45,6 +46,7 @@ __all__ = [
     "Album",
     "Artist",
     "AudioFormat",
+    "AudioMetadata",
     "AudioSource",
     "Audiobook",
     "BrowseFolder",

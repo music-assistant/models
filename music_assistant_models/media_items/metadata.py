@@ -138,6 +138,14 @@ class MediaItemCollection(DataClassDictMixin):
 
 
 @dataclass(kw_only=True)
+class AudioMetadata(DataClassDictMixin):
+    """Model for audio-analysis-derived metadata of a track."""
+
+    bpm: float | None = None  # beats per minute
+    musical_key: str | None = None  # pitch class plus mode, e.g. "F# minor"
+
+
+@dataclass(kw_only=True)
 class MediaItemMetadata(DataClassDictMixin):
     """Model for a MediaItem's metadata."""
 

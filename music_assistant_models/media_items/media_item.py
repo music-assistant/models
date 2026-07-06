@@ -21,7 +21,7 @@ from music_assistant_models.helpers import (
 from music_assistant_models.translations import resolve_translation, translations_active
 from music_assistant_models.unique_list import UniqueList
 
-from .metadata import MediaItemImage, MediaItemMetadata
+from .metadata import AudioMetadata, MediaItemImage, MediaItemMetadata
 from .provider_mapping import ProviderMapping
 
 
@@ -345,6 +345,8 @@ class Track(MediaItem):
     album: Album | ItemMapping | None = None  # required for album tracks
     disc_number: int = 0  # required for album tracks
     track_number: int = 0  # required for album tracks
+    # only populated when a FULL track is requested (get_track), not on track listings
+    audio_metadata: AudioMetadata | None = None
 
     @property
     def image(self) -> MediaItemImage | None:
