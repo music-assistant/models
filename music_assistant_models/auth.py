@@ -11,11 +11,18 @@ from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 
 class UserRole(StrEnum):
-    """User role enum."""
+    """
+    The role id's of the builtin (default) user roles.
+
+    A role is identified by its (string) id, of which these are the builtin defaults.
+    User.role is deliberately a plain string and not limited to these values,
+    to allow for custom roles in the future.
+    """
 
     ADMIN = "admin"
     USER = "user"
     GUEST = "guest"
+    SERVICE = "service"
 
 
 class AuthProviderType(StrEnum):
@@ -24,6 +31,42 @@ class AuthProviderType(StrEnum):
     BUILTIN = "builtin"
     HOME_ASSISTANT = "homeassistant"
 
+    @classmethod
+    def _missing_(cls, value: object) -> AuthProviderType:  # noqa: ARG003
+        """Return BUILTIN if an unknown value is provided."""
+        return cls.BUILTIN
+
+
+class Scope(StrEnum):
+    """Scope enum for fine grained access to (parts of) the API."""
+
+    ALL = "*"
+    LIBRARY_READ = "library.read"
+    LIBRARY_WRITE = "library.write"
+    LIBRARY_MANAGE = "library.manage"
+    PLAYERS_READ = "players.read"
+    PLAYERS_CONTROL = "players.control"
+    QUEUES_READ = "queues.read"
+    QUEUES_CONTROL = "queues.control"
+    PROVIDERS_READ = "providers.read"
+    CONFIG_PLAYERS_READ = "config.players.read"
+    CONFIG_PLAYERS_WRITE = "config.players.write"
+    CONFIG_PROVIDERS_READ = "config.providers.read"
+    CONFIG_PROVIDERS_WRITE = "config.providers.write"
+    CONFIG_CORE_READ = "config.core.read"
+    CONFIG_CORE_WRITE = "config.core.write"
+    USERS_MANAGE = "users.manage"
+    USERS_IMPERSONATE = "users.impersonate"
+    USERS_INVITE = "users.invite"
+    SYSTEM_READ = "system.read"
+    SYSTEM_MANAGE = "system.manage"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> Scope:  # noqa: ARG003
+        """Return UNKNOWN (which grants no access) if an unknown value is provided."""
+        return cls.UNKNOWN
+
 
 @dataclass
 class User(DataClassORJSONMixin):
@@ -31,7 +74,8 @@ class User(DataClassORJSONMixin):
 
     user_id: str
     username: str
-    role: UserRole
+    # the id of the role assigned to the user (see UserRole for the builtin roles)
+    role: str
     enabled: bool = True
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     display_name: str | None = None
