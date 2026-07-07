@@ -32,6 +32,8 @@ test = [
 ]
 
 [tool.codespell]
+# "acapella" is a common alternative spelling of "a cappella" used by MusicBrainz
+ignore-words-list = "acapella,"
 skip = "*.js"
 
 [tool.setuptools]
