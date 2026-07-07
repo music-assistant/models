@@ -9,7 +9,14 @@ from typing import TYPE_CHECKING, Any, cast
 
 from mashumaro import DataClassDictMixin, field_options
 
-from music_assistant_models.enums import AlbumType, ArtistType, ExternalID, ImageType, MediaType
+from music_assistant_models.enums import (
+    AlbumType,
+    ArtistType,
+    ExternalID,
+    ImageType,
+    MediaType,
+    TrackType,
+)
 from music_assistant_models.errors import InvalidDataError
 from music_assistant_models.helpers import (
     create_sort_name,
@@ -345,6 +352,7 @@ class Track(MediaItem):
     album: Album | ItemMapping | None = None  # required for album tracks
     disc_number: int = 0  # required for album tracks
     track_number: int = 0  # required for album tracks
+    track_type: TrackType = TrackType.UNKNOWN
     # only populated when a FULL track is requested (get_track), not on track listings
     audio_metadata: AudioMetadata | None = None
 

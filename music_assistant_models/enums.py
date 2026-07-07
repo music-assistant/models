@@ -169,6 +169,26 @@ class AlbumType(StrEnum):
         return cls.UNKNOWN
 
 
+class TrackType(StrEnum):
+    """Enum for Track type."""
+
+    STUDIO = "studio"
+    LIVE = "live"
+    KARAOKE = "karaoke"
+    DEMO = "demo"
+    REHEARSAL = "rehearsal"
+    INSTRUMENTAL = "instrumental"
+    ACAPELLA = "acapella"
+    COVER = "cover"
+    REMIX = "remix"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> TrackType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class ArtistType(StrEnum):
     """Enum for Artist type."""
 
