@@ -36,6 +36,13 @@ class PlayerQueue(DataClassDictMixin):
     repeat_mode: RepeatMode = RepeatMode.OFF
     crossfade_enabled: bool = False
     autoplay_enabled: bool = False
+    # audio overlay: a looping sound effect mixed into this queue's playback.
+    # overlay_source holds the selected sound effect (kept when the overlay is
+    # disabled so it can be re-enabled with the same sound), overlay_volume is
+    # the overlay loudness relative to the music in percent (100 = equally loud).
+    overlay_enabled: bool = False
+    overlay_source: ItemMapping | None = None
+    overlay_volume: int = 100
     # smart_fades_active: whether the queue's effective crossfade is currently smart crossfade
     # (i.e. crossfade is on, smart is preferred, and smart fades are available). Derived at runtime
     # by the server, read-only and not persisted; lets clients show a smart-fades indicator.
