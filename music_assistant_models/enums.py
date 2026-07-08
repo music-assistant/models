@@ -20,7 +20,6 @@ class MediaTypeMeta(EnumType):
             MediaType.RADIO,
             MediaType.AUDIOBOOK,
             MediaType.PODCAST,
-            MediaType.SOUND_EFFECT,
             MediaType.GENRE,
         ]
 
@@ -588,7 +587,6 @@ class ProviderFeature(StrEnum):
     LIBRARY_RADIOS = "library_radios"
     LIBRARY_AUDIOBOOKS = "library_audiobooks"
     LIBRARY_PODCASTS = "library_podcasts"
-    LIBRARY_SOUND_EFFECTS = "library_sound_effects"
 
     # additional library features
     AUTHOR_AUDIOBOOKS = "author_audiobooks"
@@ -614,7 +612,6 @@ class ProviderFeature(StrEnum):
     LIBRARY_RADIOS_EDIT = "library_radios_edit"
     LIBRARY_AUDIOBOOKS_EDIT = "library_audiobooks_edit"
     LIBRARY_PODCASTS_EDIT = "library_podcasts_edit"
-    LIBRARY_SOUND_EFFECTS_EDIT = "library_sound_effects_edit"
 
     # favorites editing per mediatype
     FAVORITE_ARTISTS_EDIT = "favorite_artists_edit"
@@ -624,7 +621,6 @@ class ProviderFeature(StrEnum):
     FAVORITE_RADIOS_EDIT = "favorite_radios_edit"
     FAVORITE_AUDIOBOOKS_EDIT = "favorite_audiobooks_edit"
     FAVORITE_PODCASTS_EDIT = "favorite_podcasts_edit"
-    FAVORITE_SOUND_EFFECTS_EDIT = "favorite_sound_effects_edit"
 
     # if we can grab 'similar tracks' from the music provider or plugin
     # used to generate dynamic playlists
