@@ -29,6 +29,7 @@ from .media_item import (
     PodcastEpisode,
     Radio,
     RecommendationFolder,
+    SoundEffect,
     Track,
 )
 from .metadata import (
@@ -72,6 +73,7 @@ __all__ = [
     "ProviderMapping",
     "Radio",
     "RecommendationFolder",
+    "SoundEffect",
     "Track",
     "UniqueList",
 ]
@@ -89,6 +91,7 @@ class SearchResults(DataClassDictMixin):
     radio: Sequence[Radio | ItemMapping] = field(default_factory=list)
     audiobooks: Sequence[Audiobook | ItemMapping] = field(default_factory=list)
     podcasts: Sequence[Podcast | ItemMapping] = field(default_factory=list)
+    sound_effects: Sequence[SoundEffect | ItemMapping] = field(default_factory=list)
 
 
 def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
@@ -113,6 +116,8 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return Podcast.from_dict(media_item)
     if media_item["media_type"] == "podcast_episode":
         return PodcastEpisode.from_dict(media_item)
+    if media_item["media_type"] == "sound_effect":
+        return SoundEffect.from_dict(media_item)
     if media_item["media_type"] == "audio_source":
         return AudioSource.from_dict(media_item)
     raise InvalidDataError("Unknown media type")
