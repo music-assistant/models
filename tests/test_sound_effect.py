@@ -1,6 +1,6 @@
 """Tests for the SoundEffect MediaItem and related types."""
 
-from music_assistant_models.enums import MediaType
+from music_assistant_models.enums import MediaType, ProviderFeature
 from music_assistant_models.media_items import (
     ItemMapping,
     SoundEffect,
@@ -29,6 +29,12 @@ def test_media_type_sound_effect_roundtrips() -> None:
     """MediaType.SOUND_EFFECT is reachable and round-trips through StrEnum."""
     assert MediaType("sound_effect") is MediaType.SOUND_EFFECT
     assert MediaType.SOUND_EFFECT.value == "sound_effect"
+
+
+def test_provider_feature_sound_effects_roundtrips() -> None:
+    """ProviderFeature.SOUND_EFFECTS is reachable and round-trips through StrEnum."""
+    assert ProviderFeature("sound_effects") is ProviderFeature.SOUND_EFFECTS
+    assert ProviderFeature.SOUND_EFFECTS.value == "sound_effects"
 
 
 def test_sound_effect_defaults() -> None:
