@@ -668,7 +668,6 @@ class ProviderFeature(StrEnum):
     AUDIO_SOURCE = "audio_source"
     # provider can enumerate sound effect items (live, not library-backed)
     SOUND_EFFECTS = "sound_effects"
-    AUDIO_OVERLAY = "audio_overlay"  # plugin can mix an audio overlay into queue playback
 
     #
     # OTHER FEATURES (plugin-only)
