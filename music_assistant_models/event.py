@@ -14,7 +14,7 @@ class MassEvent(DataClassORJSONMixin):
     """Representation of an Event emitted in/by Music Assistant."""
 
     event: EventType
-    object_id: str | None = None  # player_id, queue_id or uri
+    object_id: str | None = None  # player_id, queue_id, uri or provider instance_id
     data: Any = field(
         default=None,
         metadata={"serialize": lambda v: get_serializable_value(v)},
