@@ -617,7 +617,8 @@ MediaItemType = (
     | Audiobook
     | Podcast
     | PodcastEpisode
+    | SoundEffect
     | Genre
     | AudioSource
 )
-PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode | AudioSource
+PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode | SoundEffect | AudioSource
