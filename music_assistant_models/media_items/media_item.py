@@ -470,7 +470,7 @@ class PodcastEpisode(MediaItem):
 
 
 @dataclass(kw_only=True)
-class SoundEffect(MediaItem):
+class SoundEffect(_LocalizableName, MediaItem):
     """Model for a Sound Effect."""
 
     __hash__ = _MediaItemBase.__hash__
