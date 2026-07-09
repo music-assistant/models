@@ -72,3 +72,30 @@ def test_item_mapping_for_sound_effect() -> None:
     mapping = ItemMapping.from_item(_make_sound_effect())
     assert mapping.media_type == MediaType.SOUND_EFFECT
     assert mapping.item_id == "rain-loop"
+
+
+def test_translation_key_roundtrips() -> None:
+    """A translation_key survives a to_dict -> from_dict round-trip."""
+    original = _make_sound_effect()
+    original.translation_key = "white_noise"
+    restored = SoundEffect.from_dict(original.to_dict())
+    assert restored.translation_key == "white_noise"
+
+
+def test_translation_key_is_opt_in() -> None:
+    """translation_key defaults to None and older payloads without the key deserialize."""
+    item = _make_sound_effect()
+    assert item.translation_key is None
+    legacy = item.to_dict()
+    legacy.pop("translation_key", None)
+    restored = SoundEffect.from_dict(legacy)
+    assert restored.translation_key is None
+
+
+def test_item_mapping_preserves_translation_key() -> None:
+    """ItemMapping.from_item keeps translation_key and media_type of a SoundEffect."""
+    item = _make_sound_effect()
+    item.translation_key = "white_noise"
+    mapping = ItemMapping.from_item(item)
+    assert mapping.media_type == MediaType.SOUND_EFFECT
+    assert mapping.translation_key == "white_noise"

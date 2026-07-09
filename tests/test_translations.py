@@ -16,6 +16,7 @@ from music_assistant_models.media_items import (
     ProviderMapping,
     Radio,
     RecommendationFolder,
+    SoundEffect,
     Track,
 )
 from music_assistant_models.player import (
@@ -39,6 +40,7 @@ _CATALOG = {
     "media.recommendations.recently_played.subtitle": "Ga verder waar je gebleven was",
     "media.folder.libraries.name": "Bibliotheken",
     "media.podcast.unknown_podcast.name": "Onbekende podcast",
+    "media.sound_effect.white_noise.name": "Witte ruis",
     "media.genre.jazz.name": "Jazz (NL)",
     "media.genre.jazz.description": "Jazz is een Amerikaans muziekgenre.",
     "media.genre.comedy.name": "Komedie (muziek)",
@@ -255,6 +257,19 @@ def test_podcast_resolves_name() -> None:
     )
     with _resolver_active():
         assert podcast.to_dict()["name"] == "Onbekende podcast"
+
+
+def test_sound_effect_resolves_name() -> None:
+    """A SoundEffect localizes its name from media.sound_effect.<key>.name."""
+    sound_effect = SoundEffect(
+        item_id="white-noise",
+        provider="ambient_sounds",
+        name="White noise",
+        translation_key="white_noise",
+        provider_mappings=set(),
+    )
+    with _resolver_active():
+        assert sound_effect.to_dict()["name"] == "Witte ruis"
 
 
 def test_item_mapping_media_type_keeps_its_default() -> None:
