@@ -407,7 +407,7 @@ class Radio(_LocalizableTitle, MediaItem):
         """Adjust dict object after it has been serialized."""
         self._resolve_translation(d)
         # TEMP 2025-03-14: convert None duration to fake number for backwards compatibility
-        d["duration"] = 0 if d["duration"] is None else d["duration"]
+        d["duration"] = d.get("duration") or 0
         return d
 
 
