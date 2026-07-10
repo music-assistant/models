@@ -9,7 +9,14 @@ from typing import TYPE_CHECKING, Any, cast
 
 from mashumaro import DataClassDictMixin, field_options
 
-from music_assistant_models.enums import AlbumType, ArtistType, ExternalID, ImageType, MediaType
+from music_assistant_models.enums import (
+    AlbumType,
+    ArtistCategory,
+    ArtistType,
+    ExternalID,
+    ImageType,
+    MediaType,
+)
 from music_assistant_models.errors import InvalidDataError
 from music_assistant_models.helpers import (
     create_sort_name,
@@ -311,6 +318,7 @@ class Artist(MediaItem):
 
     media_type: MediaType = MediaType.ARTIST
     artist_type: ArtistType = ArtistType.SINGER
+    artist_category: ArtistCategory = ArtistCategory.UNKNOWN
 
 
 @dataclass(kw_only=True)

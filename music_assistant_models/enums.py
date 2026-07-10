@@ -177,8 +177,21 @@ class ArtistType(StrEnum):
     NARRATOR = "narrator"  # narrator of an audiobook
     UNKNOWN = "unknown"
 
+
+class ArtistCategory(StrEnum):
+    """Enum for Artist category (MusicBrainz artist type)."""
+
+    PERSON = "person"  # individual person
+    GROUP = "group"  # music group
+    BAND = "band"  # band
+    ORCHESTRA = "orchestra"  # orchestra
+    CHOIR = "choir"  # choir
+    CHARACTER = "character"  # fictional character
+    OTHER = "other"  # other
+    UNKNOWN = "unknown"
+
     @classmethod
-    def _missing_(cls, value: object) -> ArtistType:  # noqa: ARG003
+    def _missing_(cls, value: object) -> ArtistCategory:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 

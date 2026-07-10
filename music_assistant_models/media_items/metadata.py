@@ -145,6 +145,15 @@ class AudioMetadata(DataClassDictMixin):
     musical_key: str | None = None  # pitch class plus mode, e.g. "F# minor"
 
 
+@dataclass(frozen=True, kw_only=True)
+class LifeSpan(DataClassDictMixin):
+    """Life span dates for an artist (person or group)."""
+
+    begin: str | None = None  # ISO date (YYYY-MM-DD) or partial (YYYY-MM or YYYY)
+    end: str | None = None  # ISO date (YYYY-MM-DD) or partial (YYYY-MM or YYYY)
+    ended: bool = False  # whether the artist is deceased or the group has disbanded
+
+
 @dataclass(kw_only=True)
 class MediaItemMetadata(DataClassDictMixin):
     """Model for a MediaItem's metadata."""
@@ -152,6 +161,8 @@ class MediaItemMetadata(DataClassDictMixin):
     description: str | None = None
     # ISO 639-1 language code for `description`
     description_language: str | None = None
+    # Artist-specific metadata (applicable to Artist media type only)
+    life_span: LifeSpan | None = None  # birth/death for persons, founded/disbanded for groups
     review: str | None = None
     explicit: bool | None = None
     # NOTE: images is a list of available images, sorted by preference
