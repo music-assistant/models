@@ -16,6 +16,7 @@ from music_assistant_models.enums import (
     ExternalID,
     ImageType,
     MediaType,
+    RecommendationFolderType,
 )
 from music_assistant_models.errors import InvalidDataError
 from music_assistant_models.helpers import (
@@ -606,6 +607,7 @@ class RecommendationFolder(BrowseFolder):
         metadata=field_options(deserialize=_deserialize_recommendation_items),
     )
     subtitle: str | None = None  # optional subtitle for the recommendation
+    type: RecommendationFolderType = RecommendationFolderType.DEFAULT
 
     @property
     def _translation_group(self) -> str:

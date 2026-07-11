@@ -169,6 +169,18 @@ class AlbumType(StrEnum):
         return cls.UNKNOWN
 
 
+class RecommendationFolderType(StrEnum):
+    """Enum for RecommendationFolder type."""
+
+    DEFAULT = "default"
+    TIMELINE = "timeline"
+
+    @classmethod
+    def _missing_(cls, value: object) -> RecommendationFolderType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.DEFAULT
+
+
 class ArtistType(StrEnum):
     """Enum for Artist type."""
 
