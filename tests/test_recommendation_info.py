@@ -57,3 +57,12 @@ def test_recommendation_info_roundtrip() -> None:
     assert "items" not in data
     restored = RecommendationInfo.from_dict(data)
     assert restored == info
+
+
+def test_recommendation_info_effective_enabled_field() -> None:
+    """RecommendationInfo carries an effective per-user `enabled` flag (default True)."""
+    info = RecommendationInfo(item_id="x", provider="library", name="X")
+    assert info.enabled is True
+    assert info.to_dict()["enabled"] is True
+    disabled = RecommendationInfo(item_id="y", provider="library", name="Y", enabled=False)
+    assert RecommendationInfo.from_dict(disabled.to_dict()).enabled is False
