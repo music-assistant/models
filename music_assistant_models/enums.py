@@ -174,6 +174,7 @@ class RecommendationFolderType(StrEnum):
 
     DEFAULT = "default"
     TIMELINE = "timeline"
+    HERO = "hero"
 
     @classmethod
     def _missing_(cls, value: object) -> RecommendationFolderType:  # noqa: ARG003
