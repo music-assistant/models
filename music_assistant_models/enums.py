@@ -195,7 +195,6 @@ class ArtistCategory(StrEnum):
 
     PERSON = "person"  # individual person
     GROUP = "group"  # music group
-    BAND = "band"  # band
     ORCHESTRA = "orchestra"  # orchestra
     CHOIR = "choir"  # choir
     CHARACTER = "character"  # fictional character
