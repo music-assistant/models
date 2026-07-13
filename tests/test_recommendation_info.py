@@ -59,6 +59,20 @@ def test_recommendation_info_roundtrip() -> None:
     assert restored == info
 
 
+def test_recommendation_info_is_hashable() -> None:
+    """The descriptor stays hashable (uri-based) despite dataclass equality; guards __hash__."""
+    info = RecommendationInfo(item_id="x", provider="library", name="X")
+    assert hash(info) == hash(info.uri)
+    assert info in {info}  # usable as a set member / dict key
+
+
+def test_recommendation_info_equality_is_field_wise() -> None:
+    """Two descriptors with identical fields compare equal (unlike the uri-only folder types)."""
+    a = RecommendationInfo(item_id="x", provider="library", name="X", enabled_by_default=False)
+    b = RecommendationInfo(item_id="x", provider="library", name="X", enabled_by_default=False)
+    assert a == b
+
+
 def test_recommendation_info_effective_enabled_field() -> None:
     """RecommendationInfo carries an effective per-user `enabled` flag (default True)."""
     info = RecommendationInfo(item_id="x", provider="library", name="X")
