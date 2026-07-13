@@ -190,6 +190,12 @@ class DSPState(StrEnum):
     ENABLED = "enabled"
     DISABLED = "disabled"
     DISABLED_BY_UNSUPPORTED_GROUP = "disabled_by_unsupported_group"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, _: object) -> DSPState:
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
 
 
 @dataclass(kw_only=True)

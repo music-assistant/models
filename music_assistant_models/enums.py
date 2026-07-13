@@ -384,6 +384,12 @@ class CrossfadeMode(StrEnum):
     SMART_CROSSFADE = "smart_crossfade"  # Use smart crossfade with beat matching and EQ filters
     STANDARD_CROSSFADE = "standard_crossfade"  # Use standard crossfade only
     DISABLED = "disabled"  # No crossfade
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> CrossfadeMode:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
 
 
 # alias for backwards compatibility
@@ -556,6 +562,7 @@ class EventType(StrEnum):
     PLAYER_OPTIONS_UPDATED = "player_options_updated"
     PLAYER_SLEEP_TIMER_UPDATED = "player_sleep_timer_updated"
     DSP_PRESETS_UPDATED = "dsp_presets_updated"
+    AUDIO_PROCESSING_UPDATED = "audio_processing_updated"
     QUEUE_ADDED = "queue_added"
     QUEUE_UPDATED = "queue_updated"
     QUEUE_ITEMS_UPDATED = "queue_items_updated"
