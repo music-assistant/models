@@ -613,6 +613,28 @@ class RecommendationFolder(BrowseFolder):
         return "recommendations"
 
 
+@dataclass(kw_only=True)
+class RecommendationInfo(BrowseFolder):
+    """Lightweight descriptor for a recommendation row (metadata only, no items)."""
+
+    __hash__ = _MediaItemBase.__hash__
+
+    # mediatype is always folder for recommendation rows, independent of content
+    media_type: MediaType = MediaType.FOLDER
+
+    is_playable: bool = False
+    icon: str | None = None  # optional material design icon name
+    subtitle: str | None = None  # optional subtitle for the recommendation row
+    enabled_by_default: bool = True  # rows off by default are advanced/heavy
+    type: RecommendationFolderType = RecommendationFolderType.DEFAULT
+    category: str | None = None  # optional semantic tag (e.g. "made_for_you") for Top Picks
+
+    @property
+    def _translation_group(self) -> str:
+        """Own namespace: media_type is FOLDER (shared with BrowseFolder), so override it."""
+        return "recommendations"
+
+
 # some type aliases
 # NOTE: BrowseFolder is not part of the MediaItemType alias, as it lacks
 # provider mappings, i.e. we do not map a provider item to a BrowseFolder.
