@@ -11,7 +11,7 @@ from mashumaro import DataClassDictMixin, field_options
 
 from music_assistant_models.enums import (
     AlbumType,
-    ArtistCategory,
+    ArtistEntityType,
     ArtistType,
     ExternalID,
     ImageType,
@@ -319,7 +319,7 @@ class Artist(MediaItem):
 
     media_type: MediaType = MediaType.ARTIST
     artist_type: ArtistType = ArtistType.SINGER
-    artist_category: ArtistCategory = ArtistCategory.UNKNOWN
+    artist_entity_type: ArtistEntityType = ArtistEntityType.UNKNOWN
 
 
 @dataclass(kw_only=True)

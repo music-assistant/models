@@ -190,8 +190,8 @@ class ArtistType(StrEnum):
     UNKNOWN = "unknown"
 
 
-class ArtistCategory(StrEnum):
-    """Enum for Artist category (MusicBrainz artist type)."""
+class ArtistEntityType(StrEnum):
+    """Enum for Artist entity type (mirrors MusicBrainz artist type)."""
 
     PERSON = "person"  # individual person
     GROUP = "group"  # music group
@@ -202,7 +202,7 @@ class ArtistCategory(StrEnum):
     UNKNOWN = "unknown"
 
     @classmethod
-    def _missing_(cls, value: object) -> ArtistCategory:  # noqa: ARG003
+    def _missing_(cls, value: object) -> ArtistEntityType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
