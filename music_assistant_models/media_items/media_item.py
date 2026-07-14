@@ -631,7 +631,6 @@ class RecommendationInfo(BrowseFolder):
     icon: str | None = None  # optional material design icon name
     subtitle: str | None = None  # optional subtitle for the recommendation row
     enabled_by_default: bool = True  # off by default = noisier rows (e.g. random or raw history)
-    enabled: bool = True  # effective per-user enabled state (server sets from user prefs + default)
     type: RecommendationFolderType = RecommendationFolderType.DEFAULT
     category: str | None = None  # optional semantic tag (e.g. "made_for_you") for Top Picks
 

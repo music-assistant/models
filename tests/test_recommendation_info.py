@@ -71,12 +71,3 @@ def test_recommendation_info_equality_is_field_wise() -> None:
     a = RecommendationInfo(item_id="x", provider="library", name="X", enabled_by_default=False)
     b = RecommendationInfo(item_id="x", provider="library", name="X", enabled_by_default=False)
     assert a == b
-
-
-def test_recommendation_info_effective_enabled_field() -> None:
-    """RecommendationInfo carries an effective per-user `enabled` flag (default True)."""
-    info = RecommendationInfo(item_id="x", provider="library", name="X")
-    assert info.enabled is True
-    assert info.to_dict()["enabled"] is True
-    disabled = RecommendationInfo(item_id="y", provider="library", name="Y", enabled=False)
-    assert RecommendationInfo.from_dict(disabled.to_dict()).enabled is False
