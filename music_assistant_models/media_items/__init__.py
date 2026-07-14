@@ -29,7 +29,6 @@ from .media_item import (
     PodcastEpisode,
     Radio,
     RecommendationFolder,
-    RecommendationInfo,
     SoundEffect,
     Track,
 )
@@ -98,7 +97,6 @@ __all__ = [
     "Radio",
     "RadioSummary",
     "RecommendationFolder",
-    "RecommendationInfo",
     "SoundEffect",
     "SummaryDialect",
     "Track",

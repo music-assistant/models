@@ -606,32 +606,9 @@ class RecommendationFolder(BrowseFolder):
     )
     subtitle: str | None = None  # optional subtitle for the recommendation
     type: RecommendationFolderType = RecommendationFolderType.DEFAULT
-
-    @property
-    def _translation_group(self) -> str:
-        """Own namespace: media_type is FOLDER (shared with BrowseFolder), so override it."""
-        return "recommendations"
-
-
-@dataclass(kw_only=True)
-class RecommendationInfo(BrowseFolder):
-    """Lightweight descriptor for a recommendation row (metadata only, no items)."""
-
-    # Keep the uri-based hash so the descriptor stays hashable (a default eq=True
-    # dataclass sets __hash__ = None). Unlike the sibling folder types we deliberately do
-    # NOT borrow _MediaItemBase.__eq__: it compares by uri and returns False for any
-    # non-MediaItem, which would make two identical descriptors compare unequal. The
-    # dataclass field-wise __eq__ is intentional so descriptors can be value-compared.
-    __hash__ = _MediaItemBase.__hash__
-
-    # mediatype is always folder for recommendation rows, independent of content
-    media_type: MediaType = MediaType.FOLDER
-
-    is_playable: bool = False
-    icon: str | None = None  # optional material design icon name
-    subtitle: str | None = None  # optional subtitle for the recommendation row
-    enabled_by_default: bool = True  # off by default = noisier rows (e.g. random or raw history)
-    type: RecommendationFolderType = RecommendationFolderType.DEFAULT
+    # rows off by default are noisier (e.g. random or raw play-history); the client
+    # hides them until the user opts in. Only meaningful on the descriptor (rows) response.
+    enabled_by_default: bool = True
     category: str | None = None  # optional semantic tag (e.g. "made_for_you") for Top Picks
 
     @property
