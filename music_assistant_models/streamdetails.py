@@ -9,6 +9,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
+from .audio_processing import AudioProcessingChain
 from .dsp import DSPDetails
 from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
@@ -92,6 +93,9 @@ class StreamDetails(DataClassDictMixin):
     # stream metadata: radio/live streams can optionally set/use this field
     # to set the metadata of the playing media during the stream
     stream_metadata: StreamMetadata | None = None
+
+    # Complete audio processing chain; None until resolved by the server.
+    audio_processing: AudioProcessingChain | None = None
 
     #############################################################################
     # the fields below will only be used server-side and not sent to the client #
