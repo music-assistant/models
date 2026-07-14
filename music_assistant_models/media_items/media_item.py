@@ -477,6 +477,17 @@ class PodcastEpisode(MediaItem):
 
 
 @dataclass(kw_only=True)
+class MediaCollection[ItemCls: MediaItemType](MediaItem):
+    """Model for a Collection of MediaItems."""
+
+    __hash__ = _MediaItemBase.__hash__
+    __eq__ = _MediaItemBase.__eq__
+
+    title: str
+    items: UniqueList[ItemCls] = field(default_factory=UniqueList)
+
+
+@dataclass(kw_only=True)
 class SoundEffect(_LocalizableName, MediaItem):
     """Model for a Sound Effect."""
 
