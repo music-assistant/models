@@ -477,14 +477,13 @@ class PodcastEpisode(MediaItem):
 
 
 @dataclass(kw_only=True)
-class MediaCollection[ItemCls: MediaItemType](MediaItem):
+class MediaCollection(MediaItem):
     """Model for a Collection of MediaItems."""
 
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
-    title: str
-    items: UniqueList[ItemCls] = field(default_factory=UniqueList)
+    items: UniqueList[MediaItemType] = field(default_factory=UniqueList)
 
 
 @dataclass(kw_only=True)
