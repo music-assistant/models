@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from mashumaro import DataClassDictMixin, field_options
 
@@ -476,14 +476,17 @@ class PodcastEpisode(MediaItem):
     media_type: MediaType = MediaType.PODCAST_EPISODE
 
 
+M = TypeVar("M", bound="MediaItemType")
+
+
 @dataclass(kw_only=True)
-class MediaCollection(MediaItem):
+class MediaCollection[M](MediaItem):
     """Model for a Collection of MediaItems."""
 
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
-    items: UniqueList[MediaItemType] = field(default_factory=UniqueList)
+    items: UniqueList[M] = field(default_factory=UniqueList)
 
 
 @dataclass(kw_only=True)
