@@ -23,7 +23,6 @@ def test_recommendation_folder_descriptor_defaults() -> None:
         icon="mdi-motion-play",
     )
     assert folder.enabled_by_default is True
-    assert folder.category is None
     assert folder.type is RecommendationFolderType.DEFAULT
     assert folder.is_playable is False
     assert list(folder.items) == []  # the rows response omits items
@@ -40,13 +39,10 @@ def test_recommendation_folder_roundtrip() -> None:
         subtitle="A mix just for you",
         enabled_by_default=False,
         type=RecommendationFolderType.HERO,
-        category="made_for_you",
     )
     data = folder.to_dict()
     assert data["enabled_by_default"] is False
     assert data["type"] == "hero"
-    assert data["category"] == "made_for_you"
     restored = RecommendationFolder.from_dict(data)
     assert restored.enabled_by_default is False
-    assert restored.category == "made_for_you"
     assert restored.type is RecommendationFolderType.HERO

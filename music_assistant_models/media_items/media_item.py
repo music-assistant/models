@@ -609,7 +609,6 @@ class RecommendationFolder(BrowseFolder):
     # rows off by default are noisier (e.g. random or raw play-history); the client
     # hides them until the user opts in. Only meaningful on the descriptor (rows) response.
     enabled_by_default: bool = True
-    category: str | None = None  # optional semantic tag (e.g. "made_for_you") for Top Picks
 
     @property
     def _translation_group(self) -> str:
