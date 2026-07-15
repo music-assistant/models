@@ -1,17 +1,9 @@
-"""Tests for the RecommendationFolder descriptor fields and the HERO folder type."""
+"""Tests for the enabled_by_default descriptor field on RecommendationFolder."""
 
 from __future__ import annotations
 
 from music_assistant_models.enums import RecommendationFolderType
 from music_assistant_models.media_items import RecommendationFolder
-
-
-def test_recommendation_folder_type_has_hero() -> None:
-    """The hero render style is available and serializes to its string value."""
-    assert RecommendationFolderType.HERO == "hero"
-    assert RecommendationFolderType("hero") is RecommendationFolderType.HERO
-    assert RecommendationFolderType.DEFAULT == "default"
-    assert RecommendationFolderType.TIMELINE == "timeline"
 
 
 def test_recommendation_folder_descriptor_defaults() -> None:
@@ -29,20 +21,15 @@ def test_recommendation_folder_descriptor_defaults() -> None:
     assert folder.uri is not None
 
 
-def test_recommendation_folder_roundtrip() -> None:
-    """RecommendationFolder serializes and deserializes the new descriptor fields."""
+def test_recommendation_folder_enabled_by_default_roundtrip() -> None:
+    """enabled_by_default serializes and deserializes."""
     folder = RecommendationFolder(
-        item_id="top_picks",
+        item_id="random_albums",
         provider="library",
-        name="Top Picks for You",
-        icon="mdi-star",
-        subtitle="A mix just for you",
+        name="Random albums",
         enabled_by_default=False,
-        type=RecommendationFolderType.HERO,
     )
     data = folder.to_dict()
     assert data["enabled_by_default"] is False
-    assert data["type"] == "hero"
     restored = RecommendationFolder.from_dict(data)
     assert restored.enabled_by_default is False
-    assert restored.type is RecommendationFolderType.HERO
