@@ -10,7 +10,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin
 
-from music_assistant_models.enums import ImageType, LinkType
+from music_assistant_models.enums import ArtistEntityType, ImageType, LinkType
 from music_assistant_models.helpers import merge_lists
 from music_assistant_models.unique_list import UniqueList
 
@@ -163,6 +163,7 @@ class MediaItemMetadata(DataClassDictMixin):
     description_language: str | None = None
     # Artist-specific metadata (applicable to Artist media type only)
     life_span: LifeSpan | None = None  # birth/death for persons, founded/disbanded for groups
+    artist_entity_type: ArtistEntityType | None = None  # MusicBrainz artist entity type
     review: str | None = None
     explicit: bool | None = None
     # NOTE: images is a list of available images, sorted by preference
