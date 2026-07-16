@@ -31,15 +31,15 @@ def test_dsp_config_gain_balance_roundtrip() -> None:
 
 
 def test_gain_filter_validate() -> None:
-    """Gain validates within +-15 dB and rejects values outside."""
+    """Gain validates within +-60 dB and rejects values outside."""
     GainFilter(enabled=True).validate()
-    GainFilter(enabled=True, gain=-15.0).validate()
-    GainFilter(enabled=True, gain=15.0).validate()
+    GainFilter(enabled=True, gain=-60.0).validate()
+    GainFilter(enabled=True, gain=60.0).validate()
 
     with pytest.raises(ValueError, match="Gain"):
-        GainFilter(enabled=True, gain=-15.1).validate()
+        GainFilter(enabled=True, gain=-60.1).validate()
     with pytest.raises(ValueError, match="Gain"):
-        GainFilter(enabled=True, gain=15.1).validate()
+        GainFilter(enabled=True, gain=60.1).validate()
 
 
 def test_balance_filter_validate() -> None:
