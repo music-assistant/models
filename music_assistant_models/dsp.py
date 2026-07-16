@@ -147,8 +147,8 @@ class GainFilter(DSPFilterBase):
 
     def validate(self) -> None:
         """Validate the Gain filter."""
-        if not -15.0 <= self.gain <= 15.0:
-            raise ValueError("Gain must be in the range -15.0 to 15.0 dB")
+        if not -60.0 <= self.gain <= 60.0:
+            raise ValueError("Gain must be in the range -60.0 to 60.0 dB")
 
 
 @dataclass
