@@ -72,7 +72,7 @@ class SummaryDialect(Dialect):
     serialization_strategy = {  # noqa: RUF012
         MediaItemMetadata: {
             "serialize": lambda v: v.to_dict(),
-            "deserialize": lambda v: MediaItemMetadataSummary.from_dict(v),
+            "deserialize": MediaItemMetadataSummary.from_dict,
         },
     }
 
