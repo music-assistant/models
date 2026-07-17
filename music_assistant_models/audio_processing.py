@@ -91,6 +91,7 @@ class AudioDSPDetails(DataClassDictMixin):
     # Output gain in dB.
     output_gain: float = 0.0
     output_limiter: bool = False
+    # ID of the selected preset; cleared when the user changes DSP settings manually.
     preset_id: str | None = None
 
 
