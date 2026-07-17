@@ -45,6 +45,14 @@ def test_audio_processing_defaults() -> None:
         "crossfade_mode": "disabled",
         "overlay_active": False,
     }
+    assert AudioDSPDetails().to_dict() == {
+        "state": "unknown",
+        "input_gain": 0.0,
+        "filters": [],
+        "output_gain": 0.0,
+        "output_limiter": False,
+        "preset_id": None,
+    }
     assert AudioOutputDetails().to_dict() == {
         "player_ids": [],
         "dsp": {
@@ -53,6 +61,7 @@ def test_audio_processing_defaults() -> None:
             "filters": [],
             "output_gain": 0.0,
             "output_limiter": False,
+            "preset_id": None,
         },
         "source_channel": None,
         "output_format": None,
@@ -109,9 +118,32 @@ def test_audio_processing_roundtrip() -> None:
         "filters",
         "output_gain",
         "output_limiter",
+        "preset_id",
     }
+    assert output["dsp"]["preset_id"] == "preset-1"
     assert get_serializable_value(chain) == serialized
     assert AudioProcessingChain.from_dict(serialized) == chain
+
+
+def test_audio_dsp_details_legacy_payload() -> None:
+    """Audio DSP details accept payloads without a preset ID."""
+    payload = {
+        "state": "enabled",
+        "input_gain": -1.0,
+        "filters": [],
+        "output_gain": -0.5,
+        "output_limiter": True,
+    }
+
+    details = AudioDSPDetails.from_dict(payload)
+
+    assert details.preset_id is None
+    assert details == AudioDSPDetails(
+        state=DSPState.ENABLED,
+        input_gain=-1.0,
+        output_gain=-0.5,
+        output_limiter=True,
+    )
 
 
 def test_streamdetails_audio_processing_defaults_to_none() -> None:
@@ -131,6 +163,7 @@ def test_streamdetails_audio_processing_roundtrip() -> None:
 
     assert streamdetails.audio_processing is not None
     assert serialized["audio_processing"] == streamdetails.audio_processing.to_dict()
+    assert serialized["audio_processing"]["outputs"][0]["dsp"]["preset_id"] == "preset-1"
     assert StreamDetails.from_dict(serialized) == streamdetails
 
 
@@ -224,6 +257,7 @@ def _full_chain() -> AudioProcessingChain:
                     ],
                     output_gain=-0.5,
                     output_limiter=True,
+                    preset_id="preset-1",
                 ),
                 source_channel=AudioChannel.FL,
                 output_format=output_format,

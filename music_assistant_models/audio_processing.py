@@ -91,6 +91,7 @@ class AudioDSPDetails(DataClassDictMixin):
     # Output gain in dB.
     output_gain: float = 0.0
     output_limiter: bool = False
+    preset_id: str | None = None
 
 
 @dataclass(kw_only=True)

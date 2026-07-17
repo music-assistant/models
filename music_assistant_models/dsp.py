@@ -151,6 +151,7 @@ class DSPConfig(DataClassDictMixin):
     input_gain: float = 0.0
     # Output gain in dB, will be applied after all other DSP filters
     output_gain: float = 0.0
+    preset_id: str | None = None
 
     def validate(self) -> None:
         """Validate the DSP configuration."""
