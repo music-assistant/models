@@ -10,7 +10,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin
 
-from music_assistant_models.enums import ImageType, LinkType
+from music_assistant_models.enums import ArtistEntityType, ImageType, LinkType
 from music_assistant_models.helpers import merge_lists
 from music_assistant_models.unique_list import UniqueList
 
@@ -145,6 +145,15 @@ class AudioMetadata(DataClassDictMixin):
     musical_key: str | None = None  # pitch class plus mode, e.g. "F# minor"
 
 
+@dataclass(frozen=True, kw_only=True)
+class LifeSpan(DataClassDictMixin):
+    """Life span dates for an artist (person or group)."""
+
+    begin: str | None = None  # ISO date (YYYY-MM-DD) or partial (YYYY-MM or YYYY)
+    end: str | None = None  # ISO date (YYYY-MM-DD) or partial (YYYY-MM or YYYY)
+    ended: bool = False  # whether the artist is deceased or the group has disbanded
+
+
 @dataclass(kw_only=True)
 class MediaItemMetadata(DataClassDictMixin):
     """Model for a MediaItem's metadata."""
@@ -152,6 +161,9 @@ class MediaItemMetadata(DataClassDictMixin):
     description: str | None = None
     # ISO 639-1 language code for `description`
     description_language: str | None = None
+    # Artist-specific metadata (applicable to Artist media type only)
+    life_span: LifeSpan | None = None  # birth/death for persons, founded/disbanded for groups
+    artist_entity_type: ArtistEntityType | None = None  # MusicBrainz artist entity type
     review: str | None = None
     explicit: bool | None = None
     # NOTE: images is a list of available images, sorted by preference
