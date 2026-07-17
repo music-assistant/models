@@ -619,6 +619,9 @@ class RecommendationFolder(BrowseFolder):
     )
     subtitle: str | None = None  # optional subtitle for the recommendation
     type: RecommendationFolderType = RecommendationFolderType.DEFAULT
+    # rows off by default are noisier (e.g. random or raw play-history); the client
+    # hides them until the user opts in. Only meaningful on the descriptor (rows) response.
+    enabled_by_default: bool = True
 
     @property
     def _translation_group(self) -> str:
