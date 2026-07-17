@@ -38,7 +38,9 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     FOLDER = "folder"
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
+    # deprecated: replaced by AUDIO_SOURCE, kept for one release for backwards compatibility
     PLUGIN_SOURCE = "plugin_source"
+    AUDIO_SOURCE = "audio_source"
     SOUND_EFFECT = "sound_effect"
     GENRE = "genre"
     UNKNOWN = "unknown"
@@ -46,6 +48,22 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     @classmethod
     def _missing_(cls, value: object) -> MediaType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class SourceControl(StrEnum):
+    """Control actions issued to a live AudioSource by the player controller."""
+
+    PLAY = "play"
+    PAUSE = "pause"
+    NEXT = "next"
+    PREVIOUS = "previous"
+    SEEK = "seek"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> SourceControl:  # noqa: ARG003
+        """Return UNKNOWN if an unknown value is provided."""
         return cls.UNKNOWN
 
 
@@ -147,6 +165,44 @@ class AlbumType(StrEnum):
 
     @classmethod
     def _missing_(cls, value: object) -> AlbumType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class RecommendationFolderType(StrEnum):
+    """Enum for RecommendationFolder type."""
+
+    DEFAULT = "default"
+    TIMELINE = "timeline"
+
+    @classmethod
+    def _missing_(cls, value: object) -> RecommendationFolderType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.DEFAULT
+
+
+class ArtistType(StrEnum):
+    """Enum for Artist type."""
+
+    SINGER = "singer"  # regular music artist
+    AUTHOR = "author"  # author of an audiobook
+    NARRATOR = "narrator"  # narrator of an audiobook
+    UNKNOWN = "unknown"
+
+
+class ArtistEntityType(StrEnum):
+    """Enum for Artist entity type (mirrors MusicBrainz artist type)."""
+
+    PERSON = "person"  # individual person
+    GROUP = "group"  # music group
+    ORCHESTRA = "orchestra"  # orchestra
+    CHOIR = "choir"  # choir
+    CHARACTER = "character"  # fictional character
+    OTHER = "other"  # other
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ArtistEntityType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
@@ -334,6 +390,24 @@ class RepeatMode(StrEnum):
         return cls.UNKNOWN
 
 
+class CrossfadeMode(StrEnum):
+    """Enum with crossfade modes for a queue."""
+
+    SMART_CROSSFADE = "smart_crossfade"  # Use smart crossfade with beat matching and EQ filters
+    STANDARD_CROSSFADE = "standard_crossfade"  # Use standard crossfade only
+    DISABLED = "disabled"  # No crossfade
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> CrossfadeMode:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+# alias for backwards compatibility
+SmartFadesMode = CrossfadeMode
+
+
 class PlaybackState(StrEnum):
     """Enum for the (playback)state of a player."""
 
@@ -362,12 +436,19 @@ class PlayerType(StrEnum):
     group: A (dedicated) (sync)group player or (universal) playergroup.
     protocol: A generic protocol player (e.g. AirPlay/Chromecast/DLNA) without native support.
               These are wrapped by a Universal Player and hidden from the UI.
+    display: A display-only device that shows metadata (e.g. album art, track info)
+             but does not play audio.
+    visualizer: A device that visualizes music on a screen (e.g. animations, LED matrices).
+    light: A device that visualizes music through lighting (e.g. Hue sync, WLED).
     """
 
     PLAYER = "player"
     STEREO_PAIR = "stereo_pair"
     GROUP = "group"
     PROTOCOL = "protocol"
+    DISPLAY = "display"
+    VISUALIZER = "visualizer"
+    LIGHT = "light"
     UNKNOWN = "unknown"
 
     @classmethod
@@ -491,6 +572,7 @@ class EventType(StrEnum):
     PLAYER_CONFIG_UPDATED = "player_config_updated"
     PLAYER_DSP_CONFIG_UPDATED = "player_dsp_config_updated"
     PLAYER_OPTIONS_UPDATED = "player_options_updated"
+    PLAYER_SLEEP_TIMER_UPDATED = "player_sleep_timer_updated"
     DSP_PRESETS_UPDATED = "dsp_presets_updated"
     QUEUE_ADDED = "queue_added"
     QUEUE_UPDATED = "queue_updated"
@@ -501,6 +583,10 @@ class EventType(StrEnum):
     MEDIA_ITEM_UPDATED = "media_item_updated"
     MEDIA_ITEM_DELETED = "media_item_deleted"
     PROVIDERS_UPDATED = "providers_updated"
+    # generic event emitted by a provider instance;
+    # object_id = provider instance_id (optionally suffixed with /sub_scope),
+    # data = provider-defined payload
+    PROVIDER_EVENT = "provider_event"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     TASKS_UPDATED = "tasks_updated"
     MUSIC_SYNC_COMPLETED = "music_sync_completed"
@@ -537,8 +623,20 @@ class ProviderFeature(StrEnum):
     LIBRARY_PODCASTS = "library_podcasts"
 
     # additional library features
+    AUTHOR_AUDIOBOOKS = "author_audiobooks"
+    NARRATOR_AUDIOBOOKS = "narrator_audiobooks"
+
+    # if we can grab all albums for an artist from the music provider
     ARTIST_ALBUMS = "artist_albums"
+
+    # if we can grab all tracks for an artist from the music provider
+    ARTIST_TRACKS = "artist_tracks"
+
+    # if we can grab 'top tracks' for an artist from the music/metadata provider
     ARTIST_TOPTRACKS = "artist_toptracks"
+
+    # if we can grab 'top albums' for an artist from the music/metadata provider
+    ARTIST_TOPALBUMS = "artist_topalbums"
 
     # library edit (=add/remove) feature per mediatype
     LIBRARY_ARTISTS_EDIT = "library_artists_edit"
@@ -558,9 +656,13 @@ class ProviderFeature(StrEnum):
     FAVORITE_AUDIOBOOKS_EDIT = "favorite_audiobooks_edit"
     FAVORITE_PODCASTS_EDIT = "favorite_podcasts_edit"
 
-    # if we can grab 'similar tracks' from the music provider
+    # if we can grab 'similar tracks' from the music provider or plugin
     # used to generate dynamic playlists
     SIMILAR_TRACKS = "similar_tracks"
+
+    # Plugins or Music sources can provide a list of similar artists we
+    # can show in the UI.
+    SIMILAR_ARTISTS = "similar_artists"
 
     # playlist-specific features
     PLAYLIST_TRACKS_EDIT = "playlist_tracks_edit"
@@ -587,12 +689,21 @@ class ProviderFeature(StrEnum):
     ARTIST_METADATA = "artist_metadata"
     ALBUM_METADATA = "album_metadata"
     TRACK_METADATA = "track_metadata"
+    PLAYLIST_METADATA = "playlist_metadata"
     LYRICS = "lyrics"  # lyrics support - can also be provided by a music provider
 
     #
     # PLUGIN FEATURES
     #
     AUDIO_SOURCE = "audio_source"
+    # provider can enumerate sound effect items (live, not library-backed)
+    SOUND_EFFECTS = "sound_effects"
+
+    #
+    # OTHER FEATURES (plugin-only)
+    #
+    AI_QUERY = "ai_query"  # provider can handle AI queries (e.g. by calling an LLM)
+    TTS = "tts"  # provider can handle text-to-speech requests
 
     # fallback
     UNKNOWN = "unknown"
@@ -611,6 +722,7 @@ class ProviderType(StrEnum):
     METADATA = "metadata"
     PLUGIN = "plugin"
     CORE = "core"
+    AUDIO_ANALYSIS = "audio_analysis"
 
     # fallback
     UNKNOWN = "unknown"
@@ -768,3 +880,25 @@ class CoreState(StrEnum):
     RUNNING = "running"
     STOPPING = "stopping"
     STOPPED = "stopped"
+
+
+class ProviderStatus(StrEnum):
+    """
+    Enum representing the load/lifecycle status of a provider (instance).
+
+    Derived server-side from the provider's config and (when present) its loaded instance.
+    Runtime reachability of a loaded provider is conveyed separately by ProviderInstance.available.
+    """
+
+    # loaded: setup succeeded; a live instance exists
+    LOADED = "loaded"
+    # loading: enabled and being (re)loaded, or waiting on a dependency; no instance yet, no error
+    LOADING = "loading"
+    # disabled: provider config exists but is disabled by the user
+    DISABLED = "disabled"
+    # auth_required: setup failed because (re)authentication is needed
+    AUTH_REQUIRED = "auth_required"
+    # incompatible: the host does not meet the provider's requirements (permanent)
+    INCOMPATIBLE = "incompatible"
+    # error: setup failed for any other reason (see the provider's last_error)
+    ERROR = "error"

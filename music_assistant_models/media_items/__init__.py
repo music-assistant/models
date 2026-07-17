@@ -17,9 +17,11 @@ from .media_item import (
     Album,
     Artist,
     Audiobook,
+    AudioSource,
     BrowseFolder,
     Genre,
     ItemMapping,
+    MediaCollection,
     MediaItem,
     MediaItemType,
     PlayableMediaItemType,
@@ -28,24 +30,60 @@ from .media_item import (
     PodcastEpisode,
     Radio,
     RecommendationFolder,
+    SoundEffect,
     Track,
 )
-from .metadata import MediaItemChapter, MediaItemImage, MediaItemLink, MediaItemMetadata
+from .metadata import (
+    AudioMetadata,
+    MediaItemChapter,
+    MediaItemCollection,
+    MediaItemImage,
+    MediaItemLink,
+    MediaItemMetadata,
+    MediaItemPalette,
+)
 from .provider_mapping import ProviderMapping
+from .summary import (
+    AlbumSummary,
+    ArtistSummary,
+    AudiobookSummary,
+    GenreSummary,
+    ItemMappingSummary,
+    MediaItemMetadataSummary,
+    MediaItemSummaryType,
+    PlaylistSummary,
+    PodcastSummary,
+    RadioSummary,
+    SummaryDialect,
+    TrackSummary,
+)
 
 __all__ = [
     "Album",
+    "AlbumSummary",
     "Artist",
+    "ArtistSummary",
     "AudioFormat",
+    "AudioMetadata",
+    "AudioSource",
     "Audiobook",
+    "AudiobookSummary",
     "BrowseFolder",
+    "Collection",
     "Genre",
+    "GenreSummary",
     "ItemMapping",
+    "ItemMappingSummary",
+    "MediaCollection",
     "MediaItem",
     "MediaItemChapter",
+    "MediaItemCollection",
     "MediaItemImage",
     "MediaItemLink",
     "MediaItemMetadata",
+    "MediaItemMetadataSummary",
+    "MediaItemPalette",
+    "MediaItemSummaryType",
     "MediaItemType",
     "Metadata",
     "MetadataProvider",
@@ -53,13 +91,19 @@ __all__ = [
     "MetadataProviderType",
     "PlayableMediaItemType",
     "Playlist",
+    "PlaylistSummary",
     "PlaylistTrack",
     "Podcast",
     "PodcastEpisode",
+    "PodcastSummary",
     "ProviderMapping",
     "Radio",
+    "RadioSummary",
     "RecommendationFolder",
+    "SoundEffect",
+    "SummaryDialect",
     "Track",
+    "TrackSummary",
     "UniqueList",
 ]
 
@@ -76,6 +120,7 @@ class SearchResults(DataClassDictMixin):
     radio: Sequence[Radio | ItemMapping] = field(default_factory=list)
     audiobooks: Sequence[Audiobook | ItemMapping] = field(default_factory=list)
     podcasts: Sequence[Podcast | ItemMapping] = field(default_factory=list)
+    sound_effects: Sequence[SoundEffect | ItemMapping] = field(default_factory=list)
 
 
 def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
@@ -100,9 +145,18 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return Podcast.from_dict(media_item)
     if media_item["media_type"] == "podcast_episode":
         return PodcastEpisode.from_dict(media_item)
+    if media_item["media_type"] == "sound_effect":
+        return SoundEffect.from_dict(media_item)
+    if media_item["media_type"] == "audio_source":
+        return AudioSource.from_dict(media_item)
     raise InvalidDataError("Unknown media type")
 
 
 def is_track(val: MediaItem) -> TypeGuard[Track]:
     """Return true if this MediaItem is a track."""
     return val.media_type == MediaType.TRACK
+
+
+def is_audio_source(val: MediaItem) -> TypeGuard[AudioSource]:
+    """Return true if this MediaItem is an AudioSource."""
+    return val.media_type == MediaType.AUDIO_SOURCE

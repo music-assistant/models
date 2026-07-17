@@ -12,12 +12,27 @@ from typing import Any, Final, cast
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import SECURE_STRING_SUBSTITUTE
-from .enums import ConfigEntryType, PlayerType, ProviderType
+from .enums import ConfigEntryType, PlayerType, ProviderStatus, ProviderType
+from .translations import resolve_translation, translations_active
 
 LOGGER = logging.getLogger(__name__)
 
 ENCRYPT_CALLBACK: Callable[[str], str] | None = None
 DECRYPT_CALLBACK: Callable[[str], str] | None = None
+
+
+def _localized_base(override: str | None, key: str, group: str) -> str:
+    """
+    Return the translations base ``<group>.<slug>`` for a localized config field.
+
+    The slug is the explicit ``override`` (a bare key, never a group-qualified path) or, by
+    default, the entry's own ``key``/category — the group is always derived from the model.
+
+    :param override: Optional caller-supplied key (a bare slug).
+    :param key: The entry's own key (or category) used when no override is given.
+    :param group: The localization group the slug lives under (e.g. ``config_entries``).
+    """
+    return f"{group}.{override if override is not None else key}"
 
 
 _ConfigValueTypeSingle = (
@@ -59,8 +74,24 @@ UI_ONLY = (
 class ConfigValueOption(DataClassDictMixin):
     """Model for a value with separated name/value."""
 
-    title: str
+    # value: the stored value identifying this option, and the first positional argument so a
+    # value-only option can be written as ConfigValueOption("the_value"). Required (pass None
+    # explicitly only when None is a meaningful sentinel).
     value: ConfigValueType
+    # title: display title for the option. Optional: when omitted it is resolved from the
+    # translations at serialization (keyed by the owning entry + this option's value). Dynamic,
+    # data-driven options (player names, sample rates, ...) still pass a title directly.
+    title: str | None = None
+    # disabled: when True the option is shown but not selectable (e.g. a capability that is
+    # currently unavailable), so clients can surface it greyed-out instead of omitting it.
+    disabled: bool = False
+    # disabled_reason: optional human-readable explanation of why the option is disabled, resolved
+    # from the translations at serialization (keyed by the owning entry: disabled_reasons.<value>).
+    disabled_reason: str | None = None
+    # description: optional per-option help text, resolved from the translations at serialization
+    # (keyed by the owning entry: option_descriptions.<value>). Lets a single option explain itself
+    # instead of cramming the explanation into the option title or the shared entry description.
+    description: str | None = None
 
 
 MULTI_VALUE_SPLITTER: Final[str] = "||"
@@ -78,8 +109,6 @@ class ConfigEntry(DataClassDictMixin):
     # key: used as identifier for the entry, also for localization
     key: str
     type: ConfigEntryType
-    # label: default label when no translation for the key is present
-    label: str
     default_value: ConfigValueType = None
     required: bool = True
     # options [optional]: select from list of possible values/options
@@ -115,18 +144,19 @@ class ConfigEntry(DataClassDictMixin):
     # requires_reload: indicates that a reload of the provider (or player playback)
     # is required when this setting is changed
     requires_reload: bool = False
-    # translation_key: optional translation key for this entry (defaults to settings.{key})
-    translation_key: str | None = None
-    # translation_params: optional parameters for the translation key
-    translation_params: list[str] | None = None
-    # category_translation_key: optional translation key for the category
-    category_translation_key: str | None = None
-    # category_translation_params: optional parameters for the category translation key
-    category_translation_params: list[str] | None = None
     # advanced: mark this setting as advanced (e.g. hide behind an advanced toggle in frontend)
     advanced: bool = False
+    # translation_params / category_translation_params: optional positional arguments for the
+    # {0}/{1} placeholders in this entry's label/description and category translation, provided
+    # by the implementer.
+    translation_params: list[str] | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
+    category_translation_params: list[str] | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
 
-    # validate: an optional custom validation callback
+    # validate: an optional custom validation callback (author-provided)
     validate: Callable[[ConfigValueType], bool] | None = field(
         default=None,
         compare=False,
@@ -134,18 +164,88 @@ class ConfigEntry(DataClassDictMixin):
         repr=False,
     )
 
-    # value: set by the config manager/flow
-    # (or in rare cases by the provider itself during action flows)
+    # ----------------------------------------------------------------------------------
+    # The fields below are populated by the server at runtime — consumers/providers
+    # should NOT set these; they are filled in by Music Assistant.
+    # ----------------------------------------------------------------------------------
+
+    # label: localized display label, resolved from the translations at serialization.
+    label: str | None = None
+    # category_label: localized category display name, resolved from the translations at
+    # serialization. The stable `category` value is still used for grouping.
+    category_label: str | None = None
+    # translation_owner: the namespace ("provider.<domain>"/"core.<domain>") this entry's strings
+    # are resolved under; stamped by the config controller when the entry is served. Not serialized.
+    translation_owner: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
+
+    # translation_key / category_translation_key: server-set translation-key overrides (e.g. the
+    # protocol-output block re-keys copied entries to keep their original translation key). Not
+    # author-facing and not serialized; the structural defaults are config_entries.<key> /
+    # config_categories.<category>.
+    translation_key: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
+    category_translation_key: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
+
+    # value: the current value, set by the config manager/flow
+    # (or in rare cases by the provider itself during action flows).
     value: ConfigValueType = None
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
         if self.type in UI_ONLY:
             self.required = False
-        if self.translation_key is None:
-            self.translation_key = f"settings.{self.key}"
-        if self.category_translation_key is None:
-            self.category_translation_key = f"settings.category.{self.category}"
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """
+        Localize human-readable fields from the translations for the connection locale.
+
+        Resolves label/description/option titles and the category name under this entry's owner
+        namespace (keyed by config_entries.<key> / config_categories.<category>). A server-set
+        translation_key/category_translation_key override is the bare slug under that same group,
+        unless it is fully qualified. No-op when nothing matches, so the in-code values are kept.
+        The translation machinery fields are not serialized.
+        """
+        owner = self.translation_owner
+        base = _localized_base(self.translation_key, self.key, "config_entries")
+        label = resolve_translation(f"{base}.label", owner=owner, params=self.translation_params)
+        if label is not None:
+            d["label"] = label
+        description = resolve_translation(
+            f"{base}.description", owner=owner, params=self.translation_params
+        )
+        if description is not None:
+            d["description"] = description
+        if self.action is not None:
+            action_label = resolve_translation(f"{base}.action_label", owner=owner)
+            if action_label is not None:
+                d["action_label"] = action_label
+        for option_dict, option in zip(d.get("options", []), self.options, strict=False):
+            title = resolve_translation(f"{base}.options.{option.value}", owner=owner)
+            if title is not None:
+                option_dict["title"] = title
+            option_description = resolve_translation(
+                f"{base}.option_descriptions.{option.value}", owner=owner
+            )
+            if option_description is not None:
+                option_dict["description"] = option_description
+            if option.disabled:
+                reason = resolve_translation(f"{base}.disabled_reasons.{option.value}", owner=owner)
+                if reason is not None:
+                    option_dict["disabled_reason"] = reason
+        category_key = _localized_base(
+            self.category_translation_key, self.category, "config_categories"
+        )
+        category_label = resolve_translation(
+            category_key, owner=owner, params=self.category_translation_params
+        )
+        if category_label is not None:
+            d["category_label"] = category_label
+        return d
 
     def parse_value(
         self,
@@ -242,18 +342,25 @@ class Config(DataClassDictMixin):
     ) -> Config:
         """Parse Config from the raw values (as stored in persistent storage)."""
         conf = cls.from_dict({**raw, "values": {}})
+        owner = conf._translation_owner()  # noqa: SLF001 - own protected method on a same-class instance
         for entry in config_entries:
             # unpack Enum value in default_value
             if isinstance(entry.default_value, Enum):
                 entry.default_value = entry.default_value.value  # type: ignore[unreachable]
-            # copy original entry to prevent mutation
-            conf.values[entry.key] = deepcopy(entry)
-            conf.values[entry.key].parse_value(
+            # copy original entry to prevent mutation, and stamp the owner for string resolution
+            copied = deepcopy(entry)
+            copied.translation_owner = owner
+            conf.values[entry.key] = copied
+            copied.parse_value(
                 raw.get("values", {}).get(entry.key),
                 allow_none=True,
                 raise_on_error=False,
             )
         return conf
+
+    def _translation_owner(self) -> str | None:
+        """Return the translations owner namespace for this config's entries (None = common)."""
+        return None
 
     def to_raw(self) -> dict[str, Any]:
         """Return minimized/raw dict to store in persistent storage."""
@@ -323,6 +430,36 @@ class Config(DataClassDictMixin):
 
 
 @dataclass
+class ProviderError(DataClassDictMixin):
+    """Structured, localizable error describing why a provider failed to load."""
+
+    error_code: int  # MusicAssistantError.error_code; 999 for non-MusicAssistant exceptions
+    message: str
+    # translation_key: optional bare slug to localize the message; __post_serialize__ derives the
+    # errors.<slug> group and resolves it owner-first then common (mirrors ErrorResultMessage)
+    translation_key: str | None = None
+    translation_args: list[Any] = field(default_factory=list)
+    # translation_owner: owning namespace ("provider.<domain>"/"core.<domain>") consulted before
+    # common — set when a provider/controller defines its own message for the key
+    translation_owner: str | None = None
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize `message` from translation_key when a resolver is active; strip machinery."""
+        if self.translation_key:
+            params = [str(a) for a in self.translation_args] if self.translation_args else None
+            localized = resolve_translation(
+                f"errors.{self.translation_key}", owner=self.translation_owner, params=params
+            )
+            if localized is not None:
+                d["message"] = localized
+        if translations_active():
+            d.pop("translation_key", None)
+            d.pop("translation_args", None)
+            d.pop("translation_owner", None)
+        return d
+
+
+@dataclass
 class ProviderConfig(Config):
     """Provider(instance) Configuration."""
 
@@ -335,8 +472,28 @@ class ProviderConfig(Config):
     name: str | None = None
     # default_name: default name to use/persist when there is no name set by the user
     default_name: str | None = None
-    # last_error: an optional error message if the provider could not be setup with this config
-    last_error: str | None = None
+    # last_error: structured error if the provider could not be setup with this config
+    last_error: ProviderError | None = None
+    # status: load/lifecycle status, derived and stamped server-side on the api read path.
+    # Never persisted (see to_raw) and not set during normal config save/load.
+    status: ProviderStatus | None = None
+
+    @classmethod
+    def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
+        """Coerce a legacy string last_error (from older settings.json) into a ProviderError."""
+        last_error = d.get("last_error")
+        if isinstance(last_error, str):
+            d["last_error"] = {"error_code": 999, "message": last_error}
+        return d
+
+    def to_raw(self) -> dict[str, Any]:
+        """Return minimized/raw dict to store; the derived `status` is never persisted."""
+        res = super().to_raw()
+        res.pop("status", None)
+        return res
+
+    def _translation_owner(self) -> str | None:
+        return f"provider.{self.domain}"
 
 
 @dataclass
@@ -354,6 +511,20 @@ class PlayerConfig(Config):
     # player_type: type of player (player, protocol, group etc.)
     player_type: PlayerType = PlayerType.PLAYER
 
+    def _translation_owner(self) -> str | None:
+        return f"provider.{self.provider}"
+
+
+@dataclass
+class PlayerQueueConfig(Config):
+    """PlayerQueue Configuration."""
+
+    queue_id: str
+
+    def _translation_owner(self) -> str | None:
+        # queue config entries are owned by the player_queues core controller's strings
+        return "core.player_queues"
+
 
 @dataclass
 class CoreConfig(Config):
@@ -362,3 +533,6 @@ class CoreConfig(Config):
     domain: str  # domain/name of the core module
     # last_error: an optional error message if the module could not be setup with this config
     last_error: str | None = None
+
+    def _translation_owner(self) -> str | None:
+        return f"core.{self.domain}"

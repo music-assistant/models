@@ -31,6 +31,8 @@ class DSPFilterType(StrEnum):
 
     PARAMETRIC_EQ = "parametric_eq"
     TONE_CONTROL = "tone_control"
+    GAIN = "gain"
+    BALANCE = "balance"
 
 
 @dataclass
@@ -135,8 +137,37 @@ class ToneControlFilter(DSPFilterBase):
             raise ValueError("Treble level must be in the range -60.0 to 60.0 dB")
 
 
+@dataclass
+class GainFilter(DSPFilterBase):
+    """Model for a Gain filter."""
+
+    type: Literal[DSPFilterType.GAIN] = DSPFilterType.GAIN
+    # Gain in dB, can be negative or positive
+    gain: float = 0.0
+
+    def validate(self) -> None:
+        """Validate the Gain filter."""
+        if not -60.0 <= self.gain <= 60.0:
+            raise ValueError("Gain must be in the range -60.0 to 60.0 dB")
+
+
+@dataclass
+class BalanceFilter(DSPFilterBase):
+    """Model for a stereo Balance filter."""
+
+    type: Literal[DSPFilterType.BALANCE] = DSPFilterType.BALANCE
+    # Balance position from -100 (full left) to +100 (full right), 0 is centered.
+    # The channel opposite to the direction is attenuated.
+    balance: float = 0.0
+
+    def validate(self) -> None:
+        """Validate the Balance filter."""
+        if not -100.0 <= self.balance <= 100.0:
+            raise ValueError("Balance must be in the range -100.0 to 100.0")
+
+
 # Type alias for all possible DSP filters
-DSPFilter = ParametricEQFilter | ToneControlFilter
+DSPFilter = ParametricEQFilter | ToneControlFilter | GainFilter | BalanceFilter
 
 
 @dataclass
@@ -190,6 +221,12 @@ class DSPState(StrEnum):
     ENABLED = "enabled"
     DISABLED = "disabled"
     DISABLED_BY_UNSUPPORTED_GROUP = "disabled_by_unsupported_group"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, _: object) -> DSPState:
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
 
 
 @dataclass(kw_only=True)

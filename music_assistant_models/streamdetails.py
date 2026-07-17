@@ -9,6 +9,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
+from .audio_processing import AudioProcessingChain
 from .dsp import DSPDetails
 from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
@@ -93,6 +94,9 @@ class StreamDetails(DataClassDictMixin):
     # to set the metadata of the playing media during the stream
     stream_metadata: StreamMetadata | None = None
 
+    # Complete audio processing chain; None until resolved by the server.
+    audio_processing: AudioProcessingChain | None = None
+
     #############################################################################
     # the fields below will only be used server-side and not sent to the client #
     #############################################################################
@@ -111,6 +115,19 @@ class StreamDetails(DataClassDictMixin):
     # this info is for example used to pass along details to the get_audio_stream
     # this field may be set by the provider when creating the streamdetails
     data: Any = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+    # decoded_audio_format: the format MA actually receives on the input side.
+    # Set this when the upstream provider/daemon decodes the original source
+    # before handing it to MA (e.g. Spotify Connect / AirPlay receivers pipe
+    # raw PCM into MA after their own decode). The streams controller passes
+    # this to ffmpeg so it can read the input correctly, while audio_format
+    # keeps describing the original source for display purposes.
+    # Leave None when the on-the-wire format equals audio_format.
+    decoded_audio_format: AudioFormat | None = field(
         default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
@@ -199,7 +216,7 @@ class StreamDetails(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
-    seek_position: int = field(
+    seek_position: float = field(
         default=0,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),

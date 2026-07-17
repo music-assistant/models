@@ -1,0 +1,101 @@
+"""Tests for the SoundEffect MediaItem and related types."""
+
+from music_assistant_models.enums import MediaType, ProviderFeature
+from music_assistant_models.media_items import (
+    ItemMapping,
+    SoundEffect,
+    media_from_dict,
+)
+from music_assistant_models.media_items.provider_mapping import ProviderMapping
+
+
+def _make_sound_effect() -> SoundEffect:
+    return SoundEffect(
+        item_id="rain-loop",
+        provider="soundlib",
+        name="Rain Loop",
+        provider_mappings={
+            ProviderMapping(
+                item_id="rain-loop",
+                provider_domain="soundlib",
+                provider_instance="soundlib",
+            )
+        },
+        duration=30,
+    )
+
+
+def test_media_type_sound_effect_roundtrips() -> None:
+    """MediaType.SOUND_EFFECT is reachable and round-trips through StrEnum."""
+    assert MediaType("sound_effect") is MediaType.SOUND_EFFECT
+    assert MediaType.SOUND_EFFECT.value == "sound_effect"
+
+
+def test_provider_feature_sound_effects_roundtrips() -> None:
+    """ProviderFeature.SOUND_EFFECTS is reachable and round-trips through StrEnum."""
+    assert ProviderFeature("sound_effects") is ProviderFeature.SOUND_EFFECTS
+    assert ProviderFeature.SOUND_EFFECTS.value == "sound_effects"
+
+
+def test_sound_effect_defaults() -> None:
+    """SoundEffect has sane defaults aligned with the model contract."""
+    item = SoundEffect(
+        item_id="x",
+        provider="y",
+        name="z",
+        provider_mappings=set(),
+    )
+    assert item.media_type == MediaType.SOUND_EFFECT
+    assert item.duration == 0
+    assert item.uri == "y://sound_effect/x"
+
+
+def test_sound_effect_serialize_roundtrip() -> None:
+    """SoundEffect survives a to_dict -> from_dict round-trip."""
+    original = _make_sound_effect()
+    data = original.to_dict()
+    restored = SoundEffect.from_dict(data)
+    # MediaItem.__eq__ only checks the URI, so compare the serialized form to
+    # verify the full payload (duration, provider mappings, ...)
+    assert restored.to_dict() == data
+
+
+def test_media_from_dict_returns_sound_effect() -> None:
+    """media_from_dict deserializes sound_effect payloads to SoundEffect."""
+    result = media_from_dict(_make_sound_effect().to_dict())
+    assert isinstance(result, SoundEffect)
+    assert result.media_type == MediaType.SOUND_EFFECT
+
+
+def test_item_mapping_for_sound_effect() -> None:
+    """A SoundEffect can be reduced to an ItemMapping like other media items."""
+    mapping = ItemMapping.from_item(_make_sound_effect())
+    assert mapping.media_type == MediaType.SOUND_EFFECT
+    assert mapping.item_id == "rain-loop"
+
+
+def test_translation_key_roundtrips() -> None:
+    """A translation_key survives a to_dict -> from_dict round-trip."""
+    original = _make_sound_effect()
+    original.translation_key = "white_noise"
+    restored = SoundEffect.from_dict(original.to_dict())
+    assert restored.translation_key == "white_noise"
+
+
+def test_translation_key_is_opt_in() -> None:
+    """translation_key defaults to None and older payloads without the key deserialize."""
+    item = _make_sound_effect()
+    assert item.translation_key is None
+    legacy = item.to_dict()
+    legacy.pop("translation_key", None)
+    restored = SoundEffect.from_dict(legacy)
+    assert restored.translation_key is None
+
+
+def test_item_mapping_preserves_translation_key() -> None:
+    """ItemMapping.from_item keeps translation_key and media_type of a SoundEffect."""
+    item = _make_sound_effect()
+    item.translation_key = "white_noise"
+    mapping = ItemMapping.from_item(item)
+    assert mapping.media_type == MediaType.SOUND_EFFECT
+    assert mapping.translation_key == "white_noise"
