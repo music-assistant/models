@@ -183,11 +183,22 @@ jobs:
     needs: prepare-downstream-prs
     runs-on: ubuntu-latest
     steps:
+      - name: Determine server target branch
+        id: target
+        run: |
+          # Stable patch builds (PEP 440 .post releases) bump the server `stable`
+          # branch; regular releases bump the default (dev) branch.
+          if [[ "${{ inputs.version }}" == *.post* ]]; then
+            echo "branch=stable" >> $GITHUB_OUTPUT
+          else
+            echo "branch=dev" >> $GITHUB_OUTPUT
+          fi
 
       - name: Checkout server repository
         uses: actions/checkout@v6
         with:
           repository: music-assistant/server
+          ref: ${{ steps.target.outputs.branch }}
           token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
           path: .
 
@@ -213,6 +224,7 @@ jobs:
           branch: "auto-update-models-${{ inputs.version }}"
           delete-branch: true
           title: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
+          base: ${{ steps.target.outputs.branch }}
           body: |
             Update music-assistant-models to version [${{ inputs.version }}](https://github.com/music-assistant/models/releases/tag/${{ inputs.version }})
 
@@ -225,6 +237,9 @@ jobs:
     name: Client repo PR
     needs: prepare-downstream-prs
     runs-on: ubuntu-latest
+    # the client tracks dev; stable patch builds (.post releases) must not
+    # downgrade its models pin
+    if: ${{ !contains(inputs.version, '.post') }}
     steps:
       - name: Checkout client repository
         uses: actions/checkout@v6
