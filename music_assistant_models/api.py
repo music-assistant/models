@@ -34,7 +34,7 @@ class ResultMessageBase(DataClassORJSONMixin):
 class SuccessResultMessage(ResultMessageBase):
     """Message sent when a Command has been successfully executed."""
 
-    result: Any = field(default=None, metadata={"serialize": lambda v: get_serializable_value(v)})
+    result: Any = field(default=None, metadata={"serialize": get_serializable_value})
     partial: bool = False
 
 
