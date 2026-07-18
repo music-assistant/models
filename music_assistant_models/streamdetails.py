@@ -10,7 +10,6 @@ from typing import Any
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .audio_processing import AudioProcessingChain
-from .dsp import DSPDetails
 from .enums import MediaType, StreamType, VolumeNormalizationMode
 from .media_items import AudioFormat
 
@@ -204,10 +203,6 @@ class StreamDetails(DataClassDictMixin):
     volume_normalization_mode: VolumeNormalizationMode | None = None
     volume_normalization_gain_correct: float | None = None
     target_loudness: float | None = None
-
-    # This contains the DSPDetails of all players in the group.
-    # In case of single player playback, dict will contain only one entry.
-    dsp: dict[str, DSPDetails] | None = None
 
     # the fields below are managed by the queue/stream controller and may not be set by providers
     fade_in: bool = field(

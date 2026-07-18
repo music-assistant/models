@@ -55,3 +55,26 @@ def test_decoded_audio_format_is_not_serialized() -> None:
     )
     sd = _make_streamdetails(decoded_audio_format=decoded)
     assert "decoded_audio_format" not in sd.to_dict()
+
+
+def test_legacy_dsp_is_not_serialized() -> None:
+    """Legacy DSP details are not included in stream details."""
+    assert "dsp" not in _make_streamdetails().to_dict()
+
+
+def test_legacy_dsp_payload_is_ignored() -> None:
+    """Legacy DSP details do not affect deserialization."""
+    streamdetails = _make_streamdetails()
+    payload = streamdetails.to_dict()
+    payload["dsp"] = {
+        "player-id": {
+            "state": "enabled",
+            "input_gain": 0.0,
+            "filters": [],
+            "output_gain": 0.0,
+            "output_limiter": True,
+            "output_format": None,
+        }
+    }
+
+    assert StreamDetails.from_dict(payload) == streamdetails
