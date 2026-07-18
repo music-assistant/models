@@ -490,7 +490,6 @@ class MediaCollection[M](MediaItem):
         default_factory=UniqueList, metadata={"serialize": lambda v: [x.to_dict() for x in v]}
     )
     media_type: MediaType = MediaType.COLLECTION
-    is_playable = False
 
 
 @dataclass(kw_only=True)
