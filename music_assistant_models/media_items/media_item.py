@@ -486,7 +486,9 @@ class MediaCollection[M](MediaItem):
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
-    items: UniqueList[M] = field(default_factory=UniqueList)
+    items: UniqueList[M] = field(
+        default_factory=UniqueList, metadata={"serialize": lambda v: [x.to_dict() for x in v]}
+    )
 
 
 @dataclass(kw_only=True)
