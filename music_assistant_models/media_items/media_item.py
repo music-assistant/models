@@ -647,5 +647,6 @@ MediaItemType = (
     | SoundEffect
     | Genre
     | AudioSource
+    | MediaCollection
 )
 PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode | SoundEffect | AudioSource
