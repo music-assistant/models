@@ -11,16 +11,11 @@ from mashumaro import DataClassDictMixin
 class DashboardDevice(DataClassDictMixin):
     """Model for a display device capable of showing a MA dashboard."""
 
-    # device_id: provider-scoped unique id of the display device
+    # provider-scoped unique id
     device_id: str
-
-    # provider_instance: instance_id of the provider that can drive this device
     provider_instance: str
-
-    # name: human readable name of the display device
     name: str
-
-    # player_id: set when this display device is also registered as a MA player
+    # set when this display device is also registered as a MA player
     player_id: str | None = None
 
 
@@ -28,11 +23,9 @@ class DashboardDevice(DataClassDictMixin):
 class DashboardSession(DataClassDictMixin):
     """Model for an active dashboard cast session on a display device."""
 
-    # device_id: provider-scoped unique id of the display device
+    # provider-scoped unique id
     device_id: str
-
-    # provider_instance: instance_id of the provider driving this session
     provider_instance: str
-
-    # path: the dashboard route being shown (e.g. "/party")
+    name: str
+    # the dashboard route being shown (e.g. "/party")
     path: str
