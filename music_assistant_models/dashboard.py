@@ -22,3 +22,17 @@ class DashboardDevice(DataClassDictMixin):
 
     # player_id: set when this display device is also registered as a MA player
     player_id: str | None = None
+
+
+@dataclass
+class DashboardSession(DataClassDictMixin):
+    """Model for an active dashboard cast session on a display device."""
+
+    # device_id: provider-scoped unique id of the display device
+    device_id: str
+
+    # provider_instance: instance_id of the provider driving this session
+    provider_instance: str
+
+    # path: the dashboard route being shown (e.g. "/party")
+    path: str

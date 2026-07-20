@@ -589,6 +589,7 @@ class EventType(StrEnum):
     PROVIDER_EVENT = "provider_event"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     TASKS_UPDATED = "tasks_updated"
+    DASHBOARD_SESSIONS_UPDATED = "dashboard_sessions_updated"
     MUSIC_SYNC_COMPLETED = "music_sync_completed"
     AUTH_SESSION = "auth_session"
     CORE_STATE_UPDATED = "core_state_updated"
