@@ -682,6 +682,8 @@ class ProviderFeature(StrEnum):
     REMOVE_PLAYER = "remove_player"
     CREATE_GROUP_PLAYER = "create_group_player"
     REMOVE_GROUP_PLAYER = "remove_group_player"
+    # provider can show MA dashboards (e.g. party mode) on display devices
+    SHOW_DASHBOARD = "show_dashboard"
 
     #
     # METADATAPROVIDER FEATURES
