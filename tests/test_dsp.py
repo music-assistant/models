@@ -4,7 +4,9 @@ import pytest
 
 from music_assistant_models.dsp import (
     BalanceFilter,
+    ConvolutionFilter,
     DSPConfig,
+    DSPFilterType,
     GainFilter,
 )
 
@@ -89,3 +91,43 @@ def test_balance_filter_validate() -> None:
         BalanceFilter(enabled=True, balance=-100.1).validate()
     with pytest.raises(ValueError, match="Balance"):
         BalanceFilter(enabled=True, balance=100.1).validate()
+
+
+def test_convolution_filter_defaults() -> None:
+    """Convolution constructs with its documented defaults and validates."""
+    convolution = ConvolutionFilter(enabled=True)
+
+    assert convolution.type == DSPFilterType.CONVOLUTION
+    assert convolution.ir_id == ""
+    assert convolution.gain == 0.0
+
+    convolution.validate()
+
+
+def test_convolution_filter_validate() -> None:
+    """Gain validates within +-60 dB and rejects values outside."""
+    ConvolutionFilter(enabled=True, gain=-60.0).validate()
+    ConvolutionFilter(enabled=True, gain=60.0).validate()
+
+    with pytest.raises(ValueError, match="Gain"):
+        ConvolutionFilter(enabled=True, gain=-60.1).validate()
+    with pytest.raises(ValueError, match="Gain"):
+        ConvolutionFilter(enabled=True, gain=60.1).validate()
+
+
+def test_dsp_config_convolution_roundtrip() -> None:
+    """A DSPConfig with a Convolution filter round-trips to the correct class."""
+    config = DSPConfig(
+        enabled=True,
+        filters=[
+            ConvolutionFilter(enabled=True, ir_id="ir-abc123", gain=-3.0),
+        ],
+    )
+    serialized = config.to_dict()
+
+    assert serialized["filters"][0]["type"] == "convolution"
+
+    restored = DSPConfig.from_dict(serialized)
+
+    assert restored == config
+    assert isinstance(restored.filters[0], ConvolutionFilter)

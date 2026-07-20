@@ -31,6 +31,7 @@ class DSPFilterType(StrEnum):
     TONE_CONTROL = "tone_control"
     GAIN = "gain"
     BALANCE = "balance"
+    CONVOLUTION = "convolution"
 
 
 @dataclass
@@ -164,8 +165,26 @@ class BalanceFilter(DSPFilterBase):
             raise ValueError("Balance must be in the range -100.0 to 100.0")
 
 
+@dataclass
+class ConvolutionFilter(DSPFilterBase):
+    """Model for a Convolution (impulse response) filter."""
+
+    type: Literal[DSPFilterType.CONVOLUTION] = DSPFilterType.CONVOLUTION
+    # Identifier of the stored impulse response to convolve with.
+    # Empty means none is selected yet; the server treats that as a no-op,
+    # so it is not validated here.
+    ir_id: str = ""
+    # Output gain in dB applied after the convolution, can be negative or positive
+    gain: float = 0.0
+
+    def validate(self) -> None:
+        """Validate the Convolution filter."""
+        if not -60.0 <= self.gain <= 60.0:
+            raise ValueError("Gain must be in the range -60.0 to 60.0 dB")
+
+
 # Type alias for all possible DSP filters
-DSPFilter = ParametricEQFilter | ToneControlFilter | GainFilter | BalanceFilter
+DSPFilter = ParametricEQFilter | ToneControlFilter | GainFilter | BalanceFilter | ConvolutionFilter
 
 
 @dataclass
