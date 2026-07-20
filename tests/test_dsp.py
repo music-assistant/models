@@ -13,7 +13,7 @@ from music_assistant_models.dsp import (
     HighLowPassFilter,
     HighLowPassMode,
     HighLowPassSlope,
-    LimiterFilter,
+    SafetyLimiterFilter,
     StereoWidthFilter,
 )
 
@@ -140,24 +140,24 @@ def test_dsp_config_convolution_roundtrip() -> None:
     assert isinstance(restored.filters[0], ConvolutionFilter)
 
 
-def test_dsp_config_limiter_compressor_roundtrip() -> None:
-    """A DSPConfig with Limiter and Compressor filters round-trips to the correct classes."""
+def test_dsp_config_safety_limiter_compressor_roundtrip() -> None:
+    """A DSPConfig with Safety Limiter and Compressor filters round-trips to the correct classes."""
     config = DSPConfig(
         enabled=True,
         filters=[
-            LimiterFilter(enabled=True, ceiling=-3.0),
+            SafetyLimiterFilter(enabled=True, ceiling=-3.0),
             CompressorFilter(enabled=False, threshold=-20.0, ratio=4.0),
         ],
     )
     serialized = config.to_dict()
 
-    assert serialized["filters"][0]["type"] == "limiter"
+    assert serialized["filters"][0]["type"] == "safety_limiter"
     assert serialized["filters"][1]["type"] == "compressor"
 
     restored = DSPConfig.from_dict(serialized)
 
     assert restored == config
-    assert isinstance(restored.filters[0], LimiterFilter)
+    assert isinstance(restored.filters[0], SafetyLimiterFilter)
     assert isinstance(restored.filters[1], CompressorFilter)
 
 
@@ -316,26 +316,26 @@ def test_crossfeed_filter_validate() -> None:
         CrossfeedFilter(enabled=True, soundstage=1.1).validate()
 
 
-def test_limiter_filter_defaults() -> None:
-    """Limiter constructs with its documented defaults and validates."""
-    limiter = LimiterFilter(enabled=True)
+def test_safety_limiter_filter_defaults() -> None:
+    """Safety Limiter constructs with its documented defaults and validates."""
+    safety_limiter = SafetyLimiterFilter(enabled=True)
 
-    assert limiter.type == "limiter"
-    assert limiter.ceiling == -2.0
+    assert safety_limiter.type == "safety_limiter"
+    assert safety_limiter.ceiling == -2.0
 
-    limiter.validate()
+    safety_limiter.validate()
 
 
-def test_limiter_filter_validate() -> None:
+def test_safety_limiter_filter_validate() -> None:
     """Ceiling validates within -24..0 dB and rejects values outside."""
-    LimiterFilter(enabled=True, ceiling=-2.0).validate()
-    LimiterFilter(enabled=True, ceiling=-24.0).validate()
-    LimiterFilter(enabled=True, ceiling=0.0).validate()
+    SafetyLimiterFilter(enabled=True, ceiling=-2.0).validate()
+    SafetyLimiterFilter(enabled=True, ceiling=-24.0).validate()
+    SafetyLimiterFilter(enabled=True, ceiling=0.0).validate()
 
     with pytest.raises(ValueError, match="Ceiling"):
-        LimiterFilter(enabled=True, ceiling=-24.1).validate()
+        SafetyLimiterFilter(enabled=True, ceiling=-24.1).validate()
     with pytest.raises(ValueError, match="Ceiling"):
-        LimiterFilter(enabled=True, ceiling=0.1).validate()
+        SafetyLimiterFilter(enabled=True, ceiling=0.1).validate()
 
 
 def test_compressor_filter_defaults() -> None:

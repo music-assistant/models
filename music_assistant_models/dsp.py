@@ -35,7 +35,7 @@ class DSPFilterType(StrEnum):
     HIGH_LOW_PASS = "high_low_pass"
     STEREO_WIDTH = "stereo_width"
     CROSSFEED = "crossfeed"
-    LIMITER = "limiter"
+    SAFETY_LIMITER = "safety_limiter"
     COMPRESSOR = "compressor"
 
 
@@ -270,16 +270,16 @@ class CrossfeedFilter(DSPFilterBase):
 
 
 @dataclass
-class LimiterFilter(DSPFilterBase):
-    """Model for a Limiter filter."""
+class SafetyLimiterFilter(DSPFilterBase):
+    """Model for a Safety Limiter filter."""
 
-    type: Literal[DSPFilterType.LIMITER] = DSPFilterType.LIMITER
+    type: Literal[DSPFilterType.SAFETY_LIMITER] = DSPFilterType.SAFETY_LIMITER
     # Output ceiling in dB (0 = full scale); the signal is held below this level.
     # Default matches the server's global output limiter ceiling.
     ceiling: float = -2.0
 
     def validate(self) -> None:
-        """Validate the Limiter filter."""
+        """Validate the Safety Limiter filter."""
         if not -24.0 <= self.ceiling <= 0.0:
             raise ValueError("Ceiling must be in the range -24.0 to 0.0 dB")
 
@@ -328,7 +328,7 @@ DSPFilter = (
     | HighLowPassFilter
     | StereoWidthFilter
     | CrossfeedFilter
-    | LimiterFilter
+    | SafetyLimiterFilter
     | CompressorFilter
 )
 
