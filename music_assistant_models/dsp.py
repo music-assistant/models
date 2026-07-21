@@ -8,8 +8,6 @@ from typing import Literal
 
 from mashumaro import DataClassDictMixin
 
-from .media_items.audio_format import AudioFormat
-
 # ruff: noqa: S105
 
 
@@ -218,7 +216,7 @@ class DSPConfigPreset(DataClassDictMixin):
 
 
 class DSPState(StrEnum):
-    """Enum of all DSP states of DSPDetails."""
+    """Enum of all DSP processing states."""
 
     ENABLED = "enabled"
     DISABLED = "disabled"
@@ -229,22 +227,3 @@ class DSPState(StrEnum):
     def _missing_(cls, _: object) -> DSPState:
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
-
-
-@dataclass(kw_only=True)
-class DSPDetails(DataClassDictMixin):
-    """Model for information about a DSP applied to a stream.
-
-    This describes the DSP configuration as applied,
-    even when the DSP state is disabled. For example,
-    output_limiter can remain true while the DSP is disabled.
-    All filters in the list are guaranteed to be enabled.
-    output_format is the format that will be sent to the output device (if known).
-    """
-
-    state: DSPState = DSPState.DISABLED
-    input_gain: float = 0.0
-    filters: list[DSPFilter] = field(default_factory=list)
-    output_gain: float = 0.0
-    output_limiter: bool = True
-    output_format: AudioFormat | None = None
