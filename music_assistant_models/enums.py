@@ -51,6 +51,19 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
         return cls.UNKNOWN
 
 
+class DashboardType(StrEnum):
+    """Enum with the dashboards that can be cast to a display device."""
+
+    PARTY = "party"
+    NOW_PLAYING = "now_playing"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> DashboardType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class SourceControl(StrEnum):
     """Control actions issued to a live AudioSource by the player controller."""
 

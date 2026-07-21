@@ -6,6 +6,8 @@ from dataclasses import dataclass
 
 from mashumaro import DataClassDictMixin
 
+from .enums import DashboardType
+
 
 @dataclass
 class DashboardDevice(DataClassDictMixin):
@@ -27,5 +29,6 @@ class DashboardSession(DataClassDictMixin):
     device_id: str
     provider_instance: str
     name: str
-    # the dashboard route being shown (e.g. "/party")
-    path: str
+    dashboard: DashboardType
+    # set for dashboards scoped to a single player (e.g. now playing)
+    player_id: str | None = None
