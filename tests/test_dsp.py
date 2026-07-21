@@ -8,6 +8,8 @@ from music_assistant_models.dsp import (
     DSPConfig,
     DSPFilterType,
     GainFilter,
+    HighLowPassFilter,
+    HighLowPassMode,
 )
 
 
@@ -131,3 +133,60 @@ def test_dsp_config_convolution_roundtrip() -> None:
 
     assert restored == config
     assert isinstance(restored.filters[0], ConvolutionFilter)
+
+
+def test_high_low_pass_valid() -> None:
+    """A configured High/Low-pass filter validates without raising."""
+    f = HighLowPassFilter(enabled=True, mode=HighLowPassMode.LOW_PASS, frequency=12000.0, slope=24)
+    f.validate()
+
+
+def test_high_low_pass_defaults() -> None:
+    """High/Low-pass constructs with its documented defaults and validates."""
+    f = HighLowPassFilter(enabled=True)
+
+    assert f.type == DSPFilterType.HIGH_LOW_PASS
+    assert f.mode is HighLowPassMode.HIGH_PASS
+    assert f.frequency == 80.0
+    assert f.slope == 12
+
+    f.validate()
+
+
+def test_high_low_pass_bad_frequency() -> None:
+    """Cutoff frequencies outside the audible band are rejected."""
+    for freq in (10.0, 25000.0):
+        with pytest.raises(ValueError, match="Cutoff frequency"):
+            HighLowPassFilter(enabled=True, frequency=freq).validate()
+
+
+def test_high_low_pass_bad_slope() -> None:
+    """Slopes outside the allowed {12, 24, 48} set are rejected."""
+    for slope in (6, 18, 96):
+        with pytest.raises(ValueError, match="Slope"):
+            HighLowPassFilter(enabled=True, slope=slope).validate()
+
+
+def test_high_low_pass_unknown_mode_defaults() -> None:
+    """An unknown mode value falls back to high-pass."""
+    assert HighLowPassMode("sideways") is HighLowPassMode.HIGH_PASS
+
+
+def test_dsp_config_high_low_pass_roundtrip() -> None:
+    """A DSPConfig with a High/Low-pass filter round-trips to the correct class."""
+    config = DSPConfig(
+        enabled=True,
+        filters=[
+            HighLowPassFilter(
+                enabled=True, mode=HighLowPassMode.LOW_PASS, frequency=8000.0, slope=48
+            ),
+        ],
+    )
+    serialized = config.to_dict()
+
+    assert serialized["filters"][0]["type"] == "high_low_pass"
+
+    restored = DSPConfig.from_dict(serialized)
+
+    assert restored == config
+    assert isinstance(restored.filters[0], HighLowPassFilter)

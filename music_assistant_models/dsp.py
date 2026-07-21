@@ -32,6 +32,7 @@ class DSPFilterType(StrEnum):
     GAIN = "gain"
     BALANCE = "balance"
     CONVOLUTION = "convolution"
+    HIGH_LOW_PASS = "high_low_pass"
 
 
 @dataclass
@@ -183,8 +184,47 @@ class ConvolutionFilter(DSPFilterBase):
             raise ValueError("Gain must be in the range -60.0 to 60.0 dB")
 
 
+class HighLowPassMode(StrEnum):
+    """Direction of a High/Low-pass filter."""
+
+    HIGH_PASS = "high_pass"
+    LOW_PASS = "low_pass"
+
+    @classmethod
+    def _missing_(cls, _: object) -> HighLowPassMode:
+        """Set default enum member if an unknown value is provided."""
+        return cls.HIGH_PASS
+
+
+@dataclass
+class HighLowPassFilter(DSPFilterBase):
+    """Model for a High-pass / Low-pass filter."""
+
+    type: Literal[DSPFilterType.HIGH_LOW_PASS] = DSPFilterType.HIGH_LOW_PASS
+    # High-pass removes content below the cutoff; low-pass removes content above it
+    mode: HighLowPassMode = HighLowPassMode.HIGH_PASS
+    # Cutoff (corner) frequency in Hz
+    frequency: float = 80.0
+    # Filter steepness in dB per octave
+    slope: int = 12
+
+    def validate(self) -> None:
+        """Validate the High/Low-pass filter."""
+        if not 20.0 <= self.frequency <= 20000.0:
+            raise ValueError("Cutoff frequency must be in the range 20.0 to 20000.0 Hz")
+        if self.slope not in (12, 24, 48):
+            raise ValueError("Slope must be one of 12, 24 or 48 dB/octave")
+
+
 # Type alias for all possible DSP filters
-DSPFilter = ParametricEQFilter | ToneControlFilter | GainFilter | BalanceFilter | ConvolutionFilter
+DSPFilter = (
+    ParametricEQFilter
+    | ToneControlFilter
+    | GainFilter
+    | BalanceFilter
+    | ConvolutionFilter
+    | HighLowPassFilter
+)
 
 
 @dataclass
