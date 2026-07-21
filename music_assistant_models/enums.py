@@ -56,6 +56,7 @@ class DashboardType(StrEnum):
 
     PARTY = "party"
     NOW_PLAYING = "now_playing"
+    MUSIC_QUIZ = "music_quiz"
     UNKNOWN = "unknown"
 
     @classmethod
