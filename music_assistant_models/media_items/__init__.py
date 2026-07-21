@@ -149,6 +149,8 @@ def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
         return SoundEffect.from_dict(media_item)
     if media_item["media_type"] == "audio_source":
         return AudioSource.from_dict(media_item)
+    if media_item["media_type"] == "collection":
+        return MediaCollection.from_dict(media_item)
     raise InvalidDataError("Unknown media type")
 
 
