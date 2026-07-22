@@ -9,7 +9,7 @@ from typing import Any
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from .enums import ProviderFeature, ProviderStage, ProviderType
+from .enums import ProviderFeature, ProviderIconVariant, ProviderStage, ProviderType
 from .translations import resolve_translation
 
 
@@ -41,18 +41,9 @@ class ProviderManifest(DataClassORJSONMixin):
     depends_on: str | None = None
     # icon: name of the material design icon (https://pictogrammers.com/library/mdi)
     icon: str | None = None
-    # icon_svg: svg icon (full xml string)
-    # if this attribute is omitted and an icon.svg is found in the provider
-    # folder, the file contents will be read instead.
-    icon_svg: str | None = None
-    # icon_svg_dark: optional separate dark svg icon (full xml string)
-    # if this attribute is omitted and an icon_dark.svg is found in the provider
-    # folder, the file contents will be read instead.
-    icon_svg_dark: str | None = None
-    # icon_svg_monochrome: optional separate monochrome svg icon (full xml string)
-    # if this attribute is omitted and an monochrome_icon.svg is found in the provider
-    # folder, the file contents will be read instead.
-    icon_svg_monochrome: str | None = None
+    # icon_images: which icon variants this provider supplies as image files
+    # (svg or transparent png in the provider folder).
+    icon_images: list[ProviderIconVariant] = field(default_factory=list)
     # mdns_discovery: list of mdns types to discover
     mdns_discovery: list[str] | None = None
     # upnp_discovery: list of SSDP search targets to discover

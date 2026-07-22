@@ -873,6 +873,14 @@ class ProviderStage(StrEnum):
         return cls.STABLE
 
 
+class ProviderIconVariant(StrEnum):
+    """Enum of provider icon variants that a provider can supply."""
+
+    DEFAULT = "default"
+    DARK = "dark"
+    MONOCHROME = "monochrome"
+
+
 class CoreState(StrEnum):
     """Enum representing the core state of the Music Assistant server."""
 
