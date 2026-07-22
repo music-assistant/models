@@ -33,6 +33,8 @@ class DSPFilterType(StrEnum):
     BALANCE = "balance"
     CONVOLUTION = "convolution"
     HIGH_LOW_PASS = "high_low_pass"
+    STEREO_WIDTH = "stereo_width"
+    CROSSFEED = "crossfeed"
 
 
 @dataclass
@@ -214,6 +216,37 @@ class HighLowPassFilter(DSPFilterBase):
             raise ValueError("Cutoff frequency must be in the range 20.0 to 20000.0 Hz")
         if self.slope not in (12, 24, 48):
             raise ValueError("Slope must be one of 12, 24 or 48 dB/octave")
+class StereoWidthFilter(DSPFilterBase):
+    """Model for a Stereo Width filter."""
+
+    type: Literal[DSPFilterType.STEREO_WIDTH] = DSPFilterType.STEREO_WIDTH
+    # Stereo width multiplier applied to the side (L-R) signal.
+    # 1.0 = unchanged, 0.0 = mono (dual-mono), >1.0 = wider. The center
+    # (mid) signal is left untouched.
+    width: float = 1.0
+
+    def validate(self) -> None:
+        """Validate the Stereo Width filter."""
+        if not 0.0 <= self.width <= 2.0:
+            raise ValueError("Width must be in the range 0.0 to 2.0")
+
+
+@dataclass
+class CrossfeedFilter(DSPFilterBase):
+    """Model for a headphone Crossfeed filter."""
+
+    type: Literal[DSPFilterType.CROSSFEED] = DSPFilterType.CROSSFEED
+    # Crossfeed strength; 0.0 = subtle, 1.0 = maximum blending of L/R.
+    strength: float = 0.2
+    # Soundstage wideness (maps to ffmpeg crossfeed "range").
+    soundstage: float = 0.5
+
+    def validate(self) -> None:
+        """Validate the Crossfeed filter."""
+        if not 0.0 <= self.strength <= 1.0:
+            raise ValueError("Strength must be in the range 0.0 to 1.0")
+        if not 0.0 <= self.soundstage <= 1.0:
+            raise ValueError("Soundstage must be in the range 0.0 to 1.0")
 
 
 # Type alias for all possible DSP filters
@@ -224,6 +257,8 @@ DSPFilter = (
     | BalanceFilter
     | ConvolutionFilter
     | HighLowPassFilter
+    | StereoWidthFilter
+    | CrossfeedFilter
 )
 
 
