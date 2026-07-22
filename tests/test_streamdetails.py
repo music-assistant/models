@@ -72,7 +72,6 @@ def test_legacy_dsp_payload_is_ignored() -> None:
             "input_gain": 0.0,
             "filters": [],
             "output_gain": 0.0,
-            "output_limiter": True,
             "output_format": None,
         }
     }
