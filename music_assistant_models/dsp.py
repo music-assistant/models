@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
+from enum import IntEnum, StrEnum
 from typing import Literal
 
 from mashumaro import DataClassDictMixin
@@ -198,6 +198,19 @@ class HighLowPassMode(StrEnum):
         return cls.HIGH_PASS
 
 
+class HighLowPassSlope(IntEnum):
+    """Steepness of a High/Low-pass filter, in dB per octave."""
+
+    DB12 = 12
+    DB24 = 24
+    DB48 = 48
+
+    @classmethod
+    def _missing_(cls, _: object) -> HighLowPassSlope:
+        """Set default enum member if an unknown value is provided."""
+        return cls.DB12
+
+
 @dataclass
 class HighLowPassFilter(DSPFilterBase):
     """Model for a High-pass / Low-pass filter."""
@@ -208,13 +221,15 @@ class HighLowPassFilter(DSPFilterBase):
     # Cutoff (corner) frequency in Hz
     frequency: float = 80.0
     # Filter steepness in dB per octave
-    slope: int = 12
+    slope: HighLowPassSlope = HighLowPassSlope.DB12
 
     def validate(self) -> None:
         """Validate the High/Low-pass filter."""
         if not 20.0 <= self.frequency <= 20000.0:
             raise ValueError("Cutoff frequency must be in the range 20.0 to 20000.0 Hz")
-        if self.slope not in (12, 24, 48):
+        # An exact type check (not ==) so a raw 12.0 float cannot slip through
+        # and get serialized back out as a float
+        if type(self.slope) is not HighLowPassSlope:
             raise ValueError("Slope must be one of 12, 24 or 48 dB/octave")
 
 

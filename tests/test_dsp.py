@@ -11,6 +11,7 @@ from music_assistant_models.dsp import (
     GainFilter,
     HighLowPassFilter,
     HighLowPassMode,
+    HighLowPassSlope,
     StereoWidthFilter,
 )
 
@@ -160,7 +161,12 @@ def test_dsp_config_stereo_width_crossfeed_roundtrip() -> None:
 
 def test_high_low_pass_valid() -> None:
     """A configured High/Low-pass filter validates without raising."""
-    f = HighLowPassFilter(enabled=True, mode=HighLowPassMode.LOW_PASS, frequency=12000.0, slope=24)
+    f = HighLowPassFilter(
+        enabled=True,
+        mode=HighLowPassMode.LOW_PASS,
+        frequency=12000.0,
+        slope=HighLowPassSlope.DB24,
+    )
     f.validate()
 
 
@@ -171,7 +177,7 @@ def test_high_low_pass_defaults() -> None:
     assert f.type == DSPFilterType.HIGH_LOW_PASS
     assert f.mode is HighLowPassMode.HIGH_PASS
     assert f.frequency == 80.0
-    assert f.slope == 12
+    assert f.slope is HighLowPassSlope.DB12
 
     f.validate()
 
@@ -185,9 +191,24 @@ def test_high_low_pass_bad_frequency() -> None:
 
 def test_high_low_pass_bad_slope() -> None:
     """Slopes outside the allowed {12, 24, 48} set are rejected."""
-    for slope in (6, 18, 96):
+    for slope in (6, 18, 96, 12.0):
         with pytest.raises(ValueError, match="Slope"):
-            HighLowPassFilter(enabled=True, slope=slope).validate()
+            HighLowPassFilter(enabled=True, slope=slope).validate()  # type: ignore[arg-type]
+
+
+def test_high_low_pass_unknown_slope_defaults() -> None:
+    """An unknown slope value falls back to 12 dB/octave."""
+    assert HighLowPassSlope(18) is HighLowPassSlope.DB12
+
+
+def test_high_low_pass_slope_serializes_as_int() -> None:
+    """The slope stays a plain int on the wire."""
+    f = HighLowPassFilter(enabled=True, slope=HighLowPassSlope.DB48)
+    serialized = f.to_dict()
+
+    assert serialized["slope"] == 48
+    assert type(serialized["slope"]) is int
+    assert HighLowPassFilter.from_dict(serialized).slope is HighLowPassSlope.DB48
 
 
 def test_high_low_pass_unknown_mode_defaults() -> None:
@@ -201,7 +222,10 @@ def test_dsp_config_high_low_pass_roundtrip() -> None:
         enabled=True,
         filters=[
             HighLowPassFilter(
-                enabled=True, mode=HighLowPassMode.LOW_PASS, frequency=8000.0, slope=48
+                enabled=True,
+                mode=HighLowPassMode.LOW_PASS,
+                frequency=8000.0,
+                slope=HighLowPassSlope.DB48,
             ),
         ],
     )
