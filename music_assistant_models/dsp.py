@@ -216,6 +216,9 @@ class HighLowPassFilter(DSPFilterBase):
             raise ValueError("Cutoff frequency must be in the range 20.0 to 20000.0 Hz")
         if self.slope not in (12, 24, 48):
             raise ValueError("Slope must be one of 12, 24 or 48 dB/octave")
+
+
+@dataclass
 class StereoWidthFilter(DSPFilterBase):
     """Model for a Stereo Width filter."""
 

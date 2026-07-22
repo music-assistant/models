@@ -125,6 +125,18 @@ def test_dsp_config_convolution_roundtrip() -> None:
         enabled=True,
         filters=[
             ConvolutionFilter(enabled=True, ir_id="ir-abc123", gain=-3.0),
+        ],
+    )
+    serialized = config.to_dict()
+
+    assert serialized["filters"][0]["type"] == "convolution"
+
+    restored = DSPConfig.from_dict(serialized)
+
+    assert restored == config
+    assert isinstance(restored.filters[0], ConvolutionFilter)
+
+
 def test_dsp_config_stereo_width_crossfeed_roundtrip() -> None:
     """A DSPConfig with StereoWidth and Crossfeed filters round-trips to the correct classes."""
     config = DSPConfig(
@@ -136,14 +148,14 @@ def test_dsp_config_stereo_width_crossfeed_roundtrip() -> None:
     )
     serialized = config.to_dict()
 
-    assert serialized["filters"][0]["type"] == "convolution"
     assert serialized["filters"][0]["type"] == "stereo_width"
     assert serialized["filters"][1]["type"] == "crossfeed"
 
     restored = DSPConfig.from_dict(serialized)
 
     assert restored == config
-    assert isinstance(restored.filters[0], ConvolutionFilter)
+    assert isinstance(restored.filters[0], StereoWidthFilter)
+    assert isinstance(restored.filters[1], CrossfeedFilter)
 
 
 def test_high_low_pass_valid() -> None:
@@ -201,8 +213,6 @@ def test_dsp_config_high_low_pass_roundtrip() -> None:
 
     assert restored == config
     assert isinstance(restored.filters[0], HighLowPassFilter)
-    assert isinstance(restored.filters[0], StereoWidthFilter)
-    assert isinstance(restored.filters[1], CrossfeedFilter)
 
 
 def test_stereo_width_filter_defaults() -> None:
