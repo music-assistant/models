@@ -603,11 +603,7 @@ class EventType(StrEnum):
     PROVIDER_EVENT = "provider_event"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     TASKS_UPDATED = "tasks_updated"
-    # request to show a dashboard on a registered dashboard endpoint;
-    # object_id holds the dashboard_id, data holds the DashboardSession
     DASHBOARD_SHOW = "dashboard_show"
-    # request to hide the dashboard on a registered dashboard endpoint;
-    # object_id holds the dashboard_id
     DASHBOARD_HIDE = "dashboard_hide"
     DASHBOARDS_UPDATED = "dashboards_updated"
     DASHBOARD_SESSIONS_UPDATED = "dashboard_sessions_updated"
