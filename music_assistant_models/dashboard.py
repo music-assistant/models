@@ -1,8 +1,8 @@
-"""Model(s) for dashboard casting to display devices."""
+"""Model(s) for dashboards shown on display devices and (api) clients."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from mashumaro import DataClassDictMixin
 
@@ -11,23 +11,21 @@ from .enums import DashboardType
 
 @dataclass
 class DashboardDevice(DataClassDictMixin):
-    """Model for a display device capable of showing a MA dashboard."""
+    """Model for a registered dashboard endpoint capable of showing a MA dashboard."""
 
-    # provider-scoped unique id
-    device_id: str
-    provider_instance: str
+    # unique id chosen by the registering client (e.g. a device uuid)
+    dashboard_id: str
     name: str
-    # set when this display device is also registered as a MA player
+    supported_types: set[DashboardType] = field(default_factory=set)
+    # set when this dashboard endpoint is also registered as a MA player
     player_id: str | None = None
 
 
 @dataclass
 class DashboardSession(DataClassDictMixin):
-    """Model for an active dashboard cast session on a display device."""
+    """Model for an active dashboard session on a registered dashboard endpoint."""
 
-    # provider-scoped unique id
-    device_id: str
-    provider_instance: str
+    dashboard_id: str
     name: str
     dashboard: DashboardType
     # set for dashboards scoped to a single player (e.g. now playing)

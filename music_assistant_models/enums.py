@@ -603,6 +603,13 @@ class EventType(StrEnum):
     PROVIDER_EVENT = "provider_event"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     TASKS_UPDATED = "tasks_updated"
+    # request to show a dashboard on a registered dashboard endpoint;
+    # object_id holds the dashboard_id, data holds the DashboardSession
+    DASHBOARD_SHOW = "dashboard_show"
+    # request to hide the dashboard on a registered dashboard endpoint;
+    # object_id holds the dashboard_id
+    DASHBOARD_HIDE = "dashboard_hide"
+    DASHBOARDS_UPDATED = "dashboards_updated"
     DASHBOARD_SESSIONS_UPDATED = "dashboard_sessions_updated"
     MUSIC_SYNC_COMPLETED = "music_sync_completed"
     AUTH_SESSION = "auth_session"
@@ -697,8 +704,6 @@ class ProviderFeature(StrEnum):
     REMOVE_PLAYER = "remove_player"
     CREATE_GROUP_PLAYER = "create_group_player"
     REMOVE_GROUP_PLAYER = "remove_group_player"
-    # provider can show MA dashboards (e.g. party mode) on display devices
-    SHOW_DASHBOARD = "show_dashboard"
 
     #
     # METADATAPROVIDER FEATURES
