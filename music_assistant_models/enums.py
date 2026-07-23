@@ -601,6 +601,9 @@ class EventType(StrEnum):
     # object_id = provider instance_id (optionally suffixed with /sub_scope),
     # data = provider-defined payload
     PROVIDER_EVENT = "provider_event"
+    # setup_flow_updated: a running setup flow produced a new/updated step;
+    # object_id is the flow_id
+    SETUP_FLOW_UPDATED = "setup_flow_updated"
     SYNC_TASKS_UPDATED = "sync_tasks_updated"
     TASKS_UPDATED = "tasks_updated"
     DASHBOARD_SHOW = "dashboard_show"
@@ -765,10 +768,39 @@ class ConfigEntryType(StrEnum):
     ACTION = "action"
     ICON = "icon"
     ALERT = "alert"
+    IMAGE = "image"
     UNKNOWN = "unknown"
 
     @classmethod
     def _missing_(cls, value: object) -> ConfigEntryType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class FlowStepType(StrEnum):
+    """Enum with the possible types of a setup flow step."""
+
+    # form: render config entries and wait for the user to submit
+    FORM = "form"
+
+    # external: the user must open an external url (e.g. OAuth);
+    # the server advances the flow on the callback
+    EXTERNAL = "external"
+
+    # progress: the server is working/waiting on something; no user input
+    PROGRESS = "progress"
+
+    # finish: the flow completed; result references the created/updated object
+    FINISH = "finish"
+
+    # abort: the flow ended without a result
+    ABORT = "abort"
+
+    # fallback
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> FlowStepType:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
