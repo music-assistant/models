@@ -13,6 +13,7 @@ from music_assistant_models.dsp import (
     HighLowPassMode,
     HighLowPassSlope,
     StereoWidthFilter,
+    TransposeFilter,
 )
 
 
@@ -291,3 +292,53 @@ def test_crossfeed_filter_validate() -> None:
         CrossfeedFilter(enabled=True, soundstage=-0.1).validate()
     with pytest.raises(ValueError, match="Soundstage"):
         CrossfeedFilter(enabled=True, soundstage=1.1).validate()
+
+
+def test_transpose_filter_defaults() -> None:
+    """Transpose constructs with its documented defaults and validates."""
+    transpose = TransposeFilter(enabled=True)
+
+    assert transpose.type == "transpose"
+    assert transpose.semitones == 0.0
+
+    transpose.validate()
+
+
+def test_transpose_filter_roundtrip() -> None:
+    """A Transpose filter round-trips through to_dict/from_dict."""
+    transpose = TransposeFilter(enabled=True, semitones=-3.0)
+    payload = transpose.to_dict()
+
+    assert payload["type"] == "transpose"
+    assert payload["semitones"] == -3.0
+    assert TransposeFilter.from_dict(payload) == transpose
+
+
+def test_transpose_filter_validate() -> None:
+    """Semitones validates within +-12 and rejects values outside."""
+    TransposeFilter(enabled=True, semitones=-12.0).validate()
+    # Alternative concert pitch (A=432Hz) is a fraction of a semitone.
+    TransposeFilter(enabled=True, semitones=-0.318).validate()
+    TransposeFilter(enabled=True, semitones=0.0).validate()
+    TransposeFilter(enabled=True, semitones=12.0).validate()
+
+    with pytest.raises(ValueError, match="Semitones"):
+        TransposeFilter(enabled=True, semitones=-12.1).validate()
+    with pytest.raises(ValueError, match="Semitones"):
+        TransposeFilter(enabled=True, semitones=12.1).validate()
+
+
+def test_dsp_config_transpose_roundtrip() -> None:
+    """A DSPConfig containing a Transpose filter resolves back to TransposeFilter."""
+    config = DSPConfig(
+        enabled=True,
+        filters=[TransposeFilter(enabled=True, semitones=2.0)],
+    )
+    serialized = config.to_dict()
+
+    assert serialized["filters"][0]["type"] == "transpose"
+
+    restored = DSPConfig.from_dict(serialized)
+
+    assert restored == config
+    assert isinstance(restored.filters[0], TransposeFilter)
