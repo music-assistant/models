@@ -36,6 +36,7 @@ class MediaType(StrEnum, metaclass=MediaTypeMeta):
     PODCAST = "podcast"
     PODCAST_EPISODE = "podcast_episode"
     FOLDER = "folder"
+    COLLECTION = "collection"
     ANNOUNCEMENT = "announcement"
     FLOW_STREAM = "flow_stream"
     # deprecated: replaced by AUDIO_SOURCE, kept for one release for backwards compatibility
