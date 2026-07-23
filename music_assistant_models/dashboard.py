@@ -17,8 +17,8 @@ class DashboardDevice(DataClassDictMixin):
     dashboard_id: str
     name: str
     supported_types: set[DashboardType] = field(default_factory=set)
-    # material design (mdi-*) or MA/lucide icon name
-    icon: str | None = None
+    # provider domain this endpoint belongs to; used only as a hint to resolve its icon
+    provider_domain_hint: str | None = None
 
 
 @dataclass
