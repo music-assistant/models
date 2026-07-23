@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
+from enum import IntEnum, StrEnum
 from typing import Literal
 
 from mashumaro import DataClassDictMixin
@@ -31,6 +31,10 @@ class DSPFilterType(StrEnum):
     TONE_CONTROL = "tone_control"
     GAIN = "gain"
     BALANCE = "balance"
+    CONVOLUTION = "convolution"
+    HIGH_LOW_PASS = "high_low_pass"
+    STEREO_WIDTH = "stereo_width"
+    CROSSFEED = "crossfeed"
 
 
 @dataclass
@@ -164,8 +168,116 @@ class BalanceFilter(DSPFilterBase):
             raise ValueError("Balance must be in the range -100.0 to 100.0")
 
 
+@dataclass
+class ConvolutionFilter(DSPFilterBase):
+    """Model for a Convolution (impulse response) filter."""
+
+    type: Literal[DSPFilterType.CONVOLUTION] = DSPFilterType.CONVOLUTION
+    # Identifier of the stored impulse response to convolve with.
+    # Empty means none is selected yet; the server treats that as a no-op,
+    # so it is not validated here.
+    ir_id: str = ""
+    # Output gain in dB applied after the convolution, can be negative or positive
+    gain: float = 0.0
+
+    def validate(self) -> None:
+        """Validate the Convolution filter."""
+        if not -60.0 <= self.gain <= 60.0:
+            raise ValueError("Gain must be in the range -60.0 to 60.0 dB")
+
+
+class HighLowPassMode(StrEnum):
+    """Direction of a High/Low-pass filter."""
+
+    HIGH_PASS = "high_pass"
+    LOW_PASS = "low_pass"
+
+    @classmethod
+    def _missing_(cls, _: object) -> HighLowPassMode:
+        """Set default enum member if an unknown value is provided."""
+        return cls.HIGH_PASS
+
+
+class HighLowPassSlope(IntEnum):
+    """Steepness of a High/Low-pass filter, in dB per octave."""
+
+    DB12 = 12
+    DB24 = 24
+    DB48 = 48
+
+    @classmethod
+    def _missing_(cls, _: object) -> HighLowPassSlope:
+        """Set default enum member if an unknown value is provided."""
+        return cls.DB12
+
+
+@dataclass
+class HighLowPassFilter(DSPFilterBase):
+    """Model for a High-pass / Low-pass filter."""
+
+    type: Literal[DSPFilterType.HIGH_LOW_PASS] = DSPFilterType.HIGH_LOW_PASS
+    # High-pass removes content below the cutoff; low-pass removes content above it
+    mode: HighLowPassMode = HighLowPassMode.HIGH_PASS
+    # Cutoff (corner) frequency in Hz
+    frequency: float = 80.0
+    # Filter steepness in dB per octave
+    slope: HighLowPassSlope = HighLowPassSlope.DB12
+
+    def validate(self) -> None:
+        """Validate the High/Low-pass filter."""
+        if not 20.0 <= self.frequency <= 20000.0:
+            raise ValueError("Cutoff frequency must be in the range 20.0 to 20000.0 Hz")
+        # An exact type check (not ==) so a raw 12.0 float cannot slip through
+        # and get serialized back out as a float
+        if type(self.slope) is not HighLowPassSlope:
+            raise ValueError("Slope must be one of 12, 24 or 48 dB/octave")
+
+
+@dataclass
+class StereoWidthFilter(DSPFilterBase):
+    """Model for a Stereo Width filter."""
+
+    type: Literal[DSPFilterType.STEREO_WIDTH] = DSPFilterType.STEREO_WIDTH
+    # Stereo width multiplier applied to the side (L-R) signal.
+    # 1.0 = unchanged, 0.0 = mono (dual-mono), >1.0 = wider. The center
+    # (mid) signal is left untouched.
+    width: float = 1.0
+
+    def validate(self) -> None:
+        """Validate the Stereo Width filter."""
+        if not 0.0 <= self.width <= 2.0:
+            raise ValueError("Width must be in the range 0.0 to 2.0")
+
+
+@dataclass
+class CrossfeedFilter(DSPFilterBase):
+    """Model for a headphone Crossfeed filter."""
+
+    type: Literal[DSPFilterType.CROSSFEED] = DSPFilterType.CROSSFEED
+    # Crossfeed strength; 0.0 = subtle, 1.0 = maximum blending of L/R.
+    strength: float = 0.2
+    # Soundstage wideness (maps to ffmpeg crossfeed "range").
+    soundstage: float = 0.5
+
+    def validate(self) -> None:
+        """Validate the Crossfeed filter."""
+        if not 0.0 <= self.strength <= 1.0:
+            raise ValueError("Strength must be in the range 0.0 to 1.0")
+        if not 0.0 <= self.soundstage <= 1.0:
+            raise ValueError("Soundstage must be in the range 0.0 to 1.0")
+
+
 # Type alias for all possible DSP filters
-DSPFilter = ParametricEQFilter | ToneControlFilter | GainFilter | BalanceFilter
+DSPFilter = (
+    ParametricEQFilter
+    | ToneControlFilter
+    | GainFilter
+    | BalanceFilter
+    | ConvolutionFilter
+    | HighLowPassFilter
+    | StereoWidthFilter
+    | CrossfeedFilter
+)
 
 
 @dataclass
