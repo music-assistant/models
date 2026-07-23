@@ -490,12 +490,10 @@ class CollectionItemSerializationStrategy(SerializationStrategy):
 
     def deserialize(self, value: list[dict[str, Any]]) -> UniqueListItems[MediaItemType]:
         """Deserialize."""
-        if len(value) == 0:
-            return UniqueListItems([])
-        item_media_type = MediaType(value[0].get("media_type", "unknown"))
-        if item_media_type == MediaType.AUDIOBOOK:
-            return UniqueListItems([Audiobook.from_dict(x) for x in value])
-        raise TypeError(f"MediaType {item_media_type} is not supported in collections.")
+        from . import media_from_dict
+
+        # ruff: noqa: PLC0415
+        return cast("UniqueList[MediaItemType]", UniqueList(media_from_dict(x) for x in value))
 
 
 @dataclass(kw_only=True)
