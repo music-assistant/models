@@ -84,9 +84,12 @@ class SetupFlowStep(DataClassDictMixin):
         )
         if description is not None:
             d["description"] = description
-        progress_text = resolve_translation(f"setup_flow.{self.step_id}.progress_text", owner=owner)
-        if progress_text is not None:
-            d["progress_text"] = progress_text
+        if self.progress_text is not None:
+            progress_text = resolve_translation(
+                f"setup_flow.{self.step_id}.progress_text", owner=owner
+            )
+            if progress_text is not None:
+                d["progress_text"] = progress_text
         if self.reason is not None:
             reason = resolve_translation(f"setup_flow.abort.{self.reason}", owner=owner)
             if reason is not None:

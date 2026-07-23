@@ -175,6 +175,19 @@ def test_progress_text_resolves() -> None:
         assert step.to_dict()["progress_text"] == "Bezig met verbinden..."
 
 
+def test_progress_text_not_injected_when_unset() -> None:
+    """A step without progress_text never gains one, even when a translation key exists."""
+    catalog = {"provider.demo.setup_flow.credentials.progress_text": "Bezig..."}
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="credentials",
+        type=FlowStepType.FORM,
+        translation_owner="provider.demo",
+    )
+    with _resolver_active(catalog):
+        assert step.to_dict()["progress_text"] is None
+
+
 def test_abort_reason_resolves_by_value_and_keeps_slug_when_unresolved() -> None:
     """The abort reason resolves setup_flow.abort.<reason> owner-first; an unknown slug is kept."""
     catalog = {
