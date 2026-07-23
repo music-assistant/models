@@ -60,6 +60,7 @@ ConfigEntryTypeMap: dict[ConfigEntryType, type[ConfigValueType]] = {
     ConfigEntryType.ACTION: str,
     ConfigEntryType.ALERT: str,
     ConfigEntryType.ICON: str,
+    ConfigEntryType.IMAGE: str,
 }
 
 UI_ONLY = (
@@ -67,6 +68,7 @@ UI_ONLY = (
     ConfigEntryType.DIVIDER,
     ConfigEntryType.ACTION,
     ConfigEntryType.ALERT,
+    ConfigEntryType.IMAGE,
 )
 
 
@@ -477,6 +479,11 @@ class ProviderConfig(Config):
     # status: load/lifecycle status, derived and stamped server-side on the api read path.
     # Never persisted (see to_raw) and not set during normal config save/load.
     status: ProviderStatus | None = None
+    # setup_data: values collected by the (re)configure setup flow (credentials, tokens, pairing
+    # data), owned exclusively by the setup flows. Persisted to storage but NEVER serialized over
+    # the API. Any secrets in here are pre-encrypted by the server before they are stored; the
+    # models keep the value as-is and do not encrypt/decrypt anything themselves.
+    setup_data: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def __pre_deserialize__(cls, d: dict[Any, Any]) -> dict[Any, Any]:
@@ -486,10 +493,17 @@ class ProviderConfig(Config):
             d["last_error"] = {"error_code": 999, "message": last_error}
         return d
 
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Drop the storage-only setup_data from the api payload; keep the base behavior."""
+        d = super().__post_serialize__(d)
+        d.pop("setup_data", None)
+        return d
+
     def to_raw(self) -> dict[str, Any]:
-        """Return minimized/raw dict to store; the derived `status` is never persisted."""
+        """Return minimized/raw dict to store; status is dropped, setup_data is persisted."""
         res = super().to_raw()
         res.pop("status", None)
+        res["setup_data"] = self.setup_data
         return res
 
     def _translation_owner(self) -> str | None:
@@ -510,6 +524,23 @@ class PlayerConfig(Config):
     default_name: str | None = None
     # player_type: type of player (player, protocol, group etc.)
     player_type: PlayerType = PlayerType.PLAYER
+    # setup_data: values collected by the (re)configure setup flow (credentials, tokens, pairing
+    # data), owned exclusively by the setup flows. Persisted to storage but NEVER serialized over
+    # the API. Any secrets in here are pre-encrypted by the server before they are stored; the
+    # models keep the value as-is and do not encrypt/decrypt anything themselves.
+    setup_data: dict[str, Any] = field(default_factory=dict)
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Drop the storage-only setup_data from the api payload; keep the base behavior."""
+        d = super().__post_serialize__(d)
+        d.pop("setup_data", None)
+        return d
+
+    def to_raw(self) -> dict[str, Any]:
+        """Return minimized/raw dict to store; setup_data is persisted, not exposed via the api."""
+        res = super().to_raw()
+        res["setup_data"] = self.setup_data
+        return res
 
     def _translation_owner(self) -> str | None:
         return f"provider.{self.provider}"
