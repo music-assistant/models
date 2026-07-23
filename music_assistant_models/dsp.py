@@ -33,6 +33,7 @@ class DSPFilterType(StrEnum):
     BALANCE = "balance"
     STEREO_WIDTH = "stereo_width"
     CROSSFEED = "crossfeed"
+    TRANSPOSE = "transpose"
 
 
 @dataclass
@@ -200,6 +201,22 @@ class CrossfeedFilter(DSPFilterBase):
             raise ValueError("Soundstage must be in the range 0.0 to 1.0")
 
 
+@dataclass
+class TransposeFilter(DSPFilterBase):
+    """Model for a Transpose (pitch shift) filter."""
+
+    type: Literal[DSPFilterType.TRANSPOSE] = DSPFilterType.TRANSPOSE
+    # Shift in semitones, negative is down and positive is up. 0.0 leaves the
+    # audio unchanged. Fractional values are allowed so alternative concert
+    # pitches can be expressed (A=432Hz is roughly -0.318 semitones).
+    semitones: float = 0.0
+
+    def validate(self) -> None:
+        """Validate the Transpose filter."""
+        if not -12.0 <= self.semitones <= 12.0:
+            raise ValueError("Semitones must be in the range -12.0 to 12.0")
+
+
 # Type alias for all possible DSP filters
 DSPFilter = (
     ParametricEQFilter
@@ -208,6 +225,7 @@ DSPFilter = (
     | BalanceFilter
     | StereoWidthFilter
     | CrossfeedFilter
+    | TransposeFilter
 )
 
 
