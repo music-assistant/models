@@ -46,8 +46,8 @@ jobs:
           set -euo pipefail
 
           ACTOR=$(gh api user --jq '.login')
-          if [[ "$ACTOR" != "music-assistant-bot" ]]; then
-            echo "::error::PRIVILEGED_GITHUB_TOKEN authenticates as ${ACTOR}, expected music-assistant-bot."
+          if [[ "$ACTOR" != "music-assistant-machine" ]]; then
+            echo "::error::PRIVILEGED_GITHUB_TOKEN authenticates as ${ACTOR}, expected music-assistant-machine."
             exit 1
           fi
 
@@ -89,8 +89,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          git config user.name "music-assistant-bot"
-          git config user.email "music-assistant-bot@users.noreply.github.com"
+          git config user.name "music-assistant-machine"
+          git config user.email "music-assistant-machine@users.noreply.github.com"
 
           if git show-ref --verify --quiet "refs/tags/${VERSION}"; then
             echo "Reusing existing tag ${VERSION}"
