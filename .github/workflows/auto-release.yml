@@ -10,7 +10,9 @@ on:
   workflow_dispatch: # Allow manual trigger for testing
 
 permissions:
+  attestations: read
   contents: write
+  pull-requests: read
 
 jobs:
   check-and-release:

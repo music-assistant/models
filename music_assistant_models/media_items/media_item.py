@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from mashumaro import DataClassDictMixin, field_options
+from mashumaro.types import SerializationStrategy
 
 from music_assistant_models.enums import (
     AlbumType,
@@ -477,6 +478,22 @@ class PodcastEpisode(MediaItem):
 
 
 M = TypeVar("M", bound="MediaItemType")
+UniqueListItems = UniqueList  # to define the SerializationStrategy or only for this UniqueList
+
+
+class CollectionItemSerializationStrategy(SerializationStrategy):
+    """Serialization strategy for items in a collection."""
+
+    def serialize(self, value: UniqueListItems[MediaItemType]) -> list[dict[str, Any]]:
+        """Serialize."""
+        return [x.to_dict() for x in value]
+
+    def deserialize(self, value: list[dict[str, Any]]) -> UniqueListItems[MediaItemType]:
+        """Deserialize."""
+        from . import media_from_dict
+
+        # ruff: noqa: PLC0415
+        return cast("UniqueList[MediaItemType]", UniqueList(media_from_dict(x) for x in value))
 
 
 @dataclass(kw_only=True)
@@ -486,7 +503,14 @@ class MediaCollection[M](MediaItem):
     __hash__ = _MediaItemBase.__hash__
     __eq__ = _MediaItemBase.__eq__
 
-    items: UniqueList[M] = field(default_factory=UniqueList)
+    items: UniqueListItems[M] = field(default_factory=UniqueListItems)
+    media_type: MediaType = MediaType.COLLECTION
+
+    class Config:
+        """Config."""
+
+        serialization_strategy = {UniqueListItems: CollectionItemSerializationStrategy()}
+        # ruff: noqa: RUF012
 
 
 @dataclass(kw_only=True)
@@ -644,5 +668,6 @@ MediaItemType = (
     | SoundEffect
     | Genre
     | AudioSource
+    | MediaCollection
 )
 PlayableMediaItemType = Track | Radio | Audiobook | PodcastEpisode | SoundEffect | AudioSource

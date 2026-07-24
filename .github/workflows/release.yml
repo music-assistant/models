@@ -1,13 +1,14 @@
 name: Publish releases
 
-# Creates a GitHub release, builds and publishes to PyPI, and creates a PR in the server repo
+# Builds and attaches package assets before publishing an immutable GitHub release
+# Publishes to PyPI and updates the server and client repositories afterward
 # Can be triggered manually with a version number or called by the auto-release workflow
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version number (e.g., 2.16.7) - Creates release, publishes to PyPI, and updates server repo"
+        description: "Version number (e.g., 2.16.7) - Publishes to GitHub and PyPI, then updates downstream repos"
         required: true
         type: string
   workflow_call:
@@ -22,79 +23,188 @@ on:
       PRIVILEGED_GITHUB_TOKEN:
         required: true
 
+permissions:
+  attestations: read
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: release-${{ inputs.version }}
+  cancel-in-progress: false
+
 env:
+  GITHUB_API_VERSION: "2026-03-10"
   PYTHON_VERSION: "3.13"
 
 jobs:
+  verify-release-settings:
+    name: Verify Release Settings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify immutable releases are enabled
+        run: |
+          set -euo pipefail
+
+          # This endpoint requires repository administration read access.
+          ENABLED=$(
+            gh api \
+              --method GET \
+              --header "X-GitHub-Api-Version: ${GITHUB_API_VERSION}" \
+              "repos/${GITHUB_REPOSITORY}/immutable-releases" \
+              --jq '.enabled'
+          )
+
+          if [[ "$ENABLED" != "true" ]]; then
+            echo "::error::Enable release immutability under Settings > General > Releases before publishing."
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+
   test:
     name: Run Tests
+    needs: verify-release-settings
     uses: ./.github/workflows/test.yml
 
   create-release:
-    name: Create Release
-    needs: test
+    name: Prepare Release
+    needs:
+      - test
+      - verify-release-settings
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ inputs.version }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
-      - name: Create and push tag
+      - name: Create or reuse tag
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
-          git push origin "${{ inputs.version }}"
+
+          if git show-ref --verify --quiet "refs/tags/${VERSION}"; then
+            echo "Reusing existing tag ${VERSION}"
+          else
+            git tag -a "$VERSION" -m "Release $VERSION"
+            git push origin "refs/tags/${VERSION}"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+
+      - name: Check release state
+        id: release_state
+        run: |
+          set -euo pipefail
+
+          ERROR_FILE="${RUNNER_TEMP}/release-state-error"
+          if gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${VERSION}" \
+            >/dev/null 2>"$ERROR_FILE"; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          elif grep -q "(HTTP 404)" "$ERROR_FILE"; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          else
+            cat "$ERROR_FILE" >&2
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
 
       - name: Generate release notes with Release Drafter
         id: release_drafter
+        if: steps.release_state.outputs.published != 'true'
         uses: release-drafter/release-drafter@v7.6.0
         with:
+          commitish: refs/tags/${{ inputs.version }} # codespell:ignore commitish
           config-name: release-drafter.yml
-          version: ${{ inputs.version }}
-          tag: ${{ inputs.version }}
-          publish: true
+          dry-run: true
+          publish: false
           prerelease: false
+          tag: ${{ inputs.version }}
+          version: ${{ inputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check if release notes are empty and add commit log fallback
+      - name: Create or update draft release
+        if: steps.release_state.outputs.published != 'true'
         run: |
-          RELEASE_BODY=$(gh release view "${{ inputs.version }}" --json body -q .body)
+          set -euo pipefail
+
+          RELEASE_NOTES_FILE="${RUNNER_TEMP}/release-notes.md"
+          printf "%s\n" "$RELEASE_BODY" > "$RELEASE_NOTES_FILE"
+
+          ERROR_FILE="${RUNNER_TEMP}/draft-release-error"
+          if IS_DRAFT=$(gh release view "$VERSION" --json isDraft --jq .isDraft \
+            2>"$ERROR_FILE"); then
+            if [[ "$IS_DRAFT" != "true" ]]; then
+              echo "::error::Release ${VERSION} was published while preparing its draft."
+              exit 1
+            fi
+
+            gh release edit "$VERSION" \
+              --draft \
+              --notes-file "$RELEASE_NOTES_FILE" \
+              --prerelease=false \
+              --verify-tag
+          elif grep -q "release not found" "$ERROR_FILE"; then
+            gh release create "$VERSION" \
+              --draft \
+              --notes-file "$RELEASE_NOTES_FILE" \
+              --verify-tag
+          else
+            cat "$ERROR_FILE" >&2
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BODY: ${{ steps.release_drafter.outputs.body }}
+          VERSION: ${{ inputs.version }}
+
+      - name: Finalize release notes
+        if: steps.release_state.outputs.published != 'true'
+        run: |
+          set -euo pipefail
+
+          RELEASE_BODY=$(gh release view "$VERSION" --json body --jq .body)
 
           # Check if release body is empty or just says "No changes"
           if [[ -z "$RELEASE_BODY" ]] || [[ "$RELEASE_BODY" =~ "No changes" ]]; then
             echo "Release notes are empty or contain 'No changes'. Generating commit log..."
 
             # Get the previous tag
-            PREV_TAG=$(git describe --tags --abbrev=0 "${{ inputs.version }}^" 2>/dev/null || echo "")
+            PREV_TAG=$(git describe --tags --abbrev=0 "${VERSION}^" 2>/dev/null || echo "")
 
             if [[ -z "$PREV_TAG" ]]; then
               # If no previous tag, get all commits
-              COMMIT_LOG=$(git log --pretty=format:"* %s (%h)" "${{ inputs.version }}")
+              COMMIT_LOG=$(git log --pretty=format:"* %s (%h)" "$VERSION")
             else
               # Get commits between previous tag and current tag
-              COMMIT_LOG=$(git log --pretty=format:"* %s (%h)" "$PREV_TAG..${{ inputs.version }}")
+              COMMIT_LOG=$(git log --pretty=format:"* %s (%h)" "$PREV_TAG..${VERSION}")
             fi
 
             # Update release notes with commit log
-            echo "## Changes" > /tmp/release_notes.md
-            echo "" >> /tmp/release_notes.md
-            echo "$COMMIT_LOG" >> /tmp/release_notes.md
+            RELEASE_NOTES_FILE="${RUNNER_TEMP}/release-notes.md"
+            {
+              echo "## Changes"
+              echo ""
+              echo "$COMMIT_LOG"
+            } > "$RELEASE_NOTES_FILE"
 
-            gh release edit "${{ inputs.version }}" --notes-file /tmp/release_notes.md
+            gh release edit "$VERSION" --notes-file "$RELEASE_NOTES_FILE"
             echo "Release notes updated with commit log."
           else
             echo "Release notes already contain content from Release Drafter."
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
 
   build-and-publish:
-    name: Build and Publish
+    name: Build and Publish Release
     needs: create-release
     runs-on: ubuntu-latest
     steps:
@@ -103,44 +213,193 @@ jobs:
         with:
           ref: ${{ inputs.version }}
 
+      - name: Check current release state
+        id: release_state
+        run: |
+          set -euo pipefail
+
+          ERROR_FILE="${RUNNER_TEMP}/release-state-error"
+          if gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${VERSION}" \
+            >/dev/null 2>"$ERROR_FILE"; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          elif grep -q "(HTTP 404)" "$ERROR_FILE"; then
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          else
+            cat "$ERROR_FILE" >&2
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+
       - name: Set up Python ${{ env.PYTHON_VERSION }}
+        if: steps.release_state.outputs.published != 'true'
         uses: actions/setup-python@v7.0.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install build dependencies
+        if: steps.release_state.outputs.published != 'true'
         run: >-
           pip install build tomli tomli-w
 
       - name: Set Python project version
+        if: steps.release_state.outputs.published != 'true'
         shell: python
+        env:
+          VERSION: ${{ inputs.version }}
         run: |-
+          import os
+
           import tomli
           import tomli_w
 
           with open("pyproject.toml", "rb") as f:
             pyproject = tomli.load(f)
 
-          pyproject["project"]["version"] = "${{ inputs.version }}"
+          pyproject["project"]["version"] = os.environ["VERSION"]
 
           with open("pyproject.toml", "wb") as f:
             tomli_w.dump(pyproject, f)
 
       - name: Build package
+        if: steps.release_state.outputs.published != 'true'
         run: |
           python3 -m build
+
+      - name: Replace draft release assets
+        if: steps.release_state.outputs.published != 'true'
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          ASSETS=(dist/*.whl dist/*.tar.gz)
+          if (( ${#ASSETS[@]} == 0 )); then
+            echo "::error::The package build did not produce any release assets."
+            exit 1
+          fi
+
+          EXISTING_ASSETS=$(gh release view "$VERSION" --json assets --jq '.assets[].apiUrl')
+          while IFS= read -r ASSET_URL; do
+            if [[ -n "$ASSET_URL" ]]; then
+              gh api --method DELETE "${ASSET_URL#https://api.github.com/}"
+            fi
+          done <<< "$EXISTING_ASSETS"
+
+          gh release upload "$VERSION" "${ASSETS[@]}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+
+      - name: Verify draft release assets
+        if: steps.release_state.outputs.published != 'true'
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          ASSETS=(dist/*.whl dist/*.tar.gz)
+          RELEASE_ASSETS=$(gh release view "$VERSION" --json assets)
+          RELEASE_ASSET_COUNT=$(jq '.assets | length' <<< "$RELEASE_ASSETS")
+
+          if (( RELEASE_ASSET_COUNT != ${#ASSETS[@]} )); then
+            echo "::error::The draft release contains an unexpected set of assets."
+            exit 1
+          fi
+
+          for ASSET_PATH in "${ASSETS[@]}"; do
+            ASSET_NAME=$(basename "$ASSET_PATH")
+            ASSET_SIZE=$(stat --format="%s" "$ASSET_PATH")
+            ASSET_DIGEST="sha256:$(sha256sum "$ASSET_PATH" | cut -d " " -f 1)"
+
+            if ! jq -e \
+              --arg name "$ASSET_NAME" \
+              --arg digest "$ASSET_DIGEST" \
+              --argjson size "$ASSET_SIZE" \
+              '.assets[] | select(
+                .name == $name
+                and .state == "uploaded"
+                and .size == $size
+                and .digest == $digest
+              )' <<< "$RELEASE_ASSETS" >/dev/null; then
+              echo "::error::Release asset ${ASSET_NAME} was not uploaded intact."
+              exit 1
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+
+      - name: Recheck immutable release setting
+        if: steps.release_state.outputs.published != 'true'
+        run: |
+          set -euo pipefail
+
+          ENABLED=$(
+            gh api \
+              --method GET \
+              --header "X-GitHub-Api-Version: ${GITHUB_API_VERSION}" \
+              "repos/${GITHUB_REPOSITORY}/immutable-releases" \
+              --jq '.enabled'
+          )
+
+          if [[ "$ENABLED" != "true" ]]; then
+            echo "::error::Release immutability must remain enabled while publishing."
+            exit 1
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+
+      - name: Publish GitHub release
+        if: steps.release_state.outputs.published != 'true'
+        run: gh release edit "$VERSION" --draft=false --latest --verify-tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+
+      - name: Download published release assets
+        if: steps.release_state.outputs.published == 'true'
+        run: |
+          mkdir -p dist
+          gh release download "$VERSION" \
+            --dir dist \
+            --pattern "*.whl" \
+            --pattern "*.tar.gz"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+
+      - name: Verify immutable release
+        run: |
+          set -euo pipefail
+
+          for ATTEMPT in {1..12}; do
+            if IS_IMMUTABLE=$(
+              gh release view "$VERSION" \
+                --json isDraft,isImmutable \
+                --jq 'select(.isDraft == false) | .isImmutable'
+            ); then
+              if [[ "$IS_IMMUTABLE" == "true" ]] && gh release verify "$VERSION"; then
+                exit 0
+              fi
+            fi
+
+            if (( ATTEMPT < 12 )); then
+              sleep 5
+            fi
+          done
+
+          echo "::error::GitHub did not verify release ${VERSION} as immutable."
+          exit 1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
 
       - name: Publish release to PyPI
         uses: pypa/gh-action-pypi-publish@v1.14.1
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
-
-      - name: Upload release assets
-        run: |
-          gh release upload "${{ inputs.version }}" dist/*.whl dist/*.tar.gz
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          skip-existing: ${{ steps.release_state.outputs.published }}
 
   prepare-downstream-prs:
     name: Prepare downstream PRs
