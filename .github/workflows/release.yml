@@ -41,9 +41,15 @@ jobs:
     name: Verify Release Settings
     runs-on: ubuntu-latest
     steps:
-      - name: Verify immutable releases are enabled
+      - name: Verify release token and immutable releases
         run: |
           set -euo pipefail
+
+          ACTOR=$(gh api user --jq '.login')
+          if [[ "$ACTOR" != "music-assistant-bot" ]]; then
+            echo "::error::PRIVILEGED_GITHUB_TOKEN authenticates as ${ACTOR}, expected music-assistant-bot."
+            exit 1
+          fi
 
           # This endpoint requires repository administration read access.
           ENABLED=$(
@@ -74,25 +80,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Create or reuse tag
         run: |
           set -euo pipefail
 
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "music-assistant-bot"
+          git config user.email "music-assistant-bot@users.noreply.github.com"
 
           if git show-ref --verify --quiet "refs/tags/${VERSION}"; then
             echo "Reusing existing tag ${VERSION}"
           else
             git tag -a "$VERSION" -m "Release $VERSION"
+            gh auth setup-git
             git push origin "refs/tags/${VERSION}"
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
       - name: Check release state
@@ -117,7 +125,7 @@ jobs:
       - name: Generate release notes with Release Drafter
         id: release_drafter
         if: steps.release_state.outputs.published != 'true'
-        uses: release-drafter/release-drafter@v7.6.0
+        uses: release-drafter/release-drafter@eada3c96a64734dd381cfbda23511034e328ddb0 # v7.6.0
         with:
           commitish: refs/tags/${{ inputs.version }} # codespell:ignore commitish
           config-name: release-drafter.yml
@@ -160,7 +168,7 @@ jobs:
             exit 1
           fi
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
           RELEASE_BODY: ${{ steps.release_drafter.outputs.body }}
           VERSION: ${{ inputs.version }}
 
@@ -200,7 +208,7 @@ jobs:
             echo "Release notes already contain content from Release Drafter."
           fi
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
   build-and-publish:
@@ -209,7 +217,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.version }}
 
@@ -234,7 +242,7 @@ jobs:
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         if: steps.release_state.outputs.published != 'true'
-        uses: actions/setup-python@v7.0.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -288,7 +296,7 @@ jobs:
 
           gh release upload "$VERSION" "${ASSETS[@]}"
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
       - name: Verify draft release assets
@@ -353,7 +361,7 @@ jobs:
         if: steps.release_state.outputs.published != 'true'
         run: gh release edit "$VERSION" --draft=false --latest --verify-tag
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
       - name: Download published release assets
@@ -395,7 +403,7 @@ jobs:
           VERSION: ${{ inputs.version }}
 
       - name: Publish release to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.14.1
+        uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247 # v1.14.1
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
@@ -454,7 +462,7 @@ jobs:
           fi
 
       - name: Checkout server repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: music-assistant/server
           ref: ${{ steps.target.outputs.branch }}
@@ -476,7 +484,7 @@ jobs:
 
       - name: Create Pull Request
         id: create_pr
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
           commit-message: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
@@ -501,7 +509,7 @@ jobs:
     if: ${{ !contains(inputs.version, '.post') }}
     steps:
       - name: Checkout client repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: music-assistant/client
           token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
@@ -519,7 +527,7 @@ jobs:
 
       - name: Create Pull Request
         id: create_pr
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
           commit-message: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
