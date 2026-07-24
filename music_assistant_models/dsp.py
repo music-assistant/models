@@ -283,7 +283,7 @@ class TransposeFilter(DSPFilterBase):
     def validate(self) -> None:
         """Validate the Transpose filter."""
         if not -12.0 <= self.semitones <= 12.0:
-            raise ValueError("Semitones must be in the range -12.0 to 12.0"
+            raise ValueError("Semitones must be in the range -12.0 to 12.0")
 
 
 @dataclass
