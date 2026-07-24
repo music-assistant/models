@@ -83,24 +83,22 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          persist-credentials: false
 
       - name: Create or reuse tag
         run: |
           set -euo pipefail
 
-          git config user.name "music-assistant-machine"
-          git config user.email "music-assistant-machine@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
           if git show-ref --verify --quiet "refs/tags/${VERSION}"; then
             echo "Reusing existing tag ${VERSION}"
           else
             git tag -a "$VERSION" -m "Release $VERSION"
-            gh auth setup-git
             git push origin "refs/tags/${VERSION}"
           fi
         env:
-          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
       - name: Check release state
@@ -168,7 +166,7 @@ jobs:
             exit 1
           fi
         env:
-          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_BODY: ${{ steps.release_drafter.outputs.body }}
           VERSION: ${{ inputs.version }}
 
@@ -208,7 +206,7 @@ jobs:
             echo "Release notes already contain content from Release Drafter."
           fi
         env:
-          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
   build-and-publish:
@@ -296,7 +294,7 @@ jobs:
 
           gh release upload "$VERSION" "${ASSETS[@]}"
         env:
-          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
       - name: Verify draft release assets
@@ -361,7 +359,7 @@ jobs:
         if: steps.release_state.outputs.published != 'true'
         run: gh release edit "$VERSION" --draft=false --latest --verify-tag
         env:
-          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
       - name: Download published release assets
