@@ -35,6 +35,8 @@ class DSPFilterType(StrEnum):
     HIGH_LOW_PASS = "high_low_pass"
     STEREO_WIDTH = "stereo_width"
     CROSSFEED = "crossfeed"
+    SAFETY_LIMITER = "safety_limiter"
+    COMPRESSOR = "compressor"
 
 
 @dataclass
@@ -267,6 +269,55 @@ class CrossfeedFilter(DSPFilterBase):
             raise ValueError("Soundstage must be in the range 0.0 to 1.0")
 
 
+@dataclass
+class SafetyLimiterFilter(DSPFilterBase):
+    """Model for a Safety Limiter filter."""
+
+    type: Literal[DSPFilterType.SAFETY_LIMITER] = DSPFilterType.SAFETY_LIMITER
+    # Output ceiling in dB (0 = full scale); the signal is held below this level.
+    # Default matches the server's global output limiter ceiling.
+    ceiling: float = -2.0
+
+    def validate(self) -> None:
+        """Validate the Safety Limiter filter."""
+        if not -24.0 <= self.ceiling <= 0.0:
+            raise ValueError("Ceiling must be in the range -24.0 to 0.0 dB")
+
+
+@dataclass
+class CompressorFilter(DSPFilterBase):
+    """Model for a dynamic range Compressor filter."""
+
+    type: Literal[DSPFilterType.COMPRESSOR] = DSPFilterType.COMPRESSOR
+    # Level above which compression starts, in dB
+    threshold: float = -18.0
+    # Compression ratio (input:output above the threshold)
+    ratio: float = 2.0
+    # Attack time in milliseconds
+    attack: float = 20.0
+    # Release time in milliseconds
+    release: float = 250.0
+    # Knee width in dB (0 = hard knee); default matches ffmpeg's acompressor knee (~9 dB)
+    knee: float = 9.0
+    # Make-up gain in dB, applied after compression
+    makeup: float = 0.0
+
+    def validate(self) -> None:
+        """Validate the Compressor filter."""
+        if not -60.0 <= self.threshold <= 0.0:
+            raise ValueError("Threshold must be in the range -60.0 to 0.0 dB")
+        if not 1.0 <= self.ratio <= 20.0:
+            raise ValueError("Ratio must be in the range 1.0 to 20.0")
+        if not 0.01 <= self.attack <= 2000.0:
+            raise ValueError("Attack must be in the range 0.01 to 2000.0 ms")
+        if not 0.01 <= self.release <= 9000.0:
+            raise ValueError("Release must be in the range 0.01 to 9000.0 ms")
+        if not 0.0 <= self.knee <= 18.0:
+            raise ValueError("Knee must be in the range 0.0 to 18.0 dB")
+        if not 0.0 <= self.makeup <= 36.0:
+            raise ValueError("Make-up gain must be in the range 0.0 to 36.0 dB")
+
+
 # Type alias for all possible DSP filters
 DSPFilter = (
     ParametricEQFilter
@@ -277,6 +328,8 @@ DSPFilter = (
     | HighLowPassFilter
     | StereoWidthFilter
     | CrossfeedFilter
+    | SafetyLimiterFilter
+    | CompressorFilter
 )
 
 
