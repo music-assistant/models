@@ -566,7 +566,9 @@ jobs:
 
           # The client depends on the underscore-named package
           # (music_assistant_models), not the hyphenated PyPI project name.
-          with open("pyproject.toml", encoding="utf-8") as f:
+          # newline="" keeps existing line endings untouched so only the
+          # version substring changes.
+          with open("pyproject.toml", encoding="utf-8", newline="") as f:
             content = f.read()
 
           pattern = re.compile(r"music_assistant_models==[^\"']+")
@@ -577,7 +579,7 @@ jobs:
               f"Expected exactly one music_assistant_models pin in pyproject.toml, found {count}"
             )
 
-          with open("pyproject.toml", "w", encoding="utf-8") as f:
+          with open("pyproject.toml", "w", encoding="utf-8", newline="") as f:
             f.write(content)
 
       - name: Create Pull Request
