@@ -35,6 +35,7 @@ class DSPFilterType(StrEnum):
     HIGH_LOW_PASS = "high_low_pass"
     STEREO_WIDTH = "stereo_width"
     CROSSFEED = "crossfeed"
+    TRANSPOSE = "transpose"
     SAFETY_LIMITER = "safety_limiter"
     COMPRESSOR = "compressor"
 
@@ -270,6 +271,22 @@ class CrossfeedFilter(DSPFilterBase):
 
 
 @dataclass
+class TransposeFilter(DSPFilterBase):
+    """Model for a Transpose (pitch shift) filter."""
+
+    type: Literal[DSPFilterType.TRANSPOSE] = DSPFilterType.TRANSPOSE
+    # Shift in semitones, negative is down and positive is up. 0.0 leaves the
+    # audio unchanged. Fractional values are allowed so alternative concert
+    # pitches can be expressed (A=432Hz is roughly -0.318 semitones).
+    semitones: float = 0.0
+
+    def validate(self) -> None:
+        """Validate the Transpose filter."""
+        if not -12.0 <= self.semitones <= 12.0:
+            raise ValueError("Semitones must be in the range -12.0 to 12.0")
+
+
+@dataclass
 class SafetyLimiterFilter(DSPFilterBase):
     """Model for a Safety Limiter filter."""
 
@@ -328,6 +345,7 @@ DSPFilter = (
     | HighLowPassFilter
     | StereoWidthFilter
     | CrossfeedFilter
+    | TransposeFilter
     | SafetyLimiterFilter
     | CompressorFilter
 )
