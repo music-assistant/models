@@ -22,7 +22,7 @@ jobs:
       should_release: ${{ steps.check_commits.outputs.has_commits }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Fetch all history for proper comparison
 
@@ -102,5 +102,5 @@ jobs:
     with:
       version: ${{ needs.check-and-release.outputs.version }}
     secrets:
+      MUSIC_ASSISTANT_BOT_PRIVATE_KEY: ${{ secrets.MUSIC_ASSISTANT_BOT_PRIVATE_KEY }}
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-      PRIVILEGED_GITHUB_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}

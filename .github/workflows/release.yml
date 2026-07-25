@@ -18,9 +18,9 @@ on:
         required: true
         type: string
     secrets:
-      PYPI_TOKEN:
+      MUSIC_ASSISTANT_BOT_PRIVATE_KEY:
         required: true
-      PRIVILEGED_GITHUB_TOKEN:
+      PYPI_TOKEN:
         required: true
 
 permissions:
@@ -41,9 +41,22 @@ jobs:
     name: Verify Release Settings
     runs-on: ubuntu-latest
     steps:
-      - name: Verify immutable releases are enabled
+      - name: Create release settings token
+        id: release_settings_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.MUSIC_ASSISTANT_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.MUSIC_ASSISTANT_BOT_PRIVATE_KEY }}
+          permission-administration: read
+
+      - name: Verify bot token and immutable releases
         run: |
           set -euo pipefail
+
+          if [[ "$APP_SLUG" != "musicassistant-bot" ]]; then
+            echo "::error::GitHub App token belongs to ${APP_SLUG}, expected musicassistant-bot."
+            exit 1
+          fi
 
           # This endpoint requires repository administration read access.
           ENABLED=$(
@@ -59,7 +72,8 @@ jobs:
             exit 1
           fi
         env:
-          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          APP_SLUG: ${{ steps.release_settings_token.outputs.app-slug }}
+          GH_TOKEN: ${{ steps.release_settings_token.outputs.token }}
 
   test:
     name: Run Tests
@@ -74,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -117,7 +131,7 @@ jobs:
       - name: Generate release notes with Release Drafter
         id: release_drafter
         if: steps.release_state.outputs.published != 'true'
-        uses: release-drafter/release-drafter@v7.6.0
+        uses: release-drafter/release-drafter@eada3c96a64734dd381cfbda23511034e328ddb0 # v7.6.0
         with:
           commitish: refs/tags/${{ inputs.version }} # codespell:ignore commitish
           config-name: release-drafter.yml
@@ -209,7 +223,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.version }}
 
@@ -234,7 +248,7 @@ jobs:
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         if: steps.release_state.outputs.published != 'true'
-        uses: actions/setup-python@v7.0.0
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -329,6 +343,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
 
+      - name: Create release settings token
+        id: release_settings_token
+        if: steps.release_state.outputs.published != 'true'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.MUSIC_ASSISTANT_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.MUSIC_ASSISTANT_BOT_PRIVATE_KEY }}
+          permission-administration: read
+
       - name: Recheck immutable release setting
         if: steps.release_state.outputs.published != 'true'
         run: |
@@ -347,7 +370,7 @@ jobs:
             exit 1
           fi
         env:
-          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.release_settings_token.outputs.token }}
 
       - name: Publish GitHub release
         if: steps.release_state.outputs.published != 'true'
@@ -395,7 +418,7 @@ jobs:
           VERSION: ${{ inputs.version }}
 
       - name: Publish release to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.14.1
+        uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247 # v1.14.1
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
@@ -435,7 +458,7 @@ jobs:
             echo EOF
           } >> $GITHUB_OUTPUT
         env:
-          GH_TOKEN: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   server-repo-pr:
     name: Server repo PR
@@ -453,12 +476,24 @@ jobs:
             echo "branch=dev" >> $GITHUB_OUTPUT
           fi
 
-      - name: Checkout server repository
-        uses: actions/checkout@v7
+      - name: Create server repository token
+        id: app_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
+          client-id: ${{ vars.MUSIC_ASSISTANT_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.MUSIC_ASSISTANT_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: server
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout server repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
           repository: music-assistant/server
           ref: ${{ steps.target.outputs.branch }}
-          token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          token: ${{ steps.app_token.outputs.token }}
           path: .
 
       - name: Update models version
@@ -476,9 +511,9 @@ jobs:
 
       - name: Create Pull Request
         id: create_pr
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          token: ${{ steps.app_token.outputs.token }}
           commit-message: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
           branch: "auto-update-models-${{ inputs.version }}"
           delete-branch: true
@@ -500,11 +535,23 @@ jobs:
     # downgrade its models pin
     if: ${{ !contains(inputs.version, '.post') }}
     steps:
-      - name: Checkout client repository
-        uses: actions/checkout@v7
+      - name: Create client repository token
+        id: app_token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
+          client-id: ${{ vars.MUSIC_ASSISTANT_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.MUSIC_ASSISTANT_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: client
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout client repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
           repository: music-assistant/client
-          token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          token: ${{ steps.app_token.outputs.token }}
           path: .
 
       - name: Update models version
@@ -519,9 +566,9 @@ jobs:
 
       - name: Create Pull Request
         id: create_pr
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
-          token: ${{ secrets.PRIVILEGED_GITHUB_TOKEN }}
+          token: ${{ steps.app_token.outputs.token }}
           commit-message: "⬆️ Update music-assistant-models to ${{ inputs.version }}"
           branch: "auto-update-models-${{ inputs.version }}"
           delete-branch: true
