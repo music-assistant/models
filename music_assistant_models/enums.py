@@ -961,3 +961,21 @@ class ProviderStatus(StrEnum):
     INCOMPATIBLE = "incompatible"
     # error: setup failed for any other reason (see the provider's last_error)
     ERROR = "error"
+
+
+class ProviderSearchStatus(StrEnum):
+    """
+    Enum representing how a single provider contributed to a global search.
+
+    Reported per provider on SearchResults.provider_search_statuses so clients can
+    distinguish "this provider genuinely found nothing" from "this provider did not
+    answer in time / errored" instead of guessing from an empty result.
+    """
+
+    # complete: the provider answered, even if it returned no items
+    COMPLETE = "complete"
+    # timeout: the provider did not answer within the soft timeout; its search
+    # continues server-side and a retry can pick up the cached result
+    TIMEOUT = "timeout"
+    # failed: the provider search errored or exceeded the hard timeout
+    FAILED = "failed"
