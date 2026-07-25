@@ -555,14 +555,32 @@ jobs:
           path: .
 
       - name: Update models version
-        run: |
-          VERSION="${{ inputs.version }}"
+        shell: python
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |-
+          import os
+          import re
+          import sys
+          from pathlib import Path
 
-          # Update pyproject.toml
-          sed -i.bak "s/music-assistant-models==.*/music-assistant-models==$VERSION\",/" pyproject.toml
+          path = Path("pyproject.toml")
+          text = path.read_text()
 
-          # Remove backup file
-          rm -f pyproject.toml.bak
+          updated_text, replacements = re.subn(
+              r'music_assistant_models==[^",\s]+',
+              f'music_assistant_models=={os.environ["VERSION"]}',
+              text,
+          )
+
+          if replacements != 1:
+              print(
+                  "::error::Expected exactly one music_assistant_models pin in pyproject.toml.",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          path.write_text(updated_text)
 
       - name: Create Pull Request
         id: create_pr
