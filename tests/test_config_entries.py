@@ -67,6 +67,32 @@ def test_image_entry_excluded_from_to_raw_values() -> None:
     assert raw["values"]["server_url"] == "abc"
 
 
+def test_url_entry_is_ui_only_and_not_required() -> None:
+    """A URL entry is one-shot presentational: maps to str, is UI-only and never required."""
+    assert ConfigEntryType("url") is ConfigEntryType.URL
+    assert ConfigEntryType.URL in UI_ONLY
+    assert ConfigEntryTypeMap[ConfigEntryType.URL] is str
+    entry = ConfigEntry(
+        key="connect_wizard_url",
+        type=ConfigEntryType.URL,
+        value="https://example.com/connect",
+        required=True,
+    )
+    assert entry.required is False
+
+
+def test_url_entry_excluded_from_to_raw_values() -> None:
+    """A UI-only URL entry is never persisted in Config.to_raw values."""
+    entries = [
+        ConfigEntry(key="wizard", type=ConfigEntryType.URL, value="https://example.com/x"),
+        ConfigEntry(key="server_url", type=ConfigEntryType.STRING),
+    ]
+    conf = ProviderConfig.parse(entries, _provider_raw(values={"server_url": "abc"}))
+    raw = conf.to_raw()
+    assert "wizard" not in raw["values"]
+    assert raw["values"]["server_url"] == "abc"
+
+
 def test_provider_setup_data_parses_roundtrips_and_drops_on_api() -> None:
     """ProviderConfig.setup_data is parsed, persisted via to_raw, but dropped from to_dict."""
     conf = ProviderConfig.parse([], _provider_raw(setup_data={"token": "enc:secret"}))
