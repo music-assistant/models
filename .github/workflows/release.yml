@@ -573,7 +573,10 @@ jobs:
             content = f.read()
 
           pattern = re.compile(r"music_assistant_models==[^\"']+")
-          content, count = pattern.subn(f"music_assistant_models=={VERSION}", content)
+          content, count = pattern.subn(
+            lambda _match: f"music_assistant_models=={VERSION}",
+            content,
+          )
 
           if count != 1:
             raise SystemExit(
