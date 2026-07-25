@@ -555,14 +555,30 @@ jobs:
           path: .
 
       - name: Update models version
-        run: |
-          VERSION="${{ inputs.version }}"
+        shell: python
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |-
+          import os
+          import re
 
-          # Update pyproject.toml
-          sed -i.bak "s/music-assistant-models==.*/music-assistant-models==$VERSION\",/" pyproject.toml
+          VERSION = os.environ["VERSION"]
 
-          # Remove backup file
-          rm -f pyproject.toml.bak
+          # The client depends on the underscore-named package
+          # (music_assistant_models), not the hyphenated PyPI project name.
+          with open("pyproject.toml", encoding="utf-8") as f:
+            content = f.read()
+
+          pattern = re.compile(r"music_assistant_models==[^\"']+")
+          content, count = pattern.subn(f"music_assistant_models=={VERSION}", content)
+
+          if count != 1:
+            raise SystemExit(
+              f"Expected exactly one music_assistant_models pin in pyproject.toml, found {count}"
+            )
+
+          with open("pyproject.toml", "w", encoding="utf-8") as f:
+            f.write(content)
 
       - name: Create Pull Request
         id: create_pr
