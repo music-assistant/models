@@ -61,6 +61,7 @@ ConfigEntryTypeMap: dict[ConfigEntryType, type[ConfigValueType]] = {
     ConfigEntryType.ALERT: str,
     ConfigEntryType.ICON: str,
     ConfigEntryType.IMAGE: str,
+    ConfigEntryType.URL: str,
 }
 
 UI_ONLY = (
@@ -69,6 +70,7 @@ UI_ONLY = (
     ConfigEntryType.ACTION,
     ConfigEntryType.ALERT,
     ConfigEntryType.IMAGE,
+    ConfigEntryType.URL,
 )
 
 
