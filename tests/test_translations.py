@@ -35,6 +35,7 @@ _CATALOG = {
     "config_entries.crossfade_mode.options.global": "Globaal",
     "config_entries.crossfade_mode.option_descriptions.global": "Volg de standaardinstelling.",
     "config_entries.crossfade_mode.disabled_reasons.smart_crossfade": "Niet beschikbaar.",
+    "config_entries.preferred_output.disabled_reasons.needs_setup": "Moet nog ingesteld worden.",
     "config_categories.generic": "Algemeen",
     "media.recommendations.recently_played.name": "Onlangs afgespeeld",
     "media.recommendations.recently_played.subtitle": "Ga verder waar je gebleven was",
@@ -125,6 +126,30 @@ def test_config_entry_resolves_option_title_description_and_disabled_reason() ->
     assert options[1]["description"] is None
     # disabled_reason still resolves for the disabled option
     assert options[1]["disabled_reason"] == "Niet beschikbaar."
+
+
+def test_config_value_option_translation_key_is_a_bare_slug() -> None:
+    """An option's translation_key replaces its value when its strings are resolved."""
+    # e.g. a data-driven value (a player id) that still needs a localized disabled_reason
+    entry = ConfigEntry(
+        key="preferred_output",
+        type=ConfigEntryType.STRING,
+        options=[
+            ConfigValueOption(
+                value="airplay_aabbccddeeff",
+                title="AirPlay",
+                disabled=True,
+                translation_key="needs_setup",
+            )
+        ],
+    )
+    plain = entry.to_dict()["options"][0]
+    assert "translation_key" not in plain
+    with _resolver_active():
+        option = entry.to_dict()["options"][0]
+    assert option["disabled_reason"] == "Moet nog ingesteld worden."
+    # the data-driven title is kept: the slug only names why the option is disabled
+    assert option["title"] == "AirPlay"
 
 
 def test_media_item_resolves_name_subtitle_and_strips_machinery() -> None:

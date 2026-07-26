@@ -96,6 +96,12 @@ class ConfigValueOption(DataClassDictMixin):
     # (keyed by the owning entry: option_descriptions.<value>). Lets a single option explain itself
     # instead of cramming the explanation into the option title or the shared entry description.
     description: str | None = None
+    # translation_key: bare slug that replaces this option's value in all of its translation keys.
+    # For options whose value is data-driven - a player or device id - so their texts can still be
+    # localized: the slug names what the option means (e.g. "needs_setup"). Not serialized.
+    translation_key: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
 
 
 MULTI_VALUE_SPLITTER: Final[str] = "||"
@@ -211,8 +217,9 @@ class ConfigEntry(DataClassDictMixin):
         Resolves label/description/option titles and the category name under this entry's owner
         namespace (keyed by config_entries.<key> / config_categories.<category>). A server-set
         translation_key/category_translation_key override is the bare slug under that same group,
-        unless it is fully qualified. No-op when nothing matches, so the in-code values are kept.
-        The translation machinery fields are not serialized.
+        unless it is fully qualified. An option's own translation_key does the same for the option's
+        texts, which are otherwise keyed by its value. No-op when nothing matches, so the in-code
+        values are kept. The translation machinery fields are not serialized.
         """
         owner = self.translation_owner
         base = _localized_base(self.translation_key, self.key, "config_entries")
@@ -229,16 +236,17 @@ class ConfigEntry(DataClassDictMixin):
             if action_label is not None:
                 d["action_label"] = action_label
         for option_dict, option in zip(d.get("options", []), self.options, strict=False):
-            title = resolve_translation(f"{base}.options.{option.value}", owner=owner)
+            slug = option.value if option.translation_key is None else option.translation_key
+            title = resolve_translation(f"{base}.options.{slug}", owner=owner)
             if title is not None:
                 option_dict["title"] = title
             option_description = resolve_translation(
-                f"{base}.option_descriptions.{option.value}", owner=owner
+                f"{base}.option_descriptions.{slug}", owner=owner
             )
             if option_description is not None:
                 option_dict["description"] = option_description
             if option.disabled:
-                reason = resolve_translation(f"{base}.disabled_reasons.{option.value}", owner=owner)
+                reason = resolve_translation(f"{base}.disabled_reasons.{slug}", owner=owner)
                 if reason is not None:
                     option_dict["disabled_reason"] = reason
         category_key = _localized_base(
