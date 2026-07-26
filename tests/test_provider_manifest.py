@@ -46,3 +46,23 @@ def test_legacy_icon_svg_key_ignored() -> None:
     )
     assert restored.icon_images == []
     assert not hasattr(restored, "icon_svg")
+
+
+def test_has_setup_flow_defaults_false() -> None:
+    """Test that has_setup_flow defaults to False."""
+    assert _manifest().has_setup_flow is False
+
+
+def test_has_setup_flow_roundtrip() -> None:
+    """Test has_setup_flow survives JSON roundtrip."""
+    manifest = _manifest(has_setup_flow=True)
+    restored = ProviderManifest.from_json(manifest.to_json())
+    assert restored.has_setup_flow is True
+
+
+def test_has_setup_flow_missing_key_backward_compatible() -> None:
+    """Test that JSON without has_setup_flow (old server payload) defaults to False."""
+    restored = ProviderManifest.from_json(
+        '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[]}'
+    )
+    assert restored.has_setup_flow is False

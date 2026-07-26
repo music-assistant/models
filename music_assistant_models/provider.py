@@ -48,6 +48,9 @@ class ProviderManifest(DataClassORJSONMixin):
     mdns_discovery: list[str] | None = None
     # upnp_discovery: list of SSDP search targets to discover
     upnp_discovery: list[str] | None = None
+    # has_setup_flow: if True, this provider offers an interactive setup flow
+    # that can also be re-run on demand (reconfigure), regardless of auth state
+    has_setup_flow: bool = False
 
     # credits: list of credits/attributions
     # e.g. for libraries used, icons, etc.
