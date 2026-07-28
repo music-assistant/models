@@ -395,6 +395,7 @@ class Playlist(_LocalizableTitle, MediaItem):
             MediaType.AUDIOBOOK,
             MediaType.PODCAST_EPISODE,
             MediaType.RADIO,
+            MediaType.SOUND_EFFECT,
             MediaType.TRACK,
         }
         if len(self.supported_mediatypes.difference(_supported)) > 0:
