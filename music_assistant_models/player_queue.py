@@ -56,6 +56,11 @@ class PlayerQueue(DataClassDictMixin):
     current_index: int | None = None
     # index_in_buffer: index that has been preloaded/buffered by the player
     index_in_buffer: int | None = None
+    # ended: True when the queue played all the way to its end and is waiting to be restarted.
+    # Set by the server and cleared as soon as playback starts or the items change. The playback
+    # position is deliberately left on the last item, so this flag is what tells a finished queue
+    # apart from one that is merely stopped on that item.
+    ended: bool = False
 
     elapsed_time: float = 0
     elapsed_time_last_updated: float = field(default_factory=time.time)

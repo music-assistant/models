@@ -66,3 +66,26 @@ def test_payload_without_overlay_keys_deserializes() -> None:
     assert restored.overlay_enabled is False
     assert restored.overlay_source is None
     assert restored.overlay_volume == 100
+
+
+def test_ended_defaults_to_false() -> None:
+    """A fresh queue has not ended."""
+    assert _queue().ended is False
+
+
+def test_ended_serialize_roundtrip() -> None:
+    """A queue that reached its end survives a to_dict -> from_dict round-trip."""
+    queue = _queue()
+    queue.ended = True
+    queue.current_index = 4
+    restored = PlayerQueue.from_dict(queue.to_dict())
+    assert restored.ended is True
+    # the position stays on the item that finished; `ended` is what makes it legible
+    assert restored.current_index == 4
+
+
+def test_payload_without_ended_key_deserializes() -> None:
+    """Payloads from older servers without the ended key still deserialize."""
+    legacy = _queue().to_dict()
+    legacy.pop("ended", None)
+    assert PlayerQueue.from_dict(legacy).ended is False
