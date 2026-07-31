@@ -115,6 +115,10 @@ class PlayerMedia(DataClassDictMixin):
     image_url: str | None = None  # optional
     palette: MediaItemPalette | None = None  # optional
     duration: int | None = None  # optional
+    # optional - length of the audio stream as delivered to the player
+    # (differs from duration after a seek on transports whose stream restarts
+    # at position zero); None when identical to duration
+    stream_duration: int | None = None
     source_id: str | None = None  # optional (ID of the source, may be a queue id)
     queue_item_id: str | None = None  # only present for requests from queue controller
     custom_data: dict[str, Any] | None = None  # optional - must be serializable
