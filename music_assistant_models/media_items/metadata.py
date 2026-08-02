@@ -11,7 +11,7 @@ from typing import Any
 from mashumaro import DataClassDictMixin
 
 from music_assistant_models.enums import ArtistEntityType, ImageType, LinkType
-from music_assistant_models.helpers import merge_lists
+from music_assistant_models.helpers import create_safe_string, create_sort_name, merge_lists
 from music_assistant_models.unique_list import UniqueList
 
 # ContextVar set by the Music Assistant server during outbound API serialization.
@@ -135,6 +135,14 @@ class MediaItemCollection(DataClassDictMixin):
     def __hash__(self) -> int:
         """Return custom hash."""
         return hash(self.title)
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Add search strings."""
+        d["search_title"] = create_safe_string(self.title, lowercase=True, replace_space=True)
+        d["search_sort_title"] = create_safe_string(
+            create_sort_name(self.title), lowercase=True, replace_space=True
+        )
+        return d
 
 
 @dataclass(kw_only=True)
