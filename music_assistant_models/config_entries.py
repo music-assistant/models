@@ -130,8 +130,7 @@ class ConfigEntry(DataClassDictMixin):
     # help_link [optional]: link to help article.
     help_link: str | None = None
     # multi_value [optional]: allow multiple values from the list
-    # NOTE: for using multi_value, it is required to use the MultiValueConfigEntry
-    # class instead of ConfigEntry to prevent (de)serialization issues
+    # NOTE: when set, the value is stored as a list, so default_value must be a list (or None)
     multi_value: bool = False
     # depends_on [optional]: needs to be set before this setting is visible in the frontend
     depends_on: str | None = None
