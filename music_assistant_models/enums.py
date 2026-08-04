@@ -687,6 +687,11 @@ class ProviderFeature(StrEnum):
     # can show in the UI.
     SIMILAR_ARTISTS = "similar_artists"
 
+    # lookup by external ID (ISRC, MusicBrainz, etc.) per mediatype
+    TRACK_BY_EXTERNAL_ID = "track_by_external_id"
+    ALBUM_BY_EXTERNAL_ID = "album_by_external_id"
+    ARTIST_BY_EXTERNAL_ID = "artist_by_external_id"
+
     # playlist-specific features
     PLAYLIST_TRACKS_EDIT = "playlist_tracks_edit"
     # PLAYLIST_CREATE is deprecated: replaced by PLAYLIST_CREATE_TRACKS (and others)
