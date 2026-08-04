@@ -385,8 +385,10 @@ class Player(DataClassDictMixin):
     # if set to False, the player will not be added to the HA integration
     expose_to_ha: bool = True
 
-    # icon: material design icon for this player
-    icon: str = "mdi-speaker"
+    # icon: identifier from the shared Music Assistant icon set
+    # (https://github.com/music-assistant/shared-icons) - clients render
+    # the artwork for this id and fall back to "speaker" for unknown ids
+    icon: str = "speaker"
 
     # group_volume: if the player is a player group or syncgroup master,
     # this will return the average volume of all child players
