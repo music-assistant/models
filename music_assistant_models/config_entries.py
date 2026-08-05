@@ -137,7 +137,7 @@ class ConfigEntry(DataClassDictMixin):
     # have nothing to disable, so the frontend hides them instead.
     depends_on: str | None = None
     # depends_on_value [optional]: complementary to depends_on, the dependency is only met when
-    # the other entry holds this exact value (without it, any truthy value will do)
+    # the other entry holds this exact value (without it, any value the frontend reads as truthy)
     depends_on_value: ConfigValueType | None = None
     # depends_on_value_not [optional]: same as depends_on_value but inverted
     depends_on_value_not: ConfigValueType | None = None
