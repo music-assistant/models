@@ -132,9 +132,12 @@ class ConfigEntry(DataClassDictMixin):
     # multi_value [optional]: allow multiple values from the list
     # NOTE: when set, the value is stored as a list, so default_value must be a list (or None)
     multi_value: bool = False
-    # depends_on [optional]: needs to be set before this setting is visible in the frontend
+    # depends_on [optional]: key of another entry that gates this one; an unresolved key counts
+    # as unmet. While unmet, input types and ACTION stay visible but render disabled;
+    # DIVIDER/LABEL/ALERT/IMAGE have nothing to disable, so the frontend hides them instead.
     depends_on: str | None = None
-    # depends_on_value [optional]: complementary to depends_on, only show if this value is set
+    # depends_on_value [optional]: complementary to depends_on, the dependency is only met when
+    # the other entry holds this exact value (without it, any value the frontend reads as truthy)
     depends_on_value: ConfigValueType | None = None
     # depends_on_value_not [optional]: same as depends_on_value but inverted
     depends_on_value_not: ConfigValueType | None = None
