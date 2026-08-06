@@ -55,6 +55,7 @@ class Scope(StrEnum):
     CONFIG_PROVIDERS_WRITE = "config.providers.write"
     CONFIG_CORE_READ = "config.core.read"
     CONFIG_CORE_WRITE = "config.core.write"
+    USERS_READ = "users.read"
     USERS_MANAGE = "users.manage"
     USERS_IMPERSONATE = "users.impersonate"
     USERS_INVITE = "users.invite"
