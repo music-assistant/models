@@ -1,6 +1,8 @@
-"""Tests for the IMAGE config entry type and the storage-only setup_data field."""
+"""Tests for config entry types, the storage-only setup_data field and dependency gating."""
 
 from typing import Any
+
+import pytest
 
 from music_assistant_models.config_entries import (
     UI_ONLY,
@@ -125,3 +127,84 @@ def test_player_legacy_raw_without_setup_data_parses() -> None:
     assert conf.setup_data == {}
     assert conf.to_raw()["setup_data"] == {}
     assert "setup_data" not in conf.to_dict()
+
+
+def _gated(**overrides: Any) -> ConfigEntry:
+    """Build a required STRING entry with no default, gated on the `use_proxy` entry."""
+    return ConfigEntry(
+        key="proxy_url",
+        type=ConfigEntryType.STRING,
+        required=True,
+        depends_on="use_proxy",
+        **overrides,
+    )
+
+
+def _switch(*, on: bool) -> ConfigEntry:
+    """Build the BOOLEAN entry the gated entry depends on, as it looks once parsed."""
+    return ConfigEntry(
+        key="use_proxy",
+        type=ConfigEntryType.BOOLEAN,
+        required=False,
+        default_value=on,
+        value=on,
+    )
+
+
+def _dependency(value: Any) -> ConfigEntry:
+    """Build the dependency as a STRING entry already holding `value`."""
+    return ConfigEntry(key="use_proxy", type=ConfigEntryType.STRING, value=value)
+
+
+def test_dependency_met_without_depends_on() -> None:
+    """Report an entry that names no dependency as satisfied."""
+    entry = ConfigEntry(key="token", type=ConfigEntryType.STRING)
+    assert entry.dependency_met([entry]) is True
+
+
+def test_dependency_met_follows_the_dependency_value() -> None:
+    """Treat any truthy value on the dependency as satisfying it when no bound is given."""
+    assert _gated().dependency_met([_switch(on=True), _gated()]) is True
+    assert _gated().dependency_met([_switch(on=False), _gated()]) is False
+
+
+def test_dependency_met_honours_the_value_bounds() -> None:
+    """Demand the exact depends_on_value, and forbid the depends_on_value_not."""
+    exact = _gated(depends_on_value="ha")
+    assert exact.dependency_met([_dependency("ha")]) is True
+    assert exact.dependency_met([_dependency("other")]) is False
+
+    inverted = _gated(depends_on_value_not="off")
+    assert inverted.dependency_met([_dependency("off")]) is False
+    assert inverted.dependency_met([_dependency("ha")]) is True
+
+
+def test_dependency_met_is_false_for_an_unresolved_key() -> None:
+    """Count a dependency key that is not among the entries as unmet."""
+    assert _gated().dependency_met([]) is False
+
+
+def test_validate_skips_a_required_entry_behind_an_unmet_dependency() -> None:
+    """Accept a config whose required entry the user has no way to fill in."""
+    conf = ProviderConfig.parse([_switch(on=False), _gated()], _provider_raw())
+
+    conf.validate()
+
+
+def test_validate_enforces_a_required_entry_once_its_dependency_is_met() -> None:
+    """Demand the same entry again as soon as its dependency is satisfied."""
+    conf = ProviderConfig.parse([_switch(on=True), _gated()], _provider_raw())
+
+    with pytest.raises(ValueError, match="proxy_url is required"):
+        conf.validate()
+
+
+def test_validate_still_enforces_a_required_entry_without_a_dependency() -> None:
+    """Reject an ordinary required entry that holds no value."""
+    conf = ProviderConfig.parse(
+        [ConfigEntry(key="token", type=ConfigEntryType.STRING, required=True)],
+        _provider_raw(),
+    )
+
+    with pytest.raises(ValueError, match="token is required"):
+        conf.validate()

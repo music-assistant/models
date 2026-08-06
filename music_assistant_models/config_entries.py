@@ -261,6 +261,26 @@ class ConfigEntry(DataClassDictMixin):
             d["category_label"] = category_label
         return d
 
+    def dependency_met(self, entries: Iterable[ConfigEntry]) -> bool:
+        """
+        Return whether this entry's `depends_on` dependency is satisfied within `entries`.
+
+        An entry without a dependency is always satisfied, while one naming a key that is
+        not among `entries` never is. `depends_on_value` requires the dependency to hold
+        that exact value and `depends_on_value_not` requires it not to; with neither, any
+        truthy value satisfies it.
+        """
+        if self.depends_on is None:
+            return True
+        dependency = next((e for e in entries if e.key == self.depends_on), None)
+        if dependency is None:
+            return False
+        if self.depends_on_value is not None:
+            return dependency.value == self.depends_on_value
+        if self.depends_on_value_not is not None:
+            return dependency.value != self.depends_on_value_not
+        return bool(dependency.value)
+
     def parse_value(
         self,
         value: ConfigValueType,
@@ -439,8 +459,11 @@ class Config(DataClassDictMixin):
         """Validate if configuration is valid."""
         # For now we just use the parse method to check for not allowed None values
         # this can be extended later
-        for value in self.values.values():
-            value.parse_value(value.value, allow_none=False)
+        entries = list(self.values.values())
+        for entry in entries:
+            # an entry whose dependency is unmet renders disabled, so there is no way to
+            # give it a value - demanding one would make the config permanently unsavable
+            entry.parse_value(entry.value, allow_none=not entry.dependency_met(entries))
 
 
 @dataclass
