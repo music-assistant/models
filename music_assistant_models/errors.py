@@ -254,3 +254,10 @@ class UnsupportedSystemError(SetupFailedError):
 
     error_code = 26
     translation_key = "unsupported_system"
+
+
+class UserNotFoundError(MusicAssistantError):
+    """Error raised when a referenced user does not exist."""
+
+    error_code = 27
+    translation_key = "user_not_found"
