@@ -360,18 +360,20 @@ class ConfigActionResult(DataClassDictMixin):
     from the handler instead to report that the action failed.
     """
 
-    # message: human-readable outcome to show the user; a client that receives neither a message
-    # nor a url reports a generic success
+    # message: human-readable outcome to show the user, and the English fallback whenever
+    # translation_key is set - a client that receives neither a message nor a url reports a
+    # generic success, so an unresolvable key with no message says nothing at all
     message: str | None = None
+    # open_url: http(s) url the client opens once when it handles this result; a client ignores
+    # any other scheme
+    open_url: str | None = None
     # translation_key: optional bare slug to localize the message; __post_serialize__ derives the
     # config_actions.<slug> group and resolves it owner-first then common (mirrors ProviderError)
     translation_key: str | None = None
     translation_args: list[Any] = field(default_factory=list)
     # translation_owner: owning namespace ("provider.<domain>"/"core.<domain>") consulted before
-    # common; stamped by the server when the result is served
+    # common; stamped by the server when it serves a result that does not already carry one
     translation_owner: str | None = None
-    # open_url: web url the client opens once when it handles this result
-    open_url: str | None = None
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize `message` from translation_key when a resolver is active; strip machinery."""

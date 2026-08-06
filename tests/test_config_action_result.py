@@ -13,7 +13,10 @@ def _resolver_active(catalog: dict[str, str]) -> Iterator[None]:
     """Bind a fake catalog resolver for the duration of the block."""
 
     def resolve(key: str, owner: str | None = None, params: list[Any] | None = None) -> str | None:
-        for candidate in [f"{owner}.{key}", key] if owner else [key]:
+        # mirrors the server resolver: the owner's own namespace first, then common
+        candidates = [f"{owner}.{key}"] if owner else []
+        candidates.append(f"common.{key}")
+        for candidate in candidates:
             if (value := catalog.get(candidate)) is not None:
                 return value.format(*params) if params else value
         return None
@@ -41,16 +44,16 @@ def test_plain_message_is_served_as_is() -> None:
         assert result.to_dict()["message"] == "Certificate verification: VALID"
 
 
-def test_message_localizes_under_config_actions_owner_first() -> None:
-    """A bare key resolves under config_actions.<slug>, owner-first then common."""
+def test_message_localizes_under_config_actions_and_forwards_the_owner() -> None:
+    """A bare key resolves under config_actions.<slug>, with translation_owner passed through."""
     catalog = {
-        "config_actions.clear_cache.result": "De cache is geleegd",
+        "common.config_actions.clear_cache.result": "De cache is geleegd",
         "core.cache.config_actions.clear_cache.result": "De cache van de kern is geleegd",
     }
     common = ConfigActionResult(message="cleared", translation_key="clear_cache.result")
     with _resolver_active(catalog):
         assert common.to_dict()["message"] == "De cache is geleegd"
-    # a module that owns the key resolves its own message before common
+    # the owner reaches the resolver, so a module that defines the key gets its own message
     owned = ConfigActionResult(
         message="cleared",
         translation_key="clear_cache.result",
@@ -76,7 +79,7 @@ def test_translation_args_fill_the_message_placeholders() -> None:
         translation_args=[3],
     )
 
-    with _resolver_active({"config_actions.cleanup.result": "{0} items verwijderd"}):
+    with _resolver_active({"common.config_actions.cleanup.result": "{0} items verwijderd"}):
         assert result.to_dict()["message"] == "3 items verwijderd"
 
 
@@ -109,3 +112,23 @@ def test_open_url_survives_serialization() -> None:
 
     assert payload["open_url"] == "https://example.org/connect"
     assert payload["message"] is None
+
+
+def test_result_roundtrips() -> None:
+    """A result survives a to_dict/from_dict round-trip with its machinery intact."""
+    result = ConfigActionResult(
+        message="cleared",
+        open_url="https://example.org/connect",
+        translation_key="clear_cache.result",
+        translation_args=["1"],
+        translation_owner="core.cache",
+    )
+
+    assert ConfigActionResult.from_dict(result.to_dict()) == result
+
+
+def test_a_stripped_payload_deserializes() -> None:
+    """The client-facing payload (machinery stripped) is still a valid result."""
+    result = ConfigActionResult.from_dict({"message": "Geleegd", "open_url": None})
+
+    assert result == ConfigActionResult(message="Geleegd")
