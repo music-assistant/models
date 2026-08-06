@@ -349,6 +349,48 @@ class ConfigEntry(DataClassDictMixin):
         return tuple(value.split(MULTI_VALUE_SPLITTER, 1))
 
 
+@dataclass(kw_only=True)
+class ConfigActionResult(DataClassDictMixin):
+    """
+    Outcome of a one-shot config action button press.
+
+    Returned by ``handle_config_action`` to report what the action did: a message to show the
+    user and/or a url for the client to open once. It never carries config entries - an action
+    is a one-off side effect, so the config form it was pressed from is left as it is. Raise
+    from the handler instead to report that the action failed.
+    """
+
+    # message: human-readable outcome to show the user; a client that receives neither a message
+    # nor a url reports a generic success
+    message: str | None = None
+    # translation_key: optional bare slug to localize the message; __post_serialize__ derives the
+    # config_actions.<slug> group and resolves it owner-first then common (mirrors ProviderError)
+    translation_key: str | None = None
+    translation_args: list[Any] = field(default_factory=list)
+    # translation_owner: owning namespace ("provider.<domain>"/"core.<domain>") consulted before
+    # common; stamped by the server when the result is served
+    translation_owner: str | None = None
+    # open_url: web url the client opens once when it handles this result
+    open_url: str | None = None
+
+    def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
+        """Localize `message` from translation_key when a resolver is active; strip machinery."""
+        if self.translation_key:
+            params = [str(a) for a in self.translation_args] if self.translation_args else None
+            localized = resolve_translation(
+                f"config_actions.{self.translation_key}",
+                owner=self.translation_owner,
+                params=params,
+            )
+            if localized is not None:
+                d["message"] = localized
+        if translations_active():
+            d.pop("translation_key", None)
+            d.pop("translation_args", None)
+            d.pop("translation_owner", None)
+        return d
+
+
 @dataclass
 class Config(DataClassDictMixin):
     """Base Configuration object."""
