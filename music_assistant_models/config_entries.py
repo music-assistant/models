@@ -287,7 +287,16 @@ class ConfigEntry(DataClassDictMixin):
         allow_none: bool = True,
         raise_on_error: bool = True,
     ) -> ConfigValueType:
-        """Parse value from the config entry details and plain value."""
+        """
+        Coerce a plain value into this entry's value and store it, falling back to the default.
+
+        :param value: The plain value to parse, as submitted or as read from storage.
+        :param allow_none: Whether an entry that ends up without any value is acceptable, used
+            for a required entry the user has no way to fill in (e.g. one rendered disabled
+            behind an unmet `depends_on`).
+        :param raise_on_error: Whether to reject an unusable value instead of silently falling
+            back to the default.
+        """
         if self.type == ConfigEntryType.LABEL:
             value = self.label
         elif self.type in UI_ONLY:
@@ -295,6 +304,14 @@ class ConfigEntry(DataClassDictMixin):
 
         if value is None:
             value = self.default_value
+
+        if value is None:
+            # nothing to work with: the shape checks and the validate callback below all
+            # describe a value the user supplied, so only the required check applies here
+            if self.required and not allow_none and raise_on_error:
+                raise ValueError(f"{self.key} is required")
+            self.value = None
+            return self.value
 
         if isinstance(value, list) and not self.multi_value:
             if raise_on_error:
@@ -315,13 +332,9 @@ class ConfigEntry(DataClassDictMixin):
                 return bool(_value)
             return _value
 
-        if value is None and self.required and not allow_none:
-            if raise_on_error:
-                raise ValueError(f"{self.key} is required")
-            value = self.default_value
-
         # handle optional validation callback
-        if self.validate is not None and not (self.validate(value)):
+        # (value can be None again here when a shape check fell back to an empty default)
+        if value is not None and self.validate is not None and not (self.validate(value)):
             if raise_on_error:
                 raise ValueError(f"{value} is not a valid value for {self.key}")
             value = self.default_value
