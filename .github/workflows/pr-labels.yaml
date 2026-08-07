@@ -58,7 +58,7 @@ jobs:
             const re = /^\s*-\s*\[x\][^`\n]*`([^`]+)`/gim;
             const ticked = [];
             for (const m of body.matchAll(re)) {
-              const name = m[1];
+              const name = m[1].trim();
               if (known.includes(name) && !ticked.includes(name)) {
                 ticked.push(name);
               }
