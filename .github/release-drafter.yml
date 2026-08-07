@@ -28,6 +28,7 @@ categories:
       - "ci"
       - "documentation"
       - "maintenance"
+      - "refactor"
       - "dependencies"
 
 template: |
