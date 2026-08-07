@@ -1,6 +1,7 @@
 """Tests for config entry types, the storage-only setup_data field and dependency gating."""
 
-from typing import Any
+from collections.abc import Callable
+from typing import Any, cast
 
 import pytest
 
@@ -8,6 +9,7 @@ from music_assistant_models.config_entries import (
     UI_ONLY,
     ConfigEntry,
     ConfigEntryTypeMap,
+    ConfigValueType,
     PlayerConfig,
     ProviderConfig,
 )
@@ -156,6 +158,16 @@ def _dependency(value: Any) -> ConfigEntry:
     return ConfigEntry(key="use_proxy", type=ConfigEntryType.STRING, value=value)
 
 
+def _recording(seen: list[ConfigValueType]) -> Callable[[ConfigValueType], bool]:
+    """Build a validation callback that accepts anything and records what it was handed."""
+
+    def _validate(value: ConfigValueType) -> bool:
+        seen.append(value)
+        return True
+
+    return _validate
+
+
 def test_dependency_met_without_depends_on() -> None:
     """Report an entry that names no dependency as satisfied."""
     entry = ConfigEntry(key="token", type=ConfigEntryType.STRING)
@@ -208,3 +220,96 @@ def test_validate_still_enforces_a_required_entry_without_a_dependency() -> None
 
     with pytest.raises(ValueError, match="token is required"):
         conf.validate()
+
+
+def test_an_entry_without_a_value_never_reaches_its_own_callback() -> None:
+    """Keep an entry's validation callback out of the way while it holds no value."""
+    seen: list[ConfigValueType] = []
+    entries = [
+        _switch(on=False),
+        # gated and disabled, so the user cannot fill it in
+        _gated(validate=_recording(seen)),
+        # not gated, but optional and left empty
+        ConfigEntry(
+            key="chime_url",
+            type=ConfigEntryType.STRING,
+            required=False,
+            validate=_recording(seen),
+        ),
+    ]
+
+    ProviderConfig.parse(entries, _provider_raw()).validate()
+
+    assert seen == []
+
+
+def test_validate_accepts_a_gated_entry_whose_callback_assumes_a_value() -> None:
+    """Accept a config holding a disabled entry whose callback would choke on an empty value."""
+    conf = ProviderConfig.parse(
+        [_switch(on=False), _gated(validate=lambda value: cast("str", value).isascii())],
+        _provider_raw(),
+    )
+
+    conf.validate()
+
+    assert conf.values["proxy_url"].value is None
+
+
+def test_validate_accepts_a_gated_multi_value_entry() -> None:
+    """Accept a disabled entry that expects a list, rather than demanding one."""
+    conf = ProviderConfig.parse([_switch(on=False), _gated(multi_value=True)], _provider_raw())
+
+    conf.validate()
+
+    assert conf.values["proxy_url"].value is None
+
+
+def test_validate_demands_a_gated_multi_value_entry_once_its_dependency_is_met() -> None:
+    """Report the same list entry as required as soon as the user can fill it in."""
+    conf = ProviderConfig.parse([_switch(on=True), _gated(multi_value=True)], _provider_raw())
+
+    with pytest.raises(ValueError, match="proxy_url is required"):
+        conf.validate()
+
+
+def test_a_supplied_value_is_still_run_through_the_callback() -> None:
+    """Keep validating a value the user did give."""
+    entry = _gated(validate=lambda value: value == "http://proxy")
+
+    assert entry.parse_value("http://proxy") == "http://proxy"
+
+    with pytest.raises(ValueError, match="is not a valid value for proxy_url"):
+        entry.parse_value("http://elsewhere")
+
+
+def test_a_supplied_value_still_has_to_match_the_entry_shape() -> None:
+    """Keep rejecting a value whose shape does not match the entry."""
+    with pytest.raises(ValueError, match="value for proxy_url must be a list"):
+        _gated(multi_value=True).parse_value("http://proxy")
+
+    with pytest.raises(ValueError, match="proxy_url must be a single value"):
+        _gated().parse_value(["http://proxy", "http://elsewhere"])
+
+
+def test_a_value_of_the_wrong_shape_does_not_reach_the_callback() -> None:
+    """Keep the callback out of the way when a value of the wrong shape is dropped."""
+    seen: list[ConfigValueType] = []
+    entry = ConfigEntry(
+        key="proxy_url", type=ConfigEntryType.STRING, required=False, validate=_recording(seen)
+    )
+
+    assert entry.parse_value(["http://proxy"], raise_on_error=False) is None
+    assert seen == []
+
+
+def test_a_falsy_value_still_counts_as_a_value() -> None:
+    """Treat False and an empty string as values the user gave, not as an empty entry."""
+    seen: list[ConfigValueType] = []
+    switch = ConfigEntry(
+        key="use_proxy", type=ConfigEntryType.BOOLEAN, required=True, validate=_recording(seen)
+    )
+
+    assert switch.parse_value(value=False, allow_none=False) is False
+    assert seen == [False]
+
+    assert _gated().parse_value("", allow_none=False) == ""
