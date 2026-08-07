@@ -168,7 +168,8 @@ class ConfigEntry(DataClassDictMixin):
         default=None, metadata=field_options(serialize="omit"), repr=False
     )
 
-    # validate: an optional custom validation callback (author-provided)
+    # validate: an optional custom validation callback (author-provided), only ever called
+    # with a value the entry actually holds - never to check whether it holds one at all
     validate: Callable[[ConfigValueType], bool] | None = field(
         default=None,
         compare=False,
@@ -307,7 +308,7 @@ class ConfigEntry(DataClassDictMixin):
 
         if value is None:
             # nothing to work with: the shape checks and the validate callback below all
-            # describe a value the user supplied, so only the required check applies here
+            # describe a value that was actually given, so only the required check applies
             if self.required and not allow_none and raise_on_error:
                 raise ValueError(f"{self.key} is required")
             self.value = None
