@@ -13,15 +13,15 @@ fi
 my_path=$(git rev-parse --show-toplevel)
 
 # A git worktree usually has no virtualenv of its own, so search the main checkout as well.
-# Its git dir is the common dir, which for a worktree differs from that worktree's own git dir.
+# A worktree's git dir differs from the common git dir, which lives in the main checkout.
 git_dir=$(git rev-parse --path-format=absolute --git-dir 2>/dev/null || true)
 common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
-main_path=""
+main_root=""
 if [ -n "$common_dir" ] && [ "$git_dir" != "$common_dir" ]; then
-  main_path=$(dirname "$common_dir")
+  main_root=$(dirname "$common_dir")
 fi
 
-for root in "$my_path" ${main_path:+"$main_path"}; do
+for root in "$my_path" ${main_root:+"$main_root"}; do
   for venv in venv .venv .; do
     if [ -f "${root}/${venv}/bin/activate" ]; then
       . "${root}/${venv}/bin/activate"
