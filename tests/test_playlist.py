@@ -4,8 +4,8 @@ from music_assistant_models.enums import MediaType
 from music_assistant_models.media_items import Playlist, media_from_dict
 
 
-def _playlist_dict(supported_mediatypes: list[str]) -> dict:
-    return {
+def _playlist_dict(supported_mediatypes: list[str] | None = None) -> dict:
+    playlist: dict = {
         "item_id": "1",
         "provider": "library",
         "name": "Summer",
@@ -17,13 +17,15 @@ def _playlist_dict(supported_mediatypes: list[str]) -> dict:
                 "provider_instance": "builtin--1",
             }
         ],
-        "supported_mediatypes": supported_mediatypes,
     }
+    if supported_mediatypes is not None:
+        playlist["supported_mediatypes"] = supported_mediatypes
+    return playlist
 
 
 def test_supported_mediatypes_defaults_to_tracks() -> None:
     """A playlist holds tracks unless it says otherwise."""
-    playlist = media_from_dict(_playlist_dict(["track"]))
+    playlist = media_from_dict(_playlist_dict())
 
     assert isinstance(playlist, Playlist)
     assert playlist.supported_mediatypes == {MediaType.TRACK}

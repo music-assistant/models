@@ -402,9 +402,10 @@ class Playlist(_LocalizableTitle, MediaItem):
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
         super().__post_init__()
-        # Media types we have no concept of are dropped instead of rejected: a newer
-        # server may send a type that was added after this version, which must never
-        # make the playlist (and with it, the entire listing) fail to parse.
+        # Media types that cannot be in a playlist are dropped instead of rejected. That
+        # covers types added after this version, which deserialize to UNKNOWN here: a
+        # newer server must never make the playlist fail to parse, as that takes the
+        # entire listing down with it.
         self.supported_mediatypes &= PLAYLIST_SUPPORTED_MEDIATYPES
         if not self.supported_mediatypes:
             self.supported_mediatypes = {MediaType.TRACK}
