@@ -50,7 +50,6 @@ def test_audio_processing_defaults() -> None:
         "input_gain": 0.0,
         "filters": [],
         "output_gain": 0.0,
-        "output_limiter": False,
         "preset_id": None,
     }
     assert AudioOutputDetails().to_dict() == {
@@ -60,7 +59,6 @@ def test_audio_processing_defaults() -> None:
             "input_gain": 0.0,
             "filters": [],
             "output_gain": 0.0,
-            "output_limiter": False,
             "preset_id": None,
         },
         "source_channel": None,
@@ -117,7 +115,6 @@ def test_audio_processing_roundtrip() -> None:
         "input_gain",
         "filters",
         "output_gain",
-        "output_limiter",
         "preset_id",
     }
     assert output["dsp"]["preset_id"] == "preset-1"
@@ -132,7 +129,6 @@ def test_audio_dsp_details_legacy_payload() -> None:
         "input_gain": -1.0,
         "filters": [],
         "output_gain": -0.5,
-        "output_limiter": True,
     }
 
     details = AudioDSPDetails.from_dict(payload)
@@ -142,7 +138,6 @@ def test_audio_dsp_details_legacy_payload() -> None:
         state=DSPState.ENABLED,
         input_gain=-1.0,
         output_gain=-0.5,
-        output_limiter=True,
     )
 
 
@@ -256,7 +251,6 @@ def _full_chain() -> AudioProcessingChain:
                         )
                     ],
                     output_gain=-0.5,
-                    output_limiter=True,
                     preset_id="preset-1",
                 ),
                 source_channel=AudioChannel.FL,
