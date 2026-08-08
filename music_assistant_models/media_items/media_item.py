@@ -32,6 +32,17 @@ from music_assistant_models.unique_list import UniqueList
 from .metadata import AudioMetadata, MediaItemImage, MediaItemMetadata
 from .provider_mapping import ProviderMapping
 
+# The media types a playlist is allowed to hold.
+PLAYLIST_SUPPORTED_MEDIATYPES = frozenset(
+    {
+        MediaType.AUDIOBOOK,
+        MediaType.PODCAST_EPISODE,
+        MediaType.RADIO,
+        MediaType.SOUND_EFFECT,
+        MediaType.TRACK,
+    }
+)
+
 
 @dataclass(kw_only=True)
 class _MediaItemBase(DataClassDictMixin):
@@ -384,22 +395,20 @@ class Playlist(_LocalizableTitle, MediaItem):
     # Examples: Apple Music Artist Stations, Deezer Flow.
     is_dynamic: bool = False
 
-    # The playlist may support only a single, or a mix of multiple media types. Allowed entries:
-    # MediaType.AUDIOBOOK, MediaType.PODCAST_EPISODE, MediaType.RADIO, MediaType.TRACK
+    # The playlist may support only a single, or a mix of multiple media types,
+    # limited to the entries in PLAYLIST_SUPPORTED_MEDIATYPES.
     supported_mediatypes: set[MediaType] = field(default_factory=lambda: {MediaType.TRACK})
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
         super().__post_init__()
-        _supported = {
-            MediaType.AUDIOBOOK,
-            MediaType.PODCAST_EPISODE,
-            MediaType.RADIO,
-            MediaType.SOUND_EFFECT,
-            MediaType.TRACK,
-        }
-        if len(self.supported_mediatypes.difference(_supported)) > 0:
-            raise TypeError(f"Playlists are only supported for {_supported}.")
+        # Media types that cannot be in a playlist are dropped instead of rejected. That
+        # covers types added after this version, which deserialize to UNKNOWN here: a
+        # newer server must never make the playlist fail to parse, as that takes the
+        # entire listing down with it.
+        self.supported_mediatypes &= PLAYLIST_SUPPORTED_MEDIATYPES
+        if not self.supported_mediatypes:
+            self.supported_mediatypes = {MediaType.TRACK}
 
 
 @dataclass(kw_only=True)
