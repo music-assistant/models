@@ -8,7 +8,7 @@ from typing import Any, TypeGuard
 
 from mashumaro import DataClassDictMixin
 
-from music_assistant_models.enums import MediaType
+from music_assistant_models.enums import MediaType, ProviderSearchStatus
 from music_assistant_models.errors import InvalidDataError
 from music_assistant_models.unique_list import UniqueList
 
@@ -121,6 +121,9 @@ class SearchResults(DataClassDictMixin):
     audiobooks: Sequence[Audiobook | ItemMapping] = field(default_factory=list)
     podcasts: Sequence[Podcast | ItemMapping] = field(default_factory=list)
     sound_effects: Sequence[SoundEffect | ItemMapping] = field(default_factory=list)
+    # per-provider search status, keyed by provider instance_id (special key "library"
+    # for the library search); empty when the server does not report statuses
+    provider_search_statuses: dict[str, ProviderSearchStatus] = field(default_factory=dict)
 
 
 def media_from_dict(media_item: dict[str, Any]) -> MediaItemType | ItemMapping:
