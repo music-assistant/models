@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from mashumaro import DataClassDictMixin
+
 from .enums import MediaType, SortDirection, SortField
 
 
@@ -21,6 +23,20 @@ class SortFieldDefinition:
     field: SortField
     supports_direction: bool
     default_direction: SortDirection | None = None
+    label_key: str | None = None
+
+
+@dataclass
+class SortOptionInfo(DataClassDictMixin):
+    """
+    Sort option information returned by the API.
+
+    Used by clients to build UI for sorting controls.
+    """
+
+    field: str
+    supports_direction: bool
+    default_direction: str | None = None
     label_key: str | None = None
 
 
@@ -180,3 +196,25 @@ MEDIA_TYPE_SORT_FIELDS: dict[MediaType, set[SortField]] = {
         SortField.RANDOM,
     },
 }
+
+
+def get_sort_options_for_media_type(media_type: MediaType) -> list[SortOptionInfo]:
+    """
+    Get available sort options for a media type.
+
+    Returns list of SortOptionInfo ready for API response.
+    """
+    available_fields = MEDIA_TYPE_SORT_FIELDS.get(media_type, set())
+
+    return [
+        SortOptionInfo(
+            field=definition.field.value,
+            supports_direction=definition.supports_direction,
+            default_direction=definition.default_direction.value
+            if definition.default_direction
+            else None,
+            label_key=definition.label_key,
+        )
+        for field in available_fields
+        if (definition := SORT_FIELD_DEFINITIONS.get(field))
+    ]
