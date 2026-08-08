@@ -786,3 +786,27 @@ class CoreState(StrEnum):
     RUNNING = "running"
     STOPPING = "stopping"
     STOPPED = "stopped"
+
+
+class SortField(StrEnum):
+    """Sort fields available for library listings."""
+
+    NAME = "name"
+    SORT_NAME = "sort_name"
+    TIMESTAMP_ADDED = "timestamp_added"
+    TIMESTAMP_MODIFIED = "timestamp_modified"
+    LAST_PLAYED = "last_played"
+    PLAY_COUNT = "play_count"
+    DURATION = "duration"
+    YEAR = "year"
+    POSITION = "position"
+    ARTIST_NAME = "artist_name"
+    RANDOM = "random"
+    RANDOM_PLAY_COUNT = "random_play_count"
+
+
+class SortDirection(StrEnum):
+    """Sort direction."""
+
+    ASC = "asc"
+    DESC = "desc"
