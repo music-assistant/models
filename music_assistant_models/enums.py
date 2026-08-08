@@ -970,3 +970,27 @@ class ProviderStatus(StrEnum):
     INCOMPATIBLE = "incompatible"
     # error: setup failed for any other reason (see the provider's last_error)
     ERROR = "error"
+
+
+class SortField(StrEnum):
+    """Sort fields available for media listings."""
+
+    NAME = "name"
+    SORT_NAME = "sort_name"
+    TIMESTAMP_ADDED = "timestamp_added"
+    TIMESTAMP_MODIFIED = "timestamp_modified"
+    LAST_PLAYED = "last_played"
+    PLAY_COUNT = "play_count"
+    DURATION = "duration"
+    YEAR = "year"
+    POSITION = "position"
+    ARTIST_NAME = "artist_name"
+    RANDOM = "random"
+    RANDOM_PLAY_COUNT = "random_play_count"
+
+
+class SortDirection(StrEnum):
+    """Sort direction."""
+
+    ASC = "asc"
+    DESC = "desc"
