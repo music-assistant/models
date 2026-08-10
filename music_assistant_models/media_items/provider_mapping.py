@@ -49,7 +49,7 @@ class ProviderMapping(DataClassDictMixin):
         # prefer in_library items for better instance-steering
         base_score = 1 if self.in_library else 0
         # prefer local file based providers
-        if self.provider_domain in ("filesystem_local", "filesystem_smb"):
+        if self.provider_domain in ("filesystem_local", "filesystem_smb", "filesystem_nfs"):
             return base_score + 2
         if not (local_provs := get_global_cache_value("non_streaming_providers")):
             # this is probably the client
