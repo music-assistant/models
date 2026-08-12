@@ -603,3 +603,46 @@ jobs:
 
           labels: |
             dependencies
+
+      - name: Close superseded bump PRs
+        if: steps.create_pr.outputs.pull-request-number
+        run: |
+          set -euo pipefail
+
+          # The prefix must match the `branch` input of the step above.
+          OPEN_BUMPS=$(
+            gh pr list \
+              --repo music-assistant/client \
+              --state open \
+              --limit 100 \
+              --json number,headRefName \
+              --jq '.[]
+                | select(.headRefName | startswith("auto-update-models-"))
+                | [.number, (.headRefName | ltrimstr("auto-update-models-"))]
+                | @tsv'
+          )
+
+          if [[ -z "$OPEN_BUMPS" ]]; then
+            exit 0
+          fi
+
+          while IFS=$'\t' read -r NUMBER BUMP_VERSION; do
+            if [[ "$NUMBER" == "$NEW_PR" ]]; then
+              continue
+            fi
+
+            # Keep bumps to a newer version so an out-of-order release cannot close them.
+            OLDEST=$(printf "%s\n%s\n" "$BUMP_VERSION" "$VERSION" | sort -V | head -n1)
+            if [[ "$OLDEST" != "$BUMP_VERSION" ]]; then
+              continue
+            fi
+
+            gh pr close "$NUMBER" \
+              --repo music-assistant/client \
+              --delete-branch \
+              --comment "Superseded by #${NEW_PR}, which updates music-assistant-models to ${VERSION}."
+          done <<< "$OPEN_BUMPS"
+        env:
+          GH_TOKEN: ${{ steps.app_token.outputs.token }}
+          NEW_PR: ${{ steps.create_pr.outputs.pull-request-number }}
+          VERSION: ${{ inputs.version }}
