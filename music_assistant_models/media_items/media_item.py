@@ -420,6 +420,8 @@ class Radio(_LocalizableTitle, MediaItem):
 
     media_type: MediaType = MediaType.RADIO
     duration: int | None = None
+    # When True, tracks come from get_dynamic_radio_tracks instead of a live stream.
+    is_dynamic: bool = False
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Adjust dict object after it has been serialized."""
