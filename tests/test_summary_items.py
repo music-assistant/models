@@ -132,6 +132,22 @@ def test_radio_summary_duration_backcompat() -> None:
     assert radio.to_dict()["duration"] == 0
 
 
+def test_radio_is_dynamic_roundtrip() -> None:
+    """A dynamic station keeps its is_dynamic flag across serialization."""
+    radio = Radio(
+        item_id="1", provider="pandora", name="radio", provider_mappings=set(), is_dynamic=True
+    )
+    assert Radio.from_dict(radio.to_dict()).is_dynamic is True
+    summary = RadioSummary(item_id="1", provider="library", name="radio", is_dynamic=True)
+    assert Radio.from_dict(summary.to_dict()).is_dynamic is True
+
+
+def test_radio_defaults_to_a_live_stream() -> None:
+    """A station without the flag deserializes as a regular (live) radio station."""
+    payload = {"item_id": "1", "provider": "tunein", "name": "radio", "provider_mappings": []}
+    assert Radio.from_dict(payload).is_dynamic is False
+
+
 def test_per_type_summaries_serialize_sparse() -> None:
     """Every summary type serializes without None-valued keys."""
     items = [
