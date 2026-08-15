@@ -6,11 +6,11 @@ from .statistics import DailyStats, ListeningSummary, TopItem, TopItemResult
 
 __all__ = [
     "BackgroundTask",
+    "DailyStats",
+    "ListeningSummary",
     "TaskSchedule",
     "TaskScheduleType",
     "TaskStatus",
-    "DailyStats",
-    "ListeningSummary",
     "TopItem",
     "TopItemResult",
 ]

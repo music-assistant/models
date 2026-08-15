@@ -3,14 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from music_assistant_models.media_items import ItemMapping
-
-if TYPE_CHECKING:
-    from music_assistant_models.media_items import MediaItemType
 
 
 @dataclass(kw_only=True)
