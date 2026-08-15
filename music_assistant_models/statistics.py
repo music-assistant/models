@@ -57,3 +57,36 @@ class ListeningSummary(DataClassORJSONMixin):
     unique_albums: int
     unique_artists: int
     top_genre: str | None = None
+
+
+@dataclass(kw_only=True)
+class DistributionItem(DataClassORJSONMixin):
+    """A single item in a distribution chart (e.g., genre or artist distribution)."""
+
+    name: str
+    value: int
+
+
+@dataclass(kw_only=True)
+class TimeSeriesPoint(DataClassORJSONMixin):
+    """A single point in a time series chart."""
+
+    timestamp: str  # ISO 8601 date string
+    value: int
+
+
+@dataclass(kw_only=True)
+class HeatmapPoint(DataClassORJSONMixin):
+    """A single point in a heatmap (e.g., listening activity by hour and weekday)."""
+
+    hour: int  # 0-23
+    weekday: int  # 0-6 (Monday=0)
+    value: int
+
+
+@dataclass(kw_only=True)
+class ListeningTimeItem(DataClassORJSONMixin):
+    """An item with total listening time (e.g., artist or genre listening time)."""
+
+    name: str
+    minutes: float
