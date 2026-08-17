@@ -17,6 +17,7 @@ def test_recommendation_folder_descriptor_defaults() -> None:
     assert folder.enabled_by_default is True
     assert folder.type is RecommendationFolderType.DEFAULT
     assert folder.is_playable is False
+    assert folder.supports_provider_filter is False
     assert list(folder.items) == []  # the rows response omits items
     assert folder.uri is not None
 
@@ -33,3 +34,37 @@ def test_recommendation_folder_enabled_by_default_roundtrip() -> None:
     assert data["enabled_by_default"] is False
     restored = RecommendationFolder.from_dict(data)
     assert restored.enabled_by_default is False
+
+
+def test_recommendation_folder_supports_provider_filter_roundtrip() -> None:
+    """supports_provider_filter defaults to False and roundtrips when explicitly True."""
+    folder = RecommendationFolder(
+        item_id="random_albums",
+        provider="library",
+        name="Random albums",
+    )
+    assert folder.supports_provider_filter is False
+
+    folder = RecommendationFolder(
+        item_id="random_albums",
+        provider="library",
+        name="Random albums",
+        supports_provider_filter=True,
+    )
+    data = folder.to_dict()
+    assert data["supports_provider_filter"] is True
+    restored = RecommendationFolder.from_dict(data)
+    assert restored.supports_provider_filter is True
+
+
+def test_recommendation_folder_supports_provider_filter_backwards_compatible() -> None:
+    """Payloads without supports_provider_filter still deserialize, defaulting to False."""
+    folder = RecommendationFolder(
+        item_id="random_albums",
+        provider="library",
+        name="Random albums",
+    )
+    data = folder.to_dict()
+    del data["supports_provider_filter"]
+    restored = RecommendationFolder.from_dict(data)
+    assert restored.supports_provider_filter is False
