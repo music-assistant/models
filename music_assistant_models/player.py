@@ -122,6 +122,11 @@ class PlayerMedia(DataClassDictMixin):
     source_id: str | None = None  # optional (ID of the source, may be a queue id)
     queue_item_id: str | None = None  # only present for requests from queue controller
     custom_data: dict[str, Any] | None = None  # optional - must be serializable
+    # queue_session_id: playback session that owns this media, used to build and validate
+    # the stream URL. Server-internal, so it must never reach a client. Not serialized.
+    queue_session_id: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
 
     # optional - elapsed playback time of the currently playing media
     elapsed_time: int | None = None
