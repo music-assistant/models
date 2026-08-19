@@ -57,6 +57,16 @@ def test_decoded_audio_format_is_not_serialized() -> None:
     assert "decoded_audio_format" not in sd.to_dict()
 
 
+def test_is_realtime_defaults_to_false() -> None:
+    """is_realtime defaults to False, so a source is read ahead unless it says otherwise."""
+    assert _make_streamdetails().is_realtime is False
+
+
+def test_is_realtime_is_not_serialized() -> None:
+    """is_realtime is server-internal and must not be sent to clients."""
+    assert "is_realtime" not in _make_streamdetails(is_realtime=True).to_dict()
+
+
 def test_legacy_dsp_is_not_serialized() -> None:
     """Legacy DSP details are not included in stream details."""
     assert "dsp" not in _make_streamdetails().to_dict()
