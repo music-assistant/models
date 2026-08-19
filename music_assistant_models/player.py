@@ -386,6 +386,11 @@ class Player(DataClassDictMixin):
     # hide_in_ui: if the player should be hidden in the UI
     hide_in_ui: bool = False
 
+    # private: if the player must not be offered to other clients as a playback
+    # or grouping target, because it belongs to a single device (a web/app client)
+    # or is an internal anchor. Not user configurable, unlike hide_in_ui.
+    private: bool = False
+
     # expose_to_ha: if the player should be exposed to Home Assistant
     # if set to False, the player will not be added to the HA integration
     expose_to_ha: bool = True

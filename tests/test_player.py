@@ -1,4 +1,4 @@
-"""Tests for the PlayerMedia model."""
+"""Tests for the Player and PlayerMedia models (serialization/back-compat)."""
 
 from music_assistant_models.enums import MediaType, PlayerType
 from music_assistant_models.player import DeviceInfo, Player, PlayerMedia
@@ -6,6 +6,17 @@ from music_assistant_models.player import DeviceInfo, Player, PlayerMedia
 
 def _media() -> PlayerMedia:
     return PlayerMedia(uri="library://track/1", media_type=MediaType.TRACK, duration=300)
+
+
+def _player() -> Player:
+    return Player(
+        player_id="test_player",
+        provider="test_provider",
+        type=PlayerType.PLAYER,
+        name="Test Player",
+        available=True,
+        device_info=DeviceInfo(),
+    )
 
 
 def test_stream_duration_defaults_to_none() -> None:
@@ -40,14 +51,7 @@ def test_queue_session_id_is_not_serialized_on_a_player() -> None:
     """Players are what clients actually read, so the nested payload must be clean too."""
     media = _media()
     media.queue_session_id = "abcd1234"
-    player = Player(
-        player_id="p1",
-        provider="test",
-        type=PlayerType.PLAYER,
-        name="Test",
-        available=True,
-        device_info=DeviceInfo(),
-    )
+    player = _player()
     player.current_media = media
     assert "queue_session_id" not in player.to_dict()["current_media"]
 
@@ -57,3 +61,22 @@ def test_queue_session_id_is_kept_out_of_repr() -> None:
     media = _media()
     media.queue_session_id = "abcd1234"
     assert "abcd1234" not in repr(media)
+
+
+def test_private_defaults_to_false() -> None:
+    """A player is only private when its provider marks it as such."""
+    assert _player().private is False
+
+
+def test_private_serialize_roundtrip() -> None:
+    """A private player keeps the flag across serialization."""
+    player = _player()
+    player.private = True
+    assert Player.from_dict(player.to_dict()).private is True
+
+
+def test_payload_without_private_key_deserializes() -> None:
+    """Payloads from older servers without the private key still deserialize."""
+    legacy = _player().to_dict()
+    legacy.pop("private", None)
+    assert Player.from_dict(legacy).private is False
