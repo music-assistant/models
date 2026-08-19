@@ -169,6 +169,18 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
 
+    # is_realtime: bool to indicate that the source hands over its audio just-in-time,
+    # at (about) playback pace, instead of delivering it as fast as the connection allows.
+    # Radio streams and live audio sources are always realtime; a music provider should
+    # set this when its audio arrives from a paced source such as a local daemon.
+    # The server skips optimizations that assume a source can be read ahead of playback.
+    is_realtime: bool = field(
+        default=False,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
     # expiration: time in seconds until the streamdetails expire
     expiration: int = field(
         default=600,  # 10 minutes
