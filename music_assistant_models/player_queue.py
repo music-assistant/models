@@ -80,6 +80,11 @@ class PlayerQueue(DataClassDictMixin):
     # True when the queue is in dynamic mode (one or more dynamic sources); set by the server.
     # Implies autoplay and smart shuffle are active.
     is_dynamic: bool = False
+    # queue_owner: set to the owning AudioSource's uri while queue commands are delegated
+    # to an external session (the source declares queue_capabilities); None = MA owns the
+    # queue (default). Read-only, set by the server; clients use it to render mirrored
+    # items read-only and hide controls the external session handles natively.
+    queue_owner: str | None = None
 
     # extra_attributes: additional attributes for this player_queue to store/forward
     # additional data that is not part of the standard model

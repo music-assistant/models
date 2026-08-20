@@ -74,6 +74,9 @@ class SourceControl(StrEnum):
     NEXT = "next"
     PREVIOUS = "previous"
     SEEK = "seek"
+    STOP = "stop"
+    SHUFFLE = "shuffle"
+    REPEAT = "repeat"
     UNKNOWN = "unknown"
 
     @classmethod
