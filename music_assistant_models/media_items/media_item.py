@@ -536,7 +536,7 @@ class SoundEffect(_LocalizableName, MediaItem):
     media_type: MediaType = MediaType.SOUND_EFFECT
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SourceQueueCapabilities(DataClassDictMixin):
     """
     Queue commands a live AudioSource can handle natively (session-side).
