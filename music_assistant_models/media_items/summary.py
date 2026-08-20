@@ -145,6 +145,10 @@ class PodcastSummary(_SummaryBase, Podcast):
 class GenreSummary(_SummaryBase, Genre):
     """Summary variant of Genre, used for listings."""
 
+    # number of mapped aliases, carried instead of the full genre_aliases list to keep
+    # listings slim; the genre's own name (stored inside genre_aliases) is not counted
+    genre_alias_count: int | None = None
+
 
 MediaItemSummaryType = (
     ArtistSummary
