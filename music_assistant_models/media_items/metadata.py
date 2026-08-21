@@ -116,6 +116,16 @@ class MediaItemChapter(DataClassDictMixin):
 
 
 @dataclass(frozen=True, kw_only=True)
+class MediaItemTranscriptCue(DataClassDictMixin):
+    """Model for a single timed cue of a MediaItem's transcript."""
+
+    start: float  # start position in seconds
+    end: float | None = None  # end position in seconds if known
+    text: str  # spoken text of this cue
+    speaker: str | None = None  # speaker name/label if the source identifies one
+
+
+@dataclass(frozen=True, kw_only=True)
 class MediaItemCollection(DataClassDictMixin):
     """
     Model for a MediaItem's collection.
@@ -183,6 +193,12 @@ class MediaItemMetadata(DataClassDictMixin):
     copyright: str | None = None
     lyrics: str | None = None  # tracks only
     lrc_lyrics: str | None = None  # tracks only
+    # transcript of the spoken content, most commonly used for podcast episodes
+    transcript: str | None = None
+    # transcript split into timed cues, sorted by start position
+    transcript_cues: list[MediaItemTranscriptCue] | None = None
+    # whether a transcript is available, set to None if the provider cannot tell
+    has_transcript: bool | None = None
     label: str | None = None
     links: set[MediaItemLink] | None = None
     performers: set[str] | None = None

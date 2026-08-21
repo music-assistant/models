@@ -42,6 +42,7 @@ from .metadata import (
     MediaItemLink,
     MediaItemMetadata,
     MediaItemPalette,
+    MediaItemTranscriptCue,
 )
 from .provider_mapping import ProviderMapping
 from .summary import (
@@ -85,6 +86,7 @@ __all__ = [
     "MediaItemMetadataSummary",
     "MediaItemPalette",
     "MediaItemSummaryType",
+    "MediaItemTranscriptCue",
     "MediaItemType",
     "Metadata",
     "MetadataProvider",
