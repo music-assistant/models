@@ -91,6 +91,7 @@ def test_player_source_ordering_defaults() -> None:
     # must not read as "shuffle off"
     assert source.shuffle_enabled is None
     assert source.repeat_mode is None
+    assert source.native_crossfade is None
 
 
 def test_player_source_ordering_roundtrip() -> None:
@@ -102,20 +103,42 @@ def test_player_source_ordering_roundtrip() -> None:
         can_repeat=True,
         shuffle_enabled=True,
         repeat_mode=RepeatMode.ALL,
+        native_crossfade=True,
     )
     data = original.to_dict()
     restored = PlayerSource.from_dict(data)
     assert restored.to_dict() == data
     assert restored.shuffle_enabled is True
     assert restored.repeat_mode is RepeatMode.ALL
+    assert restored.native_crossfade is True
 
 
 def test_player_source_payload_without_ordering_keys() -> None:
     """Payloads from servers predating the ordering fields still deserialize."""
     data = PlayerSource(id="line-in", name="Line In").to_dict()
-    for key in ("can_shuffle", "can_repeat", "shuffle_enabled", "repeat_mode"):
+    for key in (
+        "can_shuffle",
+        "can_repeat",
+        "shuffle_enabled",
+        "repeat_mode",
+        "native_crossfade",
+    ):
         data.pop(key, None)
     restored = PlayerSource.from_dict(data)
     assert restored.can_shuffle is False
     assert restored.shuffle_enabled is None
     assert restored.repeat_mode is None
+    assert restored.native_crossfade is None
+
+
+def test_player_source_known_off_is_not_unknown() -> None:
+    """A source reporting crossfade off is distinct from one that cannot say."""
+    known_off = PlayerSource(id="spotify", name="Spotify", native_crossfade=False)
+    cannot_say = PlayerSource(id="line-in", name="Line In")
+
+    # a client renders "off" for the first and nothing for the second, so these
+    # must survive the wire as different values rather than collapsing to falsy
+    assert known_off.native_crossfade is False
+    assert cannot_say.native_crossfade is None
+    assert PlayerSource.from_dict(known_off.to_dict()).native_crossfade is False
+    assert PlayerSource.from_dict(cannot_say.to_dict()).native_crossfade is None
