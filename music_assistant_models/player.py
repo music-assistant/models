@@ -10,7 +10,14 @@ from typing import Any
 from mashumaro import DataClassDictMixin, field_options
 
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
-from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
+from .enums import (
+    IdentifierType,
+    MediaType,
+    PlaybackState,
+    PlayerFeature,
+    PlayerType,
+    RepeatMode,
+)
 from .media_items import MediaItemPalette
 from .translations import resolve_translation, translations_active
 from .unique_list import UniqueList
@@ -154,6 +161,13 @@ class PlayerSource(DataClassDictMixin):
     can_seek: bool = False
     # can_next_previous: this source can be skipped to next/previous item
     can_next_previous: bool = False
+    # can_shuffle/can_repeat: this source orders its own content, so the
+    # commands below reach the session producing the audio
+    can_shuffle: bool = False
+    can_repeat: bool = False
+    # the ordering the source reports for itself; None = it has not said
+    shuffle_enabled: bool | None = None
+    repeat_mode: RepeatMode | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""

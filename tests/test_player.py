@@ -1,7 +1,7 @@
 """Tests for the Player and PlayerMedia models (serialization/back-compat)."""
 
-from music_assistant_models.enums import MediaType, PlayerType
-from music_assistant_models.player import DeviceInfo, Player, PlayerMedia
+from music_assistant_models.enums import MediaType, PlayerType, RepeatMode
+from music_assistant_models.player import DeviceInfo, Player, PlayerMedia, PlayerSource
 
 
 def _media() -> PlayerMedia:
@@ -80,3 +80,42 @@ def test_payload_without_private_key_deserializes() -> None:
     legacy = _player().to_dict()
     legacy.pop("private", None)
     assert Player.from_dict(legacy).private is False
+
+
+def test_player_source_ordering_defaults() -> None:
+    """A source orders nothing and reports no ordering state until it says so."""
+    source = PlayerSource(id="airplay", name="AirPlay")
+    assert source.can_shuffle is False
+    assert source.can_repeat is False
+    # None rather than a default: an ordering source that has not reported yet
+    # must not read as "shuffle off"
+    assert source.shuffle_enabled is None
+    assert source.repeat_mode is None
+
+
+def test_player_source_ordering_roundtrip() -> None:
+    """The ordering capability and reported state survive a round-trip."""
+    original = PlayerSource(
+        id="spotify://audio_source/main",
+        name="Spotify Connect",
+        can_shuffle=True,
+        can_repeat=True,
+        shuffle_enabled=True,
+        repeat_mode=RepeatMode.ALL,
+    )
+    data = original.to_dict()
+    restored = PlayerSource.from_dict(data)
+    assert restored.to_dict() == data
+    assert restored.shuffle_enabled is True
+    assert restored.repeat_mode is RepeatMode.ALL
+
+
+def test_player_source_payload_without_ordering_keys() -> None:
+    """Payloads from servers predating the ordering fields still deserialize."""
+    data = PlayerSource(id="line-in", name="Line In").to_dict()
+    for key in ("can_shuffle", "can_repeat", "shuffle_enabled", "repeat_mode"):
+        data.pop(key, None)
+    restored = PlayerSource.from_dict(data)
+    assert restored.can_shuffle is False
+    assert restored.shuffle_enabled is None
+    assert restored.repeat_mode is None
