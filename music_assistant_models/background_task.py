@@ -166,6 +166,8 @@ class BackgroundTask(DataClassDictMixin):
     allow_retry: bool = False
     # Whether queued/running work can be interrupted from the UI.
     allow_cancel: bool = True
+    # Human-readable Markdown produced by the task for trusted Music Assistant clients to render.
+    report: str | None = None
     # translation_owner: namespace ("provider.<domain>"/"core.<domain>") the task's
     # translation_key resolves under; stamped by the tasks controller. Not serialized.
     translation_owner: str | None = field(
