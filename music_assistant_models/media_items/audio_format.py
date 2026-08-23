@@ -62,10 +62,16 @@ class AudioFormat(DataClassDictMixin):
         return int(self.sample_rate * (self.bit_depth / 8) * self.channels)
 
     def __eq__(self, other: object) -> bool:
-        """Check equality of two items."""
+        """
+        Check equality on content type, sample rate, bit depth and channel count.
+
+        The other fields take no part: ``codec_type`` and ``bit_rate`` are filled in
+        while ffmpeg probes the stream, and ``output_format_str`` describes how the
+        audio is rendered rather than what it is.
+        """
         if not isinstance(other, AudioFormat):
             return False
-        return str(self) == str(other)
+        return self._identity == other._identity
 
     def __str__(self) -> str:
         """Return string representation."""
@@ -75,7 +81,7 @@ class AudioFormat(DataClassDictMixin):
 
     def __hash__(self) -> int:
         """Return custom hash."""
-        return hash(self.__str__())
+        return hash(self._identity)
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
         """Execute action(s) on serialization."""
@@ -83,3 +89,10 @@ class AudioFormat(DataClassDictMixin):
         # TODO: remove this after release of MA 2.5
         d["bit_rate"] = d["bit_rate"] or 0
         return d
+
+    @property
+    def _identity(self) -> tuple[ContentType, int, int, int]:
+        """Return the fields that determine what the audio actually is."""
+        # content_type carries the sample encoding: s32le and f32le share a bit depth
+        # but not a byte layout, so the numeric fields alone cannot tell them apart.
+        return (self.content_type, self.sample_rate, self.bit_depth, self.channels)
