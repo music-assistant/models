@@ -1,5 +1,7 @@
 """Tests for the AudioFormat model."""
 
+from unittest.mock import ANY
+
 from music_assistant_models.enums import ContentType
 from music_assistant_models.media_items import AudioFormat
 
@@ -70,5 +72,7 @@ def test_a_serialization_round_trip_stays_equal() -> None:
 
 
 def test_not_equal_to_other_types() -> None:
-    """Comparing against a non-AudioFormat returns False rather than raising."""
-    assert _pcm(ContentType.PCM_S16LE, bit_depth=16) != "pcm"
+    """Unsupported operands can provide reflected equality behavior."""
+    audio_format = _pcm(ContentType.PCM_S16LE, bit_depth=16)
+    assert audio_format != "pcm"
+    assert audio_format == ANY

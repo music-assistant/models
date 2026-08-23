@@ -42,7 +42,7 @@ class MediaItemLink(DataClassDictMixin):
     def __eq__(self, other: object) -> bool:
         """Check equality of two items."""
         if not isinstance(other, MediaItemLink):
-            return False
+            return NotImplemented
         return self.url == other.url
 
 
@@ -66,7 +66,7 @@ class MediaItemImage(DataClassDictMixin):
     def __eq__(self, other: object) -> bool:
         """Check equality of two items."""
         if not isinstance(other, MediaItemImage):
-            return False
+            return NotImplemented
         return self.__hash__() == other.__hash__()
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:

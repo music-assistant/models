@@ -67,5 +67,5 @@ class ProviderMapping(DataClassDictMixin):
     def __eq__(self, other: object) -> bool:
         """Check equality of two items."""
         if not isinstance(other, ProviderMapping):
-            return False
+            return NotImplemented
         return self.provider_instance == other.provider_instance and self.item_id == other.item_id
