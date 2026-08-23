@@ -63,11 +63,11 @@ class AudioFormat(DataClassDictMixin):
 
     def __eq__(self, other: object) -> bool:
         """
-        Check whether both formats describe the same audio.
+        Check equality on content type, sample rate, bit depth and channel count.
 
-        Two formats are equal when their content type, sample rate, bit depth and
-        channel count match. ``bit_rate`` and ``codec_type`` are informational and
-        are not taken into account.
+        The other fields take no part: ``codec_type`` and ``bit_rate`` are filled in
+        while ffmpeg probes the stream, and ``output_format_str`` describes how the
+        audio is rendered rather than what it is.
         """
         if not isinstance(other, AudioFormat):
             return False
@@ -93,7 +93,6 @@ class AudioFormat(DataClassDictMixin):
     @property
     def _identity(self) -> tuple[ContentType, int, int, int]:
         """Return the fields that determine what the audio actually is."""
-        # content_type must be part of this: output_format_str renders every PCM
-        # content type identically, so a string based identity cannot tell e.g.
-        # 32 bit integer PCM apart from 32 bit float PCM.
+        # content_type carries the sample encoding: s32le and f32le share a bit depth
+        # but not a byte layout, so the numeric fields alone cannot tell them apart.
         return (self.content_type, self.sample_rate, self.bit_depth, self.channels)
