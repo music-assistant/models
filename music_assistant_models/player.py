@@ -10,7 +10,14 @@ from typing import Any
 from mashumaro import DataClassDictMixin, field_options
 
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
-from .enums import IdentifierType, MediaType, PlaybackState, PlayerFeature, PlayerType
+from .enums import (
+    IdentifierType,
+    MediaType,
+    PlaybackState,
+    PlayerFeature,
+    PlayerType,
+    RepeatMode,
+)
 from .media_items import MediaItemPalette
 from .translations import resolve_translation, translations_active
 from .unique_list import UniqueList
@@ -154,6 +161,26 @@ class PlayerSource(DataClassDictMixin):
     can_seek: bool = False
     # can_next_previous: this source can be skipped to next/previous item
     can_next_previous: bool = False
+    # can_shuffle/can_repeat: this source orders its own content, so the
+    # commands below reach the session producing the audio
+    can_shuffle: bool = False
+    can_repeat: bool = False
+    # the ordering the source reports for itself; None = it has not said
+    shuffle_enabled: bool | None = None
+    repeat_mode: RepeatMode | None = None
+    # whether the source crossfades its own playback, so Music Assistant's own
+    # crossfade is inert while it plays. None = it has not said and cannot be
+    # asked (a native device's own setting), which is distinct from a known
+    # False — clients must not render "off" for a source that simply cannot tell
+    # them. Known either way for a session Music Assistant spawns itself, since
+    # it writes the preference before playback starts.
+    native_crossfade: bool | None = None
+    # the service account this source is signed in to, once established (e.g. a
+    # Spotify user id). Lives here as well as on AudioSource because a source the
+    # device runs natively has no AudioSource to carry it. None = not established,
+    # in which case anything gated on the account matching must refuse rather
+    # than guess.
+    account_id: str | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""

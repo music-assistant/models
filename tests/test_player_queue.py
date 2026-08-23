@@ -68,26 +68,6 @@ def test_payload_without_overlay_keys_deserializes() -> None:
     assert restored.overlay_volume == 100
 
 
-def test_queue_owner_defaults_to_none() -> None:
-    """queue_owner defaults to None (MA owns the queue)."""
-    assert _queue().queue_owner is None
-
-
-def test_queue_owner_serialize_roundtrip() -> None:
-    """queue_owner survives a serialize round-trip."""
-    queue = _queue()
-    queue.queue_owner = "spotify_connect://audio_source/main"
-    restored = PlayerQueue.from_dict(queue.to_dict())
-    assert restored.queue_owner == "spotify_connect://audio_source/main"
-
-
-def test_payload_without_queue_owner_key_deserializes() -> None:
-    """Payloads from servers predating queue delegation still deserialize."""
-    data = _queue().to_dict()
-    data.pop("queue_owner", None)
-    assert PlayerQueue.from_dict(data).queue_owner is None
-
-
 def test_ended_defaults_to_false() -> None:
     """A fresh queue has not ended."""
     assert _queue().ended is False

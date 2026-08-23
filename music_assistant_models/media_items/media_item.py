@@ -537,33 +537,6 @@ class SoundEffect(_LocalizableName, MediaItem):
 
 
 @dataclass(kw_only=True)
-class SourceQueueCapabilities(DataClassDictMixin):
-    """
-    Queue commands a live AudioSource can handle natively (session-side).
-
-    Declared by the owning plugin on its AudioSource; the queue controller
-    delegates queue commands to the plugin and mirrors the session's state
-    back into the normal PlayerQueue view.
-    """
-
-    # provider domain whose items this source can play natively (e.g. "spotify")
-    provider_domain: str | None = None
-    # media types accepted by a play/replace redirect into the session
-    playable_media_types: list[MediaType] = field(default_factory=list)
-    # media types accepted by enqueue-to-session (e.g. Spotify: tracks only)
-    enqueueable_media_types: list[MediaType] = field(default_factory=list)
-    can_shuffle: bool = False
-    can_repeat: bool = False
-    # source pushes a queue view (previous/upcoming) that MA can mirror
-    provides_queue_view: bool = False
-    # declarative: the session provides these natively, so MA's own
-    # equivalents are inert while the source owns the queue
-    native_autoplay: bool = False
-    native_crossfade: bool = False
-    native_volume_normalization: bool = False
-
-
-@dataclass(kw_only=True)
 class AudioSource(MediaItem):
     """
     Model for a live audio source provided by a plugin.
@@ -589,6 +562,9 @@ class AudioSource(MediaItem):
     can_play_pause: bool = False
     can_seek: bool = False
     can_next_previous: bool = False
+    # the source orders its own content, so shuffle/repeat reach its session
+    can_shuffle: bool = False
+    can_repeat: bool = False
 
     # whether this source allows only a single concurrent consumer
     # True (default) = MA fans the single stream out via sync-group machinery
@@ -608,10 +584,6 @@ class AudioSource(MediaItem):
     # plugin's get_stream_details must raise (AudioError) when it cannot
     # actually acquire the upstream producer.
     can_initiate: bool = False
-
-    # queue commands the source's session handles natively;
-    # None = transport-only source (no queue delegation)
-    queue_capabilities: SourceQueueCapabilities | None = None
 
     # the service account the session is paired to, once known/verified
     # (e.g. the Spotify user id); used to gate playback redirects

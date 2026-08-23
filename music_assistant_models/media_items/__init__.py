@@ -31,7 +31,6 @@ from .media_item import (
     Radio,
     RecommendationFolder,
     SoundEffect,
-    SourceQueueCapabilities,
     Track,
 )
 from .metadata import (
@@ -104,7 +103,6 @@ __all__ = [
     "RadioSummary",
     "RecommendationFolder",
     "SoundEffect",
-    "SourceQueueCapabilities",
     "SummaryDialect",
     "Track",
     "TrackSummary",

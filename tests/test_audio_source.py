@@ -4,7 +4,6 @@ from music_assistant_models.enums import MediaType, SourceControl
 from music_assistant_models.media_items import (
     AudioSource,
     ItemMapping,
-    SourceQueueCapabilities,
     media_from_dict,
 )
 from music_assistant_models.media_items.provider_mapping import ProviderMapping
@@ -94,56 +93,35 @@ def test_source_control_queue_members() -> None:
     assert SourceControl("repeat") is SourceControl.REPEAT
 
 
-def test_audio_source_queue_capability_defaults() -> None:
-    """A plain AudioSource is transport-only: no queue capabilities, no account."""
+def test_audio_source_ordering_capability_defaults() -> None:
+    """A plain AudioSource orders nothing itself and is paired to no account."""
     item = _make_audio_source()
-    assert item.queue_capabilities is None
+    assert item.can_shuffle is False
+    assert item.can_repeat is False
     assert item.account_id is None
-    caps = SourceQueueCapabilities()
-    assert caps.provider_domain is None
-    assert caps.playable_media_types == []
-    assert caps.enqueueable_media_types == []
-    assert caps.can_shuffle is False
-    assert caps.can_repeat is False
-    assert caps.provides_queue_view is False
-    assert caps.native_autoplay is False
-    assert caps.native_crossfade is False
-    assert caps.native_volume_normalization is False
 
 
-def test_audio_source_queue_capabilities_roundtrip() -> None:
-    """queue_capabilities and account_id survive a serialize round-trip."""
+def test_audio_source_ordering_capabilities_roundtrip() -> None:
+    """The ordering flags and account_id survive a serialize round-trip."""
     original = _make_audio_source()
-    original.queue_capabilities = SourceQueueCapabilities(
-        provider_domain="spotify",
-        playable_media_types=[MediaType.TRACK, MediaType.ALBUM, MediaType.PLAYLIST],
-        enqueueable_media_types=[MediaType.TRACK],
-        can_shuffle=True,
-        can_repeat=True,
-        provides_queue_view=True,
-        native_autoplay=True,
-        native_crossfade=True,
-        native_volume_normalization=True,
-    )
+    original.can_shuffle = True
+    original.can_repeat = True
     original.account_id = "spotify-user-1"
     data = original.to_dict()
     restored = AudioSource.from_dict(data)
     assert restored.to_dict() == data
-    assert restored.queue_capabilities is not None
-    assert restored.queue_capabilities.provider_domain == "spotify"
-    assert restored.queue_capabilities.playable_media_types == [
-        MediaType.TRACK,
-        MediaType.ALBUM,
-        MediaType.PLAYLIST,
-    ]
+    assert restored.can_shuffle is True
+    assert restored.can_repeat is True
     assert restored.account_id == "spotify-user-1"
 
 
-def test_audio_source_payload_without_queue_capability_keys() -> None:
-    """Payloads from servers predating queue delegation still deserialize."""
+def test_audio_source_payload_without_ordering_keys() -> None:
+    """Payloads from servers predating the ordering flags still deserialize."""
     data = _make_audio_source().to_dict()
-    data.pop("queue_capabilities", None)
+    data.pop("can_shuffle", None)
+    data.pop("can_repeat", None)
     data.pop("account_id", None)
     restored = AudioSource.from_dict(data)
-    assert restored.queue_capabilities is None
+    assert restored.can_shuffle is False
+    assert restored.can_repeat is False
     assert restored.account_id is None
