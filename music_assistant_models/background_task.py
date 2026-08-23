@@ -158,6 +158,8 @@ class BackgroundTask(DataClassDictMixin):
     failure_messages: list[str] = field(default_factory=list)
     # Extra JSON-serializable context used for filtering and UI display.
     metadata: TaskMetadata = field(default_factory=dict)
+    # Human-readable Markdown produced by the task for trusted Music Assistant clients to render.
+    report: str | None = None
     # Integer completion percentage. `None` means indeterminate.
     progress: int | None = None
     # Human-readable phase text for the current run.
