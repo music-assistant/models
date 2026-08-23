@@ -870,6 +870,10 @@ class VolumeNormalizationMode(StrEnum):
     FALLBACK_FIXED_GAIN = "fallback_fixed_gain"
     FIXED_GAIN = "fixed_gain"
     FALLBACK_DYNAMIC = "fallback_dynamic"
+    # the source delivers its audio at a loudness target of its own, so the
+    # server leaves the level alone. Distinct from DISABLED, which means nothing
+    # normalized it at all - the audio here is normalized, just not by us.
+    SOURCE = "source"
 
     # fallback
     UNKNOWN = "unknown"
