@@ -414,6 +414,9 @@ class CrossfadeMode(StrEnum):
     SMART_CROSSFADE = "smart_crossfade"  # Use smart crossfade with beat matching and EQ filters
     STANDARD_CROSSFADE = "standard_crossfade"  # Use standard crossfade only
     DISABLED = "disabled"  # No crossfade
+    # The source crossfades its own playback, so the server does not. Distinct
+    # from DISABLED, which means nothing is crossfading at all.
+    SOURCE = "source"
     UNKNOWN = "unknown"
 
     @classmethod
