@@ -92,6 +92,7 @@ def test_player_source_ordering_defaults() -> None:
     assert source.shuffle_enabled is None
     assert source.repeat_mode is None
     assert source.native_crossfade is None
+    assert source.account_id is None
 
 
 def test_player_source_ordering_roundtrip() -> None:
@@ -104,6 +105,7 @@ def test_player_source_ordering_roundtrip() -> None:
         shuffle_enabled=True,
         repeat_mode=RepeatMode.ALL,
         native_crossfade=True,
+        account_id="spotify-user-1",
     )
     data = original.to_dict()
     restored = PlayerSource.from_dict(data)
@@ -111,6 +113,7 @@ def test_player_source_ordering_roundtrip() -> None:
     assert restored.shuffle_enabled is True
     assert restored.repeat_mode is RepeatMode.ALL
     assert restored.native_crossfade is True
+    assert restored.account_id == "spotify-user-1"
 
 
 def test_player_source_payload_without_ordering_keys() -> None:
@@ -122,6 +125,7 @@ def test_player_source_payload_without_ordering_keys() -> None:
         "shuffle_enabled",
         "repeat_mode",
         "native_crossfade",
+        "account_id",
     ):
         data.pop(key, None)
     restored = PlayerSource.from_dict(data)
@@ -129,6 +133,7 @@ def test_player_source_payload_without_ordering_keys() -> None:
     assert restored.shuffle_enabled is None
     assert restored.repeat_mode is None
     assert restored.native_crossfade is None
+    assert restored.account_id is None
 
 
 def test_player_source_known_off_is_not_unknown() -> None:

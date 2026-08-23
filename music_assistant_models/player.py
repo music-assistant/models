@@ -175,6 +175,12 @@ class PlayerSource(DataClassDictMixin):
     # them. Known either way for a session Music Assistant spawns itself, since
     # it writes the preference before playback starts.
     native_crossfade: bool | None = None
+    # the service account this source is signed in to, once established (e.g. a
+    # Spotify user id). Lives here as well as on AudioSource because a source the
+    # device runs natively has no AudioSource to carry it. None = not established,
+    # in which case anything gated on the account matching must refuse rather
+    # than guess.
+    account_id: str | None = None
 
     def __hash__(self) -> int:
         """Return custom hash."""
