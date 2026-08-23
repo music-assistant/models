@@ -414,6 +414,9 @@ class CrossfadeMode(StrEnum):
     SMART_CROSSFADE = "smart_crossfade"  # Use smart crossfade with beat matching and EQ filters
     STANDARD_CROSSFADE = "standard_crossfade"  # Use standard crossfade only
     DISABLED = "disabled"  # No crossfade
+    # The source crossfades its own playback, so the server does not. Distinct
+    # from DISABLED, which means nothing is crossfading at all.
+    SOURCE = "source"
     UNKNOWN = "unknown"
 
     @classmethod
@@ -870,6 +873,10 @@ class VolumeNormalizationMode(StrEnum):
     FALLBACK_FIXED_GAIN = "fallback_fixed_gain"
     FIXED_GAIN = "fixed_gain"
     FALLBACK_DYNAMIC = "fallback_dynamic"
+    # The source delivers its audio at a loudness target of its own, so the
+    # server leaves the level alone. Distinct from DISABLED, which means nothing
+    # normalized it at all: this audio is normalized, just not by us.
+    SOURCE = "source"
 
     # fallback
     UNKNOWN = "unknown"
