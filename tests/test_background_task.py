@@ -28,7 +28,6 @@ def test_markdown_report_roundtrip() -> None:
 
 def test_payload_without_report_deserializes() -> None:
     """Payloads created before report support retain the default."""
-    payload = BackgroundTask(name="Legacy task").to_dict()
-    payload.pop("report")
+    payload = {"name": "Legacy task", "id": "legacy-task", "status": "pending"}
 
     assert BackgroundTask.from_dict(payload).report is None

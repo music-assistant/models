@@ -158,8 +158,6 @@ class BackgroundTask(DataClassDictMixin):
     failure_messages: list[str] = field(default_factory=list)
     # Extra JSON-serializable context used for filtering and UI display.
     metadata: TaskMetadata = field(default_factory=dict)
-    # Human-readable Markdown produced by the task for trusted Music Assistant clients to render.
-    report: str | None = None
     # Integer completion percentage. `None` means indeterminate.
     progress: int | None = None
     # Human-readable phase text for the current run.
@@ -168,6 +166,8 @@ class BackgroundTask(DataClassDictMixin):
     allow_retry: bool = False
     # Whether queued/running work can be interrupted from the UI.
     allow_cancel: bool = True
+    # Human-readable Markdown produced by the task for trusted Music Assistant clients to render.
+    report: str | None = None
     # translation_owner: namespace ("provider.<domain>"/"core.<domain>") the task's
     # translation_key resolves under; stamped by the tasks controller. Not serialized.
     translation_owner: str | None = field(
