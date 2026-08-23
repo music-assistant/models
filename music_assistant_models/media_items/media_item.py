@@ -120,7 +120,7 @@ class _MediaItemBase(DataClassDictMixin):
     def __eq__(self, other: object) -> bool:
         """Check equality of two items."""
         if not isinstance(other, MediaItem | ItemMapping):
-            return False
+            return NotImplemented
         return self.uri == other.uri
 
 

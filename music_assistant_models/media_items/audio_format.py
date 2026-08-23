@@ -70,7 +70,7 @@ class AudioFormat(DataClassDictMixin):
         audio is rendered rather than what it is.
         """
         if not isinstance(other, AudioFormat):
-            return False
+            return NotImplemented
         return self._identity == other._identity
 
     def __str__(self) -> str:
