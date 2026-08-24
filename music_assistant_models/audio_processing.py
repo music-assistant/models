@@ -115,3 +115,17 @@ class AudioProcessingChain(DataClassDictMixin):
     input_fidelity: AudioFidelity = field(default_factory=AudioFidelity)
     queue_processing: AudioQueueProcessing | None = None
     outputs: list[AudioOutputDetails] = field(default_factory=list)
+
+
+@dataclass(kw_only=True)
+class ActiveSourceAudioDetails(DataClassDictMixin):
+    """Effective audio details for a player's active external source."""
+
+    # Original/public format of the audio delivered by the external source.
+    input_format: AudioFormat
+    input_fidelity: AudioFidelity = field(default_factory=AudioFidelity)
+    # UNKNOWN means the source has not reported its crossfade behavior.
+    crossfade_mode: CrossfadeMode = CrossfadeMode.UNKNOWN
+    # UNKNOWN means the source has not reported its normalization behavior.
+    volume_normalization_mode: VolumeNormalizationMode = VolumeNormalizationMode.UNKNOWN
+    outputs: list[AudioOutputDetails] = field(default_factory=list)

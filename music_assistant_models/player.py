@@ -9,6 +9,7 @@ from typing import Any
 
 from mashumaro import DataClassDictMixin, field_options
 
+from .audio_processing import ActiveSourceAudioDetails
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
 from .enums import (
     IdentifierType,
@@ -474,6 +475,11 @@ class Player(DataClassDictMixin):
     # sleep_timer_expires_at: unix (utc) timestamp at which the active sleep timer will
     # stop playback, or None if no sleep timer is currently set for this player
     sleep_timer_expires_at: float | None = None
+
+    # active_source_audio: effective audio details reported for the currently active
+    # (external) source, or None if the active source is Music Assistant itself or no
+    # details are available yet
+    active_source_audio: ActiveSourceAudioDetails | None = None
 
     #############################################################################
     # helper methods and properties                                             #
