@@ -1,6 +1,7 @@
 """Tests for audio processing models."""
 
 from music_assistant_models.audio_processing import (
+    ActiveSourceAudioDetails,
     AudioDSPDetails,
     AudioFidelity,
     AudioNormalizationDetails,
@@ -139,6 +140,45 @@ def test_audio_dsp_details_legacy_payload() -> None:
         input_gain=-1.0,
         output_gain=-0.5,
     )
+
+
+def test_active_source_audio_details_defaults() -> None:
+    """An active source with no reported state defaults to unknown/no outputs."""
+    input_format = AudioFormat(content_type=ContentType.FLAC, codec_type=ContentType.FLAC)
+    details = ActiveSourceAudioDetails(input_format=input_format)
+
+    assert details.to_dict() == {
+        "input_format": input_format.to_dict(),
+        "input_fidelity": {"quality": "unknown", "bit_perfect": None},
+        "crossfade_mode": "unknown",
+        "volume_normalization_mode": "unknown",
+        "outputs": [],
+    }
+    assert ActiveSourceAudioDetails.from_dict(details.to_dict()) == details
+
+
+def test_active_source_audio_details_roundtrip_with_grouped_outputs() -> None:
+    """Source/disabled modes and multiple grouped output entries survive a round-trip."""
+    details = ActiveSourceAudioDetails(
+        input_format=AudioFormat(content_type=ContentType.MP3, codec_type=ContentType.MP3),
+        input_fidelity=AudioFidelity(quality=AudioQuality.LOSSLESS, bit_perfect=False),
+        crossfade_mode=CrossfadeMode.SOURCE,
+        volume_normalization_mode=VolumeNormalizationMode.DISABLED,
+        outputs=[
+            AudioOutputDetails(player_ids=["player-1", "player-2"]),
+            AudioOutputDetails(player_ids=["player-3"]),
+        ],
+    )
+
+    restored = ActiveSourceAudioDetails.from_dict(details.to_dict())
+
+    assert restored == details
+    assert restored.crossfade_mode is CrossfadeMode.SOURCE
+    assert restored.volume_normalization_mode is VolumeNormalizationMode.DISABLED
+    assert [output.player_ids for output in restored.outputs] == [
+        ["player-1", "player-2"],
+        ["player-3"],
+    ]
 
 
 def test_streamdetails_audio_processing_defaults_to_none() -> None:

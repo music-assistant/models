@@ -1,6 +1,14 @@
 """Tests for the Player and PlayerMedia models (serialization/back-compat)."""
 
-from music_assistant_models.enums import MediaType, PlayerType, RepeatMode
+from music_assistant_models.audio_processing import ActiveSourceAudioDetails, AudioOutputDetails
+from music_assistant_models.enums import (
+    ContentType,
+    CrossfadeMode,
+    MediaType,
+    PlayerType,
+    RepeatMode,
+)
+from music_assistant_models.media_items import AudioFormat
 from music_assistant_models.player import DeviceInfo, Player, PlayerMedia, PlayerSource
 
 
@@ -80,6 +88,39 @@ def test_payload_without_private_key_deserializes() -> None:
     legacy = _player().to_dict()
     legacy.pop("private", None)
     assert Player.from_dict(legacy).private is False
+
+
+def test_active_source_audio_serializes_as_explicit_null() -> None:
+    """A player without active source audio details serializes an explicit null.
+
+    Merged PLAYER_UPDATED snapshots rely on the key being present so stale
+    details are cleared rather than left untouched.
+    """
+    serialized = _player().to_dict()
+    assert "active_source_audio" in serialized
+    assert serialized["active_source_audio"] is None
+
+
+def test_active_source_audio_roundtrip() -> None:
+    """Populated active source audio details survive a round-trip."""
+    player = _player()
+    player.active_source_audio = ActiveSourceAudioDetails(
+        input_format=AudioFormat(content_type=ContentType.FLAC, codec_type=ContentType.FLAC),
+        crossfade_mode=CrossfadeMode.SOURCE,
+        outputs=[AudioOutputDetails(player_ids=["test_player"])],
+    )
+
+    restored = Player.from_dict(player.to_dict())
+
+    assert restored.active_source_audio == player.active_source_audio
+    assert restored.active_source_audio.crossfade_mode is CrossfadeMode.SOURCE
+
+
+def test_payload_without_active_source_audio_key_deserializes() -> None:
+    """Payloads from older servers without the key still deserialize to None."""
+    legacy = _player().to_dict()
+    legacy.pop("active_source_audio", None)
+    assert Player.from_dict(legacy).active_source_audio is None
 
 
 def test_player_source_ordering_defaults() -> None:
