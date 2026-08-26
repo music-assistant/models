@@ -27,6 +27,12 @@ def _player() -> Player:
     )
 
 
+def test_player_type_source_resolves() -> None:
+    """The SOURCE member resolves; an unknown value falls back to UNKNOWN."""
+    assert PlayerType("source") is PlayerType.SOURCE
+    assert PlayerType("does-not-exist") is PlayerType.UNKNOWN
+
+
 def test_stream_duration_defaults_to_none() -> None:
     """Media that plays from the start has no separate stream length."""
     assert _media().stream_duration is None
