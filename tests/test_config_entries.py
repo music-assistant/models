@@ -38,8 +38,9 @@ def _player_raw(**overrides: Any) -> dict[str, Any]:
 
 
 def test_config_entry_type_unknown_fallback() -> None:
-    """IMAGE is a known ConfigEntryType member; an unknown value falls back to UNKNOWN."""
+    """IMAGE/PAIRING_CODE are known ConfigEntryType members; an unknown value falls to UNKNOWN."""
     assert ConfigEntryType("image") is ConfigEntryType.IMAGE
+    assert ConfigEntryType("pairing_code") is ConfigEntryType.PAIRING_CODE
     assert ConfigEntryType("does-not-exist") is ConfigEntryType.UNKNOWN
 
 
@@ -313,3 +314,80 @@ def test_a_falsy_value_still_counts_as_a_value() -> None:
     assert seen == [False]
 
     assert _gated().parse_value("", allow_none=False) == ""
+
+
+def _pairing_entry(**overrides: Any) -> ConfigEntry:
+    """Build a PAIRING_CODE entry, with no format unless overridden."""
+    return ConfigEntry(key="pin", type=ConfigEntryType.PAIRING_CODE, **overrides)
+
+
+def test_pairing_code_entry_type_registered() -> None:
+    """PAIRING_CODE resolves, maps to str, is not UI-only, and a required entry stays required."""
+    assert ConfigEntryType("pairing_code") is ConfigEntryType.PAIRING_CODE
+    assert ConfigEntryTypeMap[ConfigEntryType.PAIRING_CODE] is str
+    assert ConfigEntryType.PAIRING_CODE not in UI_ONLY
+    entry = _pairing_entry(required=True)
+    assert entry.required is True
+
+
+def test_pairing_code_strips_separators_and_whitespace() -> None:
+    """Strip the format's rendered separators and any incidental whitespace."""
+    entry = _pairing_entry(format="###-###")
+    assert entry.parse_value("123-456") == "123456"
+    assert entry.parse_value(" 123 456 ") == "123456"
+
+
+def test_pairing_code_strips_without_a_format() -> None:
+    """Strip separators/whitespace even when no format is set to validate against."""
+    entry = _pairing_entry()
+    assert entry.parse_value("123-456") == "123456"
+    assert entry.parse_value(" 123 456 ") == "123456"
+
+
+def test_pairing_code_length_mismatch() -> None:
+    """Reject a code whose length does not match the format's slot count."""
+    entry = _pairing_entry(format="###-###", default_value="000000")
+
+    with pytest.raises(ValueError, match="pin must be 6 characters"):
+        entry.parse_value("12345")
+
+    assert entry.parse_value("12345", raise_on_error=False) == "000000"
+
+
+def test_pairing_code_digit_slot_enforcement() -> None:
+    """Reject a non-digit character in a '#' slot."""
+    with pytest.raises(ValueError, match="pin must contain only digits"):
+        _pairing_entry(format="####").parse_value("12a4")
+
+
+def test_pairing_code_alnum_slots_are_uppercased() -> None:
+    """Uppercase alphanumeric 'X' slots while separators are stripped."""
+    entry = _pairing_entry(format="XXXX-XXXX")
+    assert entry.parse_value("ab12-cd34") == "AB12CD34"
+
+
+def test_pairing_code_coerces_a_scalar_value() -> None:
+    """Coerce a non-string scalar (e.g. an int read back from storage) before validating it."""
+    entry = _pairing_entry(format="####")
+    assert entry.parse_value(1234) == "1234"
+
+
+def test_pairing_code_format_rejects_invalid_characters() -> None:
+    """Reject a format containing characters outside '#X-'."""
+    with pytest.raises(ValueError, match="pin has an invalid pairing code format"):
+        _pairing_entry(format="?!")
+
+
+def test_pairing_code_format_requires_at_least_one_slot() -> None:
+    """Reject a format made only of separators, with no '#'/'X' slot."""
+    with pytest.raises(ValueError, match="pin has an invalid pairing code format"):
+        _pairing_entry(format="--")
+
+
+def test_pairing_code_format_roundtrips() -> None:
+    """Round-trip the `format` field through to_dict/from_dict."""
+    entry = _pairing_entry(format="###-###")
+
+    restored = ConfigEntry.from_dict(entry.to_dict())
+
+    assert restored.format == "###-###"

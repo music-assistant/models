@@ -52,6 +52,7 @@ ConfigEntryTypeMap: dict[ConfigEntryType, type[ConfigValueType]] = {
     ConfigEntryType.BOOLEAN: bool,
     ConfigEntryType.STRING: str,
     ConfigEntryType.SECURE_STRING: str,
+    ConfigEntryType.PAIRING_CODE: str,
     ConfigEntryType.INTEGER: int,
     ConfigEntryType.SPLITTED_STRING: str,
     ConfigEntryType.FLOAT: float,
@@ -125,6 +126,11 @@ class ConfigEntry(DataClassDictMixin):
     options: list[ConfigValueOption] = field(default_factory=list)
     # range [optional]: select values within range
     range: tuple[int, int] | None = None
+    # format [optional]: for PAIRING_CODE entries, the shape of the code:
+    # '#' = digit box, 'X' = alphanumeric box (uppercase), '-' = rendered separator.
+    # The value is the code WITHOUT separators (e.g. "123456" for "###-###").
+    # Submit codes as strings (leading zeros); leave default_value unset.
+    format: str | None = None
     # description [optional]: extended description of the setting.
     description: str | None = None
     # help_link [optional]: link to help article.
@@ -216,6 +222,10 @@ class ConfigEntry(DataClassDictMixin):
         """Run some basic sanity checks after init."""
         if self.type in UI_ONLY:
             self.required = False
+        if self.type == ConfigEntryType.PAIRING_CODE and self.format is not None:
+            has_slot = any(ch in "#X" for ch in self.format)
+            if not self.format or any(ch not in "#X-" for ch in self.format) or not has_slot:
+                raise ValueError(f"{self.key} has an invalid pairing code format: {self.format!r}")
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """
@@ -327,6 +337,19 @@ class ConfigEntry(DataClassDictMixin):
                 raise ValueError(f"value for {self.key} must be a list")
             value = self.default_value
 
+        # (value can be None again here when a shape check above fell back to an empty default)
+        if (
+            self.type == ConfigEntryType.PAIRING_CODE
+            and value is not None
+            and not isinstance(value, list)
+        ):
+            try:
+                value = self._parse_pairing_code(str(value))
+            except ValueError:
+                if raise_on_error:
+                    raise
+                value = self.default_value
+
         # handle some value type conversions caused by the serialization
         def convert_value(_value: _ConfigValueTypeSingle) -> _ConfigValueTypeSingle:
             if self.type == ConfigEntryType.FLOAT and isinstance(_value, int | str):
@@ -365,6 +388,22 @@ class ConfigEntry(DataClassDictMixin):
             return [tuple(x.split(MULTI_VALUE_SPLITTER, 1)) for x in value]
         assert isinstance(value, str)
         return tuple(value.split(MULTI_VALUE_SPLITTER, 1))
+
+    def _parse_pairing_code(self, value: str) -> str:
+        """Strip separators/whitespace and validate the code against `format`."""
+        code = "".join(ch for ch in value if ch != "-" and not ch.isspace())
+        if not self.format:
+            return code
+        slots = [ch for ch in self.format if ch in "#X"]
+        if len(code) != len(slots):
+            raise ValueError(f"{self.key} must be {len(slots)} characters")
+        code = code.upper()
+        for char, slot in zip(code, slots, strict=True):
+            if slot == "#" and not char.isdigit():
+                raise ValueError(f"{self.key} must contain only digits")
+            if slot == "X" and not char.isalnum():
+                raise ValueError(f"{char!r} is not valid in {self.key}")
+        return code
 
 
 @dataclass(kw_only=True)
