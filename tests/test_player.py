@@ -90,6 +90,25 @@ def test_payload_without_private_key_deserializes() -> None:
     assert Player.from_dict(legacy).private is False
 
 
+def test_source_needs_approval_defaults_to_false() -> None:
+    """A player's source only awaits approval when its provider marks it as such."""
+    assert _player().source_needs_approval is False
+
+
+def test_source_needs_approval_serialize_roundtrip() -> None:
+    """A player with a source awaiting approval keeps the flag across serialization."""
+    player = _player()
+    player.source_needs_approval = True
+    assert Player.from_dict(player.to_dict()).source_needs_approval is True
+
+
+def test_payload_without_source_approval_key_deserializes() -> None:
+    """Payloads from older servers without the source approval key still deserialize."""
+    legacy = _player().to_dict()
+    legacy.pop("source_needs_approval", None)
+    assert Player.from_dict(legacy).source_needs_approval is False
+
+
 def test_active_source_audio_serializes_as_explicit_null() -> None:
     """A player without active source audio details serializes an explicit null.
 

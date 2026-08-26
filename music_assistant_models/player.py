@@ -465,6 +465,11 @@ class Player(DataClassDictMixin):
     # regardless of whether setup is currently needed
     has_setup_flow: bool = False
 
+    # source_needs_approval: if True, the player offers an audio source that stays
+    # inactive until the user explicitly approves it. Approval is granted through the
+    # player's setup flow, so a provider setting this flag must also offer one
+    source_needs_approval: bool = False
+
     # sleep_timer_expires_at: unix (utc) timestamp at which the active sleep timer will
     # stop playback, or None if no sleep timer is currently set for this player
     sleep_timer_expires_at: float | None = None
