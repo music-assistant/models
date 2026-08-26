@@ -786,6 +786,9 @@ class ConfigEntryType(StrEnum):
     # url: a clickable link; when returned from a config invoke_action response,
     # the frontend opens the value (one-shot) instead of rendering a field
     URL = "url"
+    # pairing_code: a short code (PIN) shown on a device that the user copies over
+    # during pairing; the entry's `format` field describes its shape
+    PAIRING_CODE = "pairing_code"
     UNKNOWN = "unknown"
 
     @classmethod
