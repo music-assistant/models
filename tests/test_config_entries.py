@@ -38,7 +38,7 @@ def _player_raw(**overrides: Any) -> dict[str, Any]:
 
 
 def test_config_entry_type_unknown_fallback() -> None:
-    """IMAGE/PAIRING_CODE are known ConfigEntryType members; an unknown value falls to UNKNOWN."""
+    """Known ConfigEntryType members resolve; an unknown value falls back to UNKNOWN."""
     assert ConfigEntryType("image") is ConfigEntryType.IMAGE
     assert ConfigEntryType("pairing_code") is ConfigEntryType.PAIRING_CODE
     assert ConfigEntryType("does-not-exist") is ConfigEntryType.UNKNOWN

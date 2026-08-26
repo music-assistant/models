@@ -130,7 +130,8 @@ class ConfigEntry(DataClassDictMixin):
     # '#' = digit box, 'X' = alphanumeric box (uppercase), any other character
     # is a rendered separator (e.g. '-'). The value is the code WITHOUT
     # separators (e.g. "123456" for "###-###").
-    # Submit codes as strings (leading zeros); leave default_value unset.
+    # Submit codes as strings (leading zeros); leave default_value unset so a
+    # required code blocks submission until the user entered it.
     format: str | None = None
     # description [optional]: extended description of the setting.
     description: str | None = None
@@ -405,7 +406,7 @@ class ConfigEntry(DataClassDictMixin):
             if slot == "#" and not (char.isascii() and char.isdigit()):
                 raise ValueError(f"{self.key} must contain only digits")
             if slot == "X" and not (char.isascii() and char.isalnum()):
-                raise ValueError(f"{char!r} is not valid in {self.key}")
+                raise ValueError(f"{self.key} contains an invalid character: {char!r}")
         return code
 
 
