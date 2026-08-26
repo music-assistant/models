@@ -24,6 +24,22 @@ def test_playlog_update_serialize_roundtrip() -> None:
     assert PlaylogUpdate.from_dict(data) == original
 
 
+def test_playlog_update_userid_optional() -> None:
+    """Userid identifies the affected user and defaults to None (all users)."""
+    update = PlaylogUpdate(
+        uri="library://audiobook/5",
+        media_type=MediaType.AUDIOBOOK,
+        fully_played=True,
+        seconds_played=0,
+        userid="user-1",
+    )
+    assert PlaylogUpdate.from_dict(update.to_dict()) == update
+    # payloads from before the field existed deserialize to None
+    legacy = update.to_dict()
+    del legacy["userid"]
+    assert PlaylogUpdate.from_dict(legacy).userid is None
+
+
 def test_playlog_update_as_event_payload() -> None:
     """A PlaylogUpdate serializes as the data of a MassEvent."""
     update = PlaylogUpdate(
