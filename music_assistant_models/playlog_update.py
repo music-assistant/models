@@ -21,3 +21,5 @@ class PlaylogUpdate(DataClassDictMixin):
     media_type: MediaType
     fully_played: bool
     seconds_played: int
+    # the user the playlog change applies to; None when it applies to all users
+    userid: str | None = None
