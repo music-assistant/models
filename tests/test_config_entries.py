@@ -372,16 +372,38 @@ def test_pairing_code_coerces_a_scalar_value() -> None:
     assert entry.parse_value(1234) == "1234"
 
 
-def test_pairing_code_format_rejects_invalid_characters() -> None:
-    """Reject a format containing characters outside '#X-'."""
-    with pytest.raises(ValueError, match="pin has an invalid pairing code format"):
-        _pairing_entry(format="?!")
+def test_pairing_code_format_treats_unknown_characters_as_separators() -> None:
+    """Accept any non-slot character in the format as a rendered separator."""
+    entry = _pairing_entry(format="##:##")
+    assert entry.parse_value("12:34") == "1234"
+    assert entry.parse_value("1234") == "1234"
 
 
 def test_pairing_code_format_requires_at_least_one_slot() -> None:
-    """Reject a format made only of separators, with no '#'/'X' slot."""
-    with pytest.raises(ValueError, match="pin has an invalid pairing code format"):
-        _pairing_entry(format="--")
+    """Reject a format without a single '#'/'X' slot."""
+    for bogus in ("--", "?!"):
+        with pytest.raises(ValueError, match="pin has an invalid pairing code format"):
+            _pairing_entry(format=bogus)
+
+
+def test_pairing_code_rejects_non_ascii_digits() -> None:
+    """Reject non-ASCII digits in a '#' slot; devices expect plain 0-9."""
+    with pytest.raises(ValueError, match="pin must contain only digits"):
+        _pairing_entry(format="####").parse_value("١٢٣٤")
+
+
+def test_pairing_code_is_normalized_before_the_validate_callback() -> None:
+    """Hand the validate callback the stripped and uppercased code, not the raw input."""
+    seen: list[ConfigValueType] = []
+    entry = _pairing_entry(format="XX-XX", validate=_recording(seen))
+
+    assert entry.parse_value("ab-cd") == "ABCD"
+    assert seen == ["ABCD"]
+
+
+def test_pairing_code_fallback_without_a_default_returns_none() -> None:
+    """Fall back to None for an invalid code when no default is set and raising is off."""
+    assert _pairing_entry(format="####").parse_value("123", raise_on_error=False) is None
 
 
 def test_pairing_code_format_roundtrips() -> None:

@@ -127,8 +127,9 @@ class ConfigEntry(DataClassDictMixin):
     # range [optional]: select values within range
     range: tuple[int, int] | None = None
     # format [optional]: for PAIRING_CODE entries, the shape of the code:
-    # '#' = digit box, 'X' = alphanumeric box (uppercase), '-' = rendered separator.
-    # The value is the code WITHOUT separators (e.g. "123456" for "###-###").
+    # '#' = digit box, 'X' = alphanumeric box (uppercase), any other character
+    # is a rendered separator (e.g. '-'). The value is the code WITHOUT
+    # separators (e.g. "123456" for "###-###").
     # Submit codes as strings (leading zeros); leave default_value unset.
     format: str | None = None
     # description [optional]: extended description of the setting.
@@ -222,10 +223,12 @@ class ConfigEntry(DataClassDictMixin):
         """Run some basic sanity checks after init."""
         if self.type in UI_ONLY:
             self.required = False
-        if self.type == ConfigEntryType.PAIRING_CODE and self.format is not None:
-            has_slot = any(ch in "#X" for ch in self.format)
-            if not self.format or any(ch not in "#X-" for ch in self.format) or not has_slot:
-                raise ValueError(f"{self.key} has an invalid pairing code format: {self.format!r}")
+        if (
+            self.type == ConfigEntryType.PAIRING_CODE
+            and self.format is not None
+            and not any(ch in "#X" for ch in self.format)
+        ):
+            raise ValueError(f"{self.key} has an invalid pairing code format: {self.format!r}")
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """
@@ -390,8 +393,8 @@ class ConfigEntry(DataClassDictMixin):
         return tuple(value.split(MULTI_VALUE_SPLITTER, 1))
 
     def _parse_pairing_code(self, value: str) -> str:
-        """Strip separators/whitespace and validate the code against `format`."""
-        code = "".join(ch for ch in value if ch != "-" and not ch.isspace())
+        """Strip separators and validate the code against `format`."""
+        code = "".join(ch for ch in value if ch.isalnum())
         if not self.format:
             return code
         slots = [ch for ch in self.format if ch in "#X"]
@@ -399,9 +402,9 @@ class ConfigEntry(DataClassDictMixin):
             raise ValueError(f"{self.key} must be {len(slots)} characters")
         code = code.upper()
         for char, slot in zip(code, slots, strict=True):
-            if slot == "#" and not char.isdigit():
+            if slot == "#" and not (char.isascii() and char.isdigit()):
                 raise ValueError(f"{self.key} must contain only digits")
-            if slot == "X" and not char.isalnum():
+            if slot == "X" and not (char.isascii() and char.isalnum()):
                 raise ValueError(f"{char!r} is not valid in {self.key}")
         return code
 
