@@ -235,6 +235,14 @@ class StreamDetails(DataClassDictMixin):
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
     )
+    # the playback session these details were resolved for, so a teardown can tell the
+    # audio it owns from the audio a session that started after it owns
+    queue_session_id: str | None = field(
+        default=None,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
     seconds_streamed: float | None = field(
         default=None,
         compare=False,
