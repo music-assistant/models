@@ -245,6 +245,7 @@ class ContentType(StrEnum):
     WMA = "wma"  # Windows Media Audio
     WMAV2 = "wmav2"  # Windows Media Audio v2
     WMAPRO = "wmapro"  # Windows Media Audio Professional
+    WMALOSSLESS = "wmalossless"  # Windows Media Audio Lossless
     WAVPACK = "wavpack"  # WavPack lossless
     TAK = "tak"  # Tom's Lossless Audio Kompressor
     APE = "ape"  # Monkey's Audio
@@ -348,6 +349,7 @@ class ContentType(StrEnum):
             ContentType.WAVPACK,
             ContentType.TAK,
             ContentType.APE,
+            ContentType.WMALOSSLESS,
             ContentType.TRUEHD,
             ContentType.DSD_LSBF,
             ContentType.DSD_MSBF,
