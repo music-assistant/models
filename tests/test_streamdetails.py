@@ -67,6 +67,13 @@ def test_is_realtime_is_not_serialized() -> None:
     assert "is_realtime" not in _make_streamdetails(is_realtime=True).to_dict()
 
 
+def test_queue_session_id_is_not_serialized() -> None:
+    """queue_session_id is server-internal and must not be sent to clients."""
+    sd = _make_streamdetails()
+    sd.queue_session_id = "sess-1"
+    assert "queue_session_id" not in sd.to_dict()
+
+
 def test_legacy_dsp_is_not_serialized() -> None:
     """Legacy DSP details are not included in stream details."""
     assert "dsp" not in _make_streamdetails().to_dict()
