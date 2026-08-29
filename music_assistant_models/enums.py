@@ -199,6 +199,18 @@ class RecommendationFolderType(StrEnum):
         return cls.DEFAULT
 
 
+class PlaylistMatchPolicy(StrEnum):
+    """Enum with playlist track match policies, from strictest to loosest.
+
+    Controls how loosely a substitute track may be matched on another provider once
+    a playlist entry's original source is confirmed unavailable.
+    """
+
+    EXACT = "exact"
+    SAME_RECORDING = "same_recording"
+    BEST_EFFORT = "best_effort"
+
+
 class ArtistType(StrEnum):
     """Enum for Artist type."""
 
