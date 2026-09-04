@@ -660,6 +660,9 @@ class ProviderFeature(StrEnum):
     SEARCH = "search"
     RECOMMENDATIONS = "recommendations"
 
+    # if the provider requires calls beyond searching to get other album versions
+    ALBUM_VERSIONS = "album_versions"
+
     # library feature per mediatype
     LIBRARY_ARTISTS = "library_artists"
     LIBRARY_ALBUMS = "library_albums"
