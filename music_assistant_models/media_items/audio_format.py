@@ -26,6 +26,9 @@ class AudioFormat(DataClassDictMixin):
 
     def __post_init__(self) -> None:
         """Execute actions after init."""
+        if self.channels < 1:
+            # corrupt/unprobeable files report 0 channels; fall back to stereo
+            self.channels = 2
         if not self.output_format_str and self.content_type.is_pcm():
             self.output_format_str = (
                 f"pcm;codec=pcm;rate={self.sample_rate};"
