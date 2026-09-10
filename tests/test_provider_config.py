@@ -1,4 +1,4 @@
-"""Tests for ProviderConfig structured error and derived status (de)serialization."""
+"""Tests for ProviderConfig structured error, derived status and access record (de)serialization."""
 
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -96,6 +96,15 @@ def test_missing_access_defaults_to_none() -> None:
 def test_unknown_sharing_falls_back_to_private() -> None:
     """An unknown sharing mode falls back to PRIVATE, so access is never widened by accident."""
     assert ProviderAccess.from_dict({"sharing": "future_mode"}).sharing is ProviderSharing.PRIVATE
+    conf = ProviderConfig.from_dict(_raw(access={"owner": "user-1", "sharing": "future_mode"}))
+    assert conf.access is not None
+    assert conf.access.sharing is ProviderSharing.PRIVATE
+
+
+def test_access_sharing_defaults_to_private() -> None:
+    """A record without an explicit sharing mode is private."""
+    assert ProviderAccess(owner="user-1").sharing is ProviderSharing.PRIVATE
+    assert ProviderAccess.from_dict({"owner": "user-1"}).sharing is ProviderSharing.PRIVATE
 
 
 def test_last_error_localized_on_serialize_with_resolver() -> None:

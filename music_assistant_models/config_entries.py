@@ -607,7 +607,8 @@ class ProviderAccess(DataClassDictMixin):
 
     # owner: user_id of the member this instance belongs to; None = household (admin managed)
     owner: str | None = None
-    sharing: ProviderSharing = ProviderSharing.EVERYONE
+    # sharing: defaults to the most restrictive value; a household source is written as EVERYONE
+    sharing: ProviderSharing = ProviderSharing.PRIVATE
     # shared_users: only consulted with ProviderSharing.SELECTED
     shared_users: list[str] = field(default_factory=list)
 

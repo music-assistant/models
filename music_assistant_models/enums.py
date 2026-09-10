@@ -774,9 +774,13 @@ class ProviderFeature(StrEnum):
 class ProviderSharing(StrEnum):
     """Who, besides its owner, a provider instance is shared with."""
 
+    # only the owner
     PRIVATE = "private"
+    # the owner plus the users listed on the access record
     SELECTED = "selected"
+    # every signed-in household member, guests excluded
     MEMBERS = "members"
+    # every user, guests included
     EVERYONE = "everyone"
 
     @classmethod
