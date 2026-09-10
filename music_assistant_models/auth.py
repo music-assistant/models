@@ -53,6 +53,7 @@ class Scope(StrEnum):
     CONFIG_PLAYERS_WRITE = "config.players.write"
     CONFIG_PROVIDERS_READ = "config.providers.read"
     CONFIG_PROVIDERS_WRITE = "config.providers.write"
+    CONFIG_PROVIDERS_OWN = "config.providers.own"
     CONFIG_CORE_READ = "config.core.read"
     CONFIG_CORE_WRITE = "config.core.write"
     USERS_READ = "users.read"

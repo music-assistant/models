@@ -753,6 +753,8 @@ class ProviderFeature(StrEnum):
     AUDIO_SOURCE = "audio_source"
     # provider can enumerate sound effect items (live, not library-backed)
     SOUND_EFFECTS = "sound_effects"
+    # provider records playback to an external listening history
+    SCROBBLE = "scrobble"
 
     #
     # OTHER FEATURES (plugin-only)
@@ -767,6 +769,24 @@ class ProviderFeature(StrEnum):
     def _missing_(cls, value: object) -> ProviderFeature:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
+
+
+class ProviderSharing(StrEnum):
+    """Who, besides its owner, a provider instance is shared with."""
+
+    # only the owner
+    PRIVATE = "private"
+    # the owner plus the users listed on the access record
+    SELECTED = "selected"
+    # every signed-in household member, guests excluded
+    MEMBERS = "members"
+    # every user, guests included
+    EVERYONE = "everyone"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ProviderSharing:  # noqa: ARG003
+        """Fall back to PRIVATE (the safest value) for an unknown sharing mode."""
+        return cls.PRIVATE
 
 
 class ProviderType(StrEnum):

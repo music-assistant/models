@@ -12,7 +12,7 @@ from typing import Any, Final, cast
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
 from .constants import SECURE_STRING_SUBSTITUTE
-from .enums import ConfigEntryType, PlayerType, ProviderStatus, ProviderType
+from .enums import ConfigEntryType, PlayerType, ProviderSharing, ProviderStatus, ProviderType
 from .translations import resolve_translation, translations_active
 
 LOGGER = logging.getLogger(__name__)
@@ -602,6 +602,19 @@ class ProviderError(DataClassDictMixin):
 
 
 @dataclass
+class ProviderAccess(DataClassDictMixin):
+    """Who a provider instance serves: its owner and the users it is shared with."""
+
+    # owner: user_id of the member this instance belongs to; None = admin managed, and then
+    # sharing alone decides who may use it
+    owner: str | None = None
+    # sharing: defaults to the most restrictive value; a household source is written as EVERYONE
+    sharing: ProviderSharing = ProviderSharing.PRIVATE
+    # shared_users: only consulted with ProviderSharing.SELECTED
+    shared_users: list[str] = field(default_factory=list)
+
+
+@dataclass
 class ProviderConfig(Config):
     """Provider(instance) Configuration."""
 
@@ -616,6 +629,10 @@ class ProviderConfig(Config):
     default_name: str | None = None
     # last_error: structured error if the provider could not be setup with this config
     last_error: ProviderError | None = None
+    # access: who this instance serves. None = no record: a legacy config, or a provider type
+    # where ownership is meaningless (player/metadata/...); treated as visible to everyone.
+    # Unlike setup_data this is both persisted AND served over the api.
+    access: ProviderAccess | None = None
     # status: load/lifecycle status, derived and stamped server-side on the api read path.
     # Never persisted (see to_raw) and not set during normal config save/load.
     status: ProviderStatus | None = None

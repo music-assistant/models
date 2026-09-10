@@ -29,6 +29,11 @@ def test_scope_missing() -> None:
     assert Scope("library.read") == Scope.LIBRARY_READ
 
 
+def test_config_providers_own_scope() -> None:
+    """Test that the scope for managing one's own provider configs resolves."""
+    assert Scope("config.providers.own") is Scope.CONFIG_PROVIDERS_OWN
+
+
 def test_user_with_unknown_role_deserializes() -> None:
     """Test that a User with an unknown role id deserializes with the role id preserved."""
     user = User.from_dict(
