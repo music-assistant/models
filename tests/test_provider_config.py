@@ -4,8 +4,8 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Any
 
-from music_assistant_models.config_entries import ProviderConfig, ProviderError
-from music_assistant_models.enums import ProviderStatus, ProviderType
+from music_assistant_models.config_entries import ProviderAccess, ProviderConfig, ProviderError
+from music_assistant_models.enums import ProviderSharing, ProviderStatus, ProviderType
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
 
@@ -77,6 +77,25 @@ def test_status_is_served_but_never_persisted() -> None:
     conf.status = ProviderStatus.LOADED
     assert conf.to_dict()["status"] == ProviderStatus.LOADED.value
     assert "status" not in conf.to_raw()
+
+
+def test_access_is_persisted_and_served() -> None:
+    """The access record is part of both the api payload (to_dict) and the raw storage dict."""
+    access = ProviderAccess(owner="user-1", sharing=ProviderSharing.SELECTED, shared_users=["u2"])
+    conf = ProviderConfig.from_dict(_raw(access=access.to_dict()))
+    assert conf.access == access
+    assert conf.to_dict()["access"] == access.to_dict()
+    assert conf.to_raw()["access"] == access.to_dict()
+
+
+def test_missing_access_defaults_to_none() -> None:
+    """A legacy raw dict without access deserializes into a household (unowned) provider."""
+    assert ProviderConfig.from_dict(_raw()).access is None
+
+
+def test_unknown_sharing_falls_back_to_private() -> None:
+    """An unknown sharing mode falls back to PRIVATE, so access is never widened by accident."""
+    assert ProviderAccess.from_dict({"sharing": "future_mode"}).sharing is ProviderSharing.PRIVATE
 
 
 def test_last_error_localized_on_serialize_with_resolver() -> None:
