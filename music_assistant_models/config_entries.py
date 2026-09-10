@@ -605,7 +605,8 @@ class ProviderError(DataClassDictMixin):
 class ProviderAccess(DataClassDictMixin):
     """Who a provider instance serves: its owner and the users it is shared with."""
 
-    # owner: user_id of the member this instance belongs to; None = household (admin managed)
+    # owner: user_id of the member this instance belongs to; None = admin managed, and then
+    # sharing alone decides who may use it
     owner: str | None = None
     # sharing: defaults to the most restrictive value; a household source is written as EVERYONE
     sharing: ProviderSharing = ProviderSharing.PRIVATE
@@ -628,8 +629,8 @@ class ProviderConfig(Config):
     default_name: str | None = None
     # last_error: structured error if the provider could not be setup with this config
     last_error: ProviderError | None = None
-    # access: who this instance serves. None = household source, visible to everyone, and the
-    # only valid value for provider types where ownership is meaningless (player/metadata/...).
+    # access: who this instance serves. None = no record: a legacy config, or a provider type
+    # where ownership is meaningless (player/metadata/...); treated as visible to everyone.
     # Unlike setup_data this is both persisted AND served over the api.
     access: ProviderAccess | None = None
     # status: load/lifecycle status, derived and stamped server-side on the api read path.
