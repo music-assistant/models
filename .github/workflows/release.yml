@@ -34,7 +34,7 @@ concurrency:
 
 env:
   GITHUB_API_VERSION: "2026-03-10"
-  PYTHON_VERSION: "3.13"
+  PYTHON_VERSION: "3.14"
 
 jobs:
   verify-release-settings:
