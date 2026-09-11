@@ -7,6 +7,7 @@ from music_assistant_models.auth import (
     Scope,
     User,
     UserRole,
+    UserSummary,
 )
 
 
@@ -45,3 +46,21 @@ def test_user_with_unknown_role_deserializes() -> None:
     )
     # the role id is preserved as-is, to allow for custom roles in the future
     assert user.role == "some_future_role"
+
+
+def test_user_summary_carries_only_the_public_face_of_a_user() -> None:
+    """Test that a user summary serves the public fields of a user and nothing else."""
+    user = User(
+        user_id="abc123",
+        username="testuser",
+        role=UserRole.ADMIN,
+        display_name="Test User",
+        avatar_url="avatar.png",
+        preferences={"theme": "dark"},
+    )
+    assert UserSummary.from_user(user).to_dict() == {
+        "user_id": "abc123",
+        "username": "testuser",
+        "display_name": "Test User",
+        "avatar_url": "avatar.png",
+    }
