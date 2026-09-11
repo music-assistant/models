@@ -1,7 +1,12 @@
 """Tests for the Playlist MediaItem."""
 
-from music_assistant_models.enums import MediaType
-from music_assistant_models.media_items import Playlist, media_from_dict
+from music_assistant_models.enums import MediaType, ProviderSharing
+from music_assistant_models.media_items import (
+    Playlist,
+    PlaylistAccess,
+    PlaylistSummary,
+    media_from_dict,
+)
 
 
 def _playlist_dict(supported_mediatypes: list[str] | None = None) -> dict:
@@ -62,3 +67,44 @@ def test_supported_mediatypes_roundtrip() -> None:
 
     assert isinstance(playlist, Playlist)
     assert Playlist.from_dict(playlist.to_dict()).supported_mediatypes == supported
+
+
+def test_access_defaults_to_no_record() -> None:
+    """A playlist without an access record is a household playlist."""
+    playlist = media_from_dict(_playlist_dict())
+
+    assert isinstance(playlist, Playlist)
+    assert playlist.access is None
+    assert "access" in playlist.to_dict()
+
+
+def test_access_record_round_trip() -> None:
+    """The access record survives serialization, on the full item and on its summary."""
+    raw = _playlist_dict()
+    raw["access"] = {
+        "owner": "user-1",
+        "sharing": "selected",
+        "shared_users": ["user-2"],
+        "collaborative": True,
+    }
+    playlist = media_from_dict(raw)
+
+    assert isinstance(playlist, Playlist)
+    assert playlist.access == PlaylistAccess(
+        owner="user-1",
+        sharing=ProviderSharing.SELECTED,
+        shared_users=["user-2"],
+        collaborative=True,
+    )
+    assert playlist.to_dict()["access"] == raw["access"]
+    assert PlaylistSummary.from_dict(raw).access == playlist.access
+    assert PlaylistSummary.from_dict(raw).to_dict()["access"] == raw["access"]
+
+
+def test_access_record_is_private_and_not_collaborative_by_default() -> None:
+    """A record that only names an owner is the most restrictive one."""
+    access = PlaylistAccess.from_dict({"owner": "user-1"})
+
+    assert access.sharing is ProviderSharing.PRIVATE
+    assert access.shared_users == []
+    assert access.collaborative is False
