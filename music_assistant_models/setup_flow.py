@@ -40,6 +40,8 @@ class SetupFlowStep(DataClassDictMixin):
     last_step: bool | None = None
     # url [EXTERNAL]: url the user must open (e.g. an OAuth authorize url)
     url: str | None = None
+    # copy_text [EXTERNAL]: optional value that the client may copy to the clipboard
+    copy_text: str | None = None
     # progress_text [PROGRESS]: status slug/message, resolved from the translations at serialization
     progress_text: str | None = None
     # progress [PROGRESS]: optional completion fraction between 0 and 1

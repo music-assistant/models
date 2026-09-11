@@ -60,17 +60,19 @@ def test_form_step_shape() -> None:
 
 
 def test_external_step_shape() -> None:
-    """An EXTERNAL step carries the url to open and an optional deadline."""
+    """An EXTERNAL step carries the url to open, copyable text and an optional deadline."""
     step = SetupFlowStep(
         flow_id="f",
         step_id="oauth",
         type=FlowStepType.EXTERNAL,
         url="https://example.test/authorize",
+        copy_text="123456",
         expires_at=1234.5,
     )
     d = step.to_dict()
     assert d["type"] == "external"
     assert d["url"] == "https://example.test/authorize"
+    assert d["copy_text"] == "123456"
     assert d["expires_at"] == 1234.5
 
 
