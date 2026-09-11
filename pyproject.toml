@@ -115,6 +115,7 @@ ignore = [
   "TRY003", # Just annoying, not really useful
   "TRY400", # Just annoying, not really useful
   "COM812", # Conflicts with the Ruff formatter
+  "CPY001", # Project intentionally does not enforce copyright headers
   "N818", # Just annoying, not really useful
   "FBT001", # Just annoying, not really useful
   "FBT002", # Just annoying, not really useful
