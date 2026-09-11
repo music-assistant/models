@@ -399,9 +399,10 @@ class Playlist(_LocalizableTitle, MediaItem):
     # The playlist may support only a single, or a mix of multiple media types,
     # limited to the entries in PLAYLIST_SUPPORTED_MEDIATYPES.
     supported_mediatypes: set[MediaType] = field(default_factory=lambda: {MediaType.TRACK})
-    # access: who this playlist serves. None = no record: a household playlist, or a playlist
-    # of a music service, which follows the access of that service. Only Music Assistant's
-    # own (builtin) playlists carry a record.
+    # access: who this playlist serves. Only Music Assistant's own (builtin) playlists carry a
+    # record; None means everyone: a playlist without a record, or a playlist of a music
+    # service, which follows the access of that service. Its owner is a user id, unrelated
+    # to the display name in `owner` above.
     access: PlaylistAccess | None = None
 
     def __post_init__(self) -> None:

@@ -98,6 +98,7 @@ def test_access_record_round_trip() -> None:
     )
     assert playlist.to_dict()["access"] == raw["access"]
     assert PlaylistSummary.from_dict(raw).access == playlist.access
+    assert PlaylistSummary.from_dict(raw).to_dict()["access"] == raw["access"]
 
 
 def test_access_record_is_private_and_not_collaborative_by_default() -> None:
