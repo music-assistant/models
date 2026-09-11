@@ -11,8 +11,9 @@ from typing import Any, Final, cast
 
 from mashumaro import DataClassDictMixin, field_options, pass_through
 
+from .access import ProviderAccess as ProviderAccess  # noqa: PLC0414
 from .constants import SECURE_STRING_SUBSTITUTE
-from .enums import ConfigEntryType, PlayerType, ProviderSharing, ProviderStatus, ProviderType
+from .enums import ConfigEntryType, PlayerType, ProviderStatus, ProviderType
 from .translations import resolve_translation, translations_active
 
 LOGGER = logging.getLogger(__name__)
@@ -599,19 +600,6 @@ class ProviderError(DataClassDictMixin):
             d.pop("translation_args", None)
             d.pop("translation_owner", None)
         return d
-
-
-@dataclass
-class ProviderAccess(DataClassDictMixin):
-    """Who a provider instance serves: its owner and the users it is shared with."""
-
-    # owner: user_id of the member this instance belongs to; None = admin managed, and then
-    # sharing alone decides who may use it
-    owner: str | None = None
-    # sharing: defaults to the most restrictive value; a household source is written as EVERYONE
-    sharing: ProviderSharing = ProviderSharing.PRIVATE
-    # shared_users: only consulted with ProviderSharing.SELECTED
-    shared_users: list[str] = field(default_factory=list)
 
 
 @dataclass

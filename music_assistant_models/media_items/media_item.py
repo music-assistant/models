@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 from mashumaro import DataClassDictMixin, field_options
 from mashumaro.types import SerializationStrategy
 
+from music_assistant_models.access import PlaylistAccess
 from music_assistant_models.enums import (
     AlbumType,
     ArtistType,
@@ -398,6 +399,10 @@ class Playlist(_LocalizableTitle, MediaItem):
     # The playlist may support only a single, or a mix of multiple media types,
     # limited to the entries in PLAYLIST_SUPPORTED_MEDIATYPES.
     supported_mediatypes: set[MediaType] = field(default_factory=lambda: {MediaType.TRACK})
+    # access: who this playlist serves. None = no record: a household playlist, or a playlist
+    # of a music service, which follows the access of that service. Only Music Assistant's
+    # own (builtin) playlists carry a record.
+    access: PlaylistAccess | None = None
 
     def __post_init__(self) -> None:
         """Run some basic sanity checks after init."""
