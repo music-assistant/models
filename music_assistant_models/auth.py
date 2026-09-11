@@ -88,6 +88,26 @@ class User(DataClassORJSONMixin):
 
 
 @dataclass
+class UserSummary(DataClassORJSONMixin):
+    """The public face of a user account, safe to serve to every member."""
+
+    user_id: str
+    username: str
+    display_name: str | None = None
+    avatar_url: str | None = None
+
+    @classmethod
+    def from_user(cls, user: User) -> UserSummary:
+        """Return the summary of the given user account."""
+        return cls(
+            user_id=user.user_id,
+            username=user.username,
+            display_name=user.display_name,
+            avatar_url=user.avatar_url,
+        )
+
+
+@dataclass
 class UserAuthProvider(DataClassORJSONMixin):
     """Link between a User and an Authentication Provider."""
 
