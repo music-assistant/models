@@ -51,6 +51,10 @@ class ProviderManifest(DataClassORJSONMixin):
     # has_setup_flow: if True, this provider offers an interactive setup flow
     # that can also be re-run on demand (reconfigure), regardless of auth state
     has_setup_flow: bool = False
+    # self_service: whether a member may set up (and reconfigure) an instance of this
+    # provider as a music source of its own; when False, only a user who manages every
+    # music source may set it up
+    self_service: bool = True
 
     # credits: list of credits/attributions
     # e.g. for libraries used, icons, etc.

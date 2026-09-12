@@ -12,7 +12,7 @@ from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 class UserRole(StrEnum):
     """
-    The role id's of the builtin user roles.
+    The role ids of the builtin user roles.
 
     A role is identified by its (string) id, of which these are the builtin roles.
     Admins may create custom roles as well, so User.role is a plain string
