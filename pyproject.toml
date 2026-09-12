@@ -91,7 +91,6 @@ line-ending = "lf"
 
 [tool.pytest.ini_options]
 addopts = "--cov music_assistant_models"
-asyncio_mode = "auto"
 
 [tool.ruff.lint]
 ignore = [
