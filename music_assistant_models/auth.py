@@ -12,11 +12,11 @@ from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 class UserRole(StrEnum):
     """
-    The role id's of the builtin (default) user roles.
+    The role ids of the builtin user roles.
 
-    A role is identified by its (string) id, of which these are the builtin defaults.
-    User.role is deliberately a plain string and not limited to these values,
-    to allow for custom roles in the future.
+    A role is identified by its (string) id, of which these are the builtin roles.
+    Admins may create custom roles as well, so User.role is a plain string
+    and not limited to these values.
     """
 
     ADMIN = "admin"
@@ -105,6 +105,17 @@ class UserSummary(DataClassORJSONMixin):
             display_name=user.display_name,
             avatar_url=user.avatar_url,
         )
+
+
+@dataclass
+class Role(DataClassORJSONMixin):
+    """A user role: a named set of scopes."""
+
+    role_id: str
+    name: str
+    scopes: list[Scope] = field(default_factory=list)
+    # builtin roles ship with Music Assistant and can not be changed or removed
+    builtin: bool = False
 
 
 @dataclass

@@ -66,3 +66,23 @@ def test_has_setup_flow_missing_key_backward_compatible() -> None:
         '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[]}'
     )
     assert restored.has_setup_flow is False
+
+
+def test_self_service_defaults_true() -> None:
+    """Test that self_service defaults to True."""
+    assert _manifest().self_service is True
+
+
+def test_self_service_roundtrip() -> None:
+    """Test that a provider without self-service survives JSON roundtrip."""
+    manifest = _manifest(self_service=False)
+    restored = ProviderManifest.from_json(manifest.to_json())
+    assert restored.self_service is False
+
+
+def test_self_service_missing_key_backward_compatible() -> None:
+    """Test that JSON without self_service (old server payload) defaults to True."""
+    restored = ProviderManifest.from_json(
+        '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[]}'
+    )
+    assert restored.self_service is True
