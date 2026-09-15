@@ -142,6 +142,23 @@ def test_radio_is_dynamic_roundtrip() -> None:
     assert Radio.from_dict(summary.to_dict()).is_dynamic is True
 
 
+def test_radio_is_finite_roundtrip() -> None:
+    """A finite show keeps its is_finite flag across serialization."""
+    radio = Radio(
+        item_id="1",
+        provider="ai_radio",
+        name="show",
+        provider_mappings=set(),
+        is_dynamic=True,
+        is_finite=True,
+    )
+    assert Radio.from_dict(radio.to_dict()).is_finite is True
+    # a payload from an older server simply lacks the flag
+    payload = radio.to_dict()
+    payload.pop("is_finite")
+    assert Radio.from_dict(payload).is_finite is False
+
+
 def test_radio_defaults_to_a_live_stream() -> None:
     """A station without the flag deserializes as a regular (live) radio station."""
     payload = {"item_id": "1", "provider": "tunein", "name": "radio", "provider_mappings": []}
