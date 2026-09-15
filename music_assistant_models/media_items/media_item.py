@@ -428,6 +428,10 @@ class Radio(_LocalizableTitle, MediaItem):
     duration: int | None = None
     # When True, tracks come from get_dynamic_radio_tracks instead of a live stream.
     is_dynamic: bool = False
+    # Only meaningful with is_dynamic: when True the feed is a finite tracklist served
+    # whole in one stateless call, and the queue plays it out and ends (an AI Radio
+    # show); when False the feed is endless and the queue keeps refilling from it.
+    is_finite: bool = False
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Adjust dict object after it has been serialized."""
