@@ -426,8 +426,21 @@ class Radio(_LocalizableTitle, MediaItem):
 
     media_type: MediaType = MediaType.RADIO
     duration: int | None = None
-    # When True, tracks come from get_dynamic_radio_tracks instead of a live stream.
+    # When True the tracklist changes on every fetch (get_dynamic_radio_tracks)
+    # and the queue keeps refilling from it.
     is_dynamic: bool = False
+    # True: an infinite broadcast stream with no tracklist. False: the station has a
+    # tracklist, dynamic (is_dynamic) or finite (paged through get_radio_tracks and
+    # played out like a playlist).
+    is_endless_stream: bool = True
+
+    def __post_init__(self) -> None:
+        """Run some basic sanity checks after init."""
+        super().__post_init__()
+        # a dynamic tracklist is never a broadcast stream; normalized rather than
+        # rejected so payloads from before this flag existed keep deserializing
+        if self.is_dynamic:
+            self.is_endless_stream = False
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Adjust dict object after it has been serialized."""
