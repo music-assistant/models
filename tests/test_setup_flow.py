@@ -6,7 +6,7 @@ from typing import Any
 
 from music_assistant_models.config_entries import ConfigEntry
 from music_assistant_models.enums import ConfigEntryType, FlowStepType
-from music_assistant_models.setup_flow import SetupFlowStep
+from music_assistant_models.setup_flow import SetupFlowStep, TranslationRef
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
 
@@ -31,6 +31,17 @@ def test_flow_step_type_unknown_fallback() -> None:
     """A known FlowStepType value resolves; an unknown value falls back to UNKNOWN."""
     assert FlowStepType("form") is FlowStepType.FORM
     assert FlowStepType("does-not-exist") is FlowStepType.UNKNOWN
+
+
+def test_translation_ref_is_data_only_with_independent_args_defaults() -> None:
+    """TranslationRef groups metadata and does not share its default argument list."""
+    first = TranslationRef(key="first")
+    second = TranslationRef(key="second")
+    first.args.append("value")
+
+    assert first.to_dict() == {"key": "first", "args": ["value"], "owner": None}
+    assert second.args == []
+    assert second.owner is None
 
 
 def test_form_step_shape() -> None:
@@ -261,12 +272,12 @@ def test_error_translation_metadata_is_field_specific_and_omitted() -> None:
         type=FlowStepType.FORM,
         errors=errors,
         translation_owner="provider.default",
-        error_translation_keys={
-            "username": "username_required",
-            "password": "password_invalid",
+        error_translations={
+            "username": TranslationRef(key="username_required", args=["Alice"]),
+            "password": TranslationRef(
+                key="password_invalid", args=["Bob", 3], owner="provider.special"
+            ),
         },
-        error_translation_args={"username": ["Alice"], "password": ["Bob", 3]},
-        error_translation_owners={"password": "provider.special"},
     )
     catalog = {
         "provider.default.errors.username_required": "Username for {0} is required",
@@ -283,9 +294,7 @@ def test_error_translation_metadata_is_field_specific_and_omitted() -> None:
         "base": "Base error",
     }
     assert step.errors == errors
-    assert "error_translation_keys" not in serialized
-    assert "error_translation_args" not in serialized
-    assert "error_translation_owners" not in serialized
+    assert "error_translations" not in serialized
 
 
 def test_error_translation_resolver_binding_can_change_for_the_same_step() -> None:
@@ -295,7 +304,7 @@ def test_error_translation_resolver_binding_can_change_for_the_same_step() -> No
         step_id="credentials",
         type=FlowStepType.FORM,
         errors={"base": "invalid_auth"},
-        error_translation_keys={"base": "login_failed"},
+        error_translations={"base": TranslationRef(key="login_failed")},
     )
 
     with _resolver_active({"errors.login_failed": "Invalid login."}):
@@ -312,7 +321,7 @@ def test_error_translation_missing_key_keeps_original_slug() -> None:
         step_id="credentials",
         type=FlowStepType.FORM,
         errors=errors,
-        error_translation_keys={"base": "missing_translation"},
+        error_translations={"base": TranslationRef(key="missing_translation")},
     )
 
     with _resolver_active({}):
@@ -330,8 +339,7 @@ def test_abort_reason_translation_metadata_localizes_without_mutation() -> None:
         type=FlowStepType.ABORT,
         reason="raw_reason",
         translation_owner="provider.default",
-        reason_translation_key="connection_failed",
-        reason_translation_args=["Speaker", 2],
+        reason_translation=TranslationRef(key="connection_failed", args=["Speaker", 2]),
     )
 
     with _resolver_active(
@@ -346,7 +354,7 @@ def test_abort_reason_translation_metadata_localizes_without_mutation() -> None:
     assert dutch["reason"] == "Verbinding met Speaker mislukte (2)."
     assert english["reason"] == "Connection to Speaker failed (2)."
     assert step.reason == "raw_reason"
-    assert step.reason_translation_args == ["Speaker", 2]
+    assert step.reason_translation == TranslationRef(key="connection_failed", args=["Speaker", 2])
 
 
 def test_abort_reason_translation_owner_overrides_step_owner() -> None:
@@ -357,8 +365,7 @@ def test_abort_reason_translation_owner_overrides_step_owner() -> None:
         type=FlowStepType.ABORT,
         reason="raw_reason",
         translation_owner="provider.step",
-        reason_translation_key="connection_failed",
-        reason_translation_owner="provider.reason",
+        reason_translation=TranslationRef(key="connection_failed", owner="provider.reason"),
     )
     catalog = {
         "provider.reason.errors.connection_failed": "Reason owner",
@@ -376,7 +383,7 @@ def test_abort_reason_translation_missing_key_keeps_reason() -> None:
         step_id="failed",
         type=FlowStepType.ABORT,
         reason="raw_reason",
-        reason_translation_key="missing_reason",
+        reason_translation=TranslationRef(key="missing_reason"),
     )
 
     with _resolver_active({}):
@@ -390,17 +397,15 @@ def test_abort_reason_translation_metadata_is_omitted() -> None:
         step_id="failed",
         type=FlowStepType.ABORT,
         reason="raw_reason",
-        reason_translation_key="connection_failed",
-        reason_translation_args=["Speaker"],
-        reason_translation_owner="provider.demo",
+        reason_translation=TranslationRef(
+            key="connection_failed", args=["Speaker"], owner="provider.demo"
+        ),
     )
 
     serialized = step.to_dict()
 
     assert serialized["reason"] == "raw_reason"
-    assert "reason_translation_key" not in serialized
-    assert "reason_translation_args" not in serialized
-    assert "reason_translation_owner" not in serialized
+    assert "reason_translation" not in serialized
 
 
 def test_abort_reason_without_translation_key_keeps_legacy_slug_resolution() -> None:
