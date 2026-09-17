@@ -55,6 +55,17 @@ class SetupFlowStep(DataClassDictMixin):
     result: dict[str, str] | None = None
     # reason [ABORT]: reason slug/message, resolved from the translations at serialization
     reason: str | None = None
+    # Optional metadata for resolving an ABORT reason through errors.<key> instead of the legacy
+    # setup_flow.abort.<reason> key. These fields are populated by the server and not serialized.
+    reason_translation_key: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
+    reason_translation_args: list[Any] | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
+    reason_translation_owner: str | None = field(
+        default=None, metadata=field_options(serialize="omit"), repr=False
+    )
     # translation_owner: the namespace ("provider.<domain>") this step's strings are resolved
     # under; stamped by the server when the step is served. Not serialized.
     translation_owner: str | None = field(
@@ -65,15 +76,28 @@ class SetupFlowStep(DataClassDictMixin):
     translation_params: list[str] | None = field(
         default=None, metadata=field_options(serialize="omit"), repr=False
     )
+    # Per-field translation metadata for errors, populated by the server when a form is served.
+    # These maps are kept internal so the existing errors mapping remains the fallback payload.
+    error_translation_keys: dict[str, str] = field(
+        default_factory=dict, metadata=field_options(serialize="omit"), repr=False
+    )
+    error_translation_args: dict[str, list[Any]] = field(
+        default_factory=dict, metadata=field_options(serialize="omit"), repr=False
+    )
+    error_translation_owners: dict[str, str] = field(
+        default_factory=dict, metadata=field_options(serialize="omit"), repr=False
+    )
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """
         Localize human-readable fields from the translations for the connection locale.
 
-        Resolves title/description (setup_flow.<step_id>.*), progress_text, the abort reason
-        (setup_flow.abort.<reason>) and each error value (errors.<slug>) under this step's owner
-        namespace. No-op when nothing matches, so the in-code values/slugs are kept. The
-        translation machinery fields are not serialized.
+        Resolves title/description (setup_flow.<step_id>.*), progress_text, the abort reason and
+        each error value (errors.<slug>) under the appropriate owner namespace. An explicit ABORT
+        reason translation key uses errors.<key> with its owner and arguments; otherwise the legacy
+        setup_flow.abort.<reason> lookup is used. Error translation metadata can override the slug,
+        owner, and arguments for each field. No-op when nothing matches, so the in-code values/slugs
+        are kept. The translation machinery fields are not serialized.
         """
         owner = self.translation_owner
         title = resolve_translation(
@@ -93,11 +117,33 @@ class SetupFlowStep(DataClassDictMixin):
             if progress_text is not None:
                 d["progress_text"] = progress_text
         if self.reason is not None:
-            reason = resolve_translation(f"setup_flow.abort.{self.reason}", owner=owner)
+            if self.reason_translation_key is not None:
+                params = (
+                    [str(arg) for arg in self.reason_translation_args]
+                    if self.reason_translation_args
+                    else None
+                )
+                reason = resolve_translation(
+                    f"errors.{self.reason_translation_key}",
+                    owner=(
+                        self.reason_translation_owner
+                        if self.reason_translation_owner is not None
+                        else owner
+                    ),
+                    params=params,
+                )
+            else:
+                reason = resolve_translation(f"setup_flow.abort.{self.reason}", owner=owner)
             if reason is not None:
                 d["reason"] = reason
         for field_key, slug in self.errors.items():
-            localized = resolve_translation(f"errors.{slug}", owner=owner)
+            translation_key = self.error_translation_keys.get(field_key, slug)
+            translation_owner = self.error_translation_owners.get(field_key, owner)
+            translation_args = self.error_translation_args.get(field_key)
+            params = [str(arg) for arg in translation_args] if translation_args else None
+            localized = resolve_translation(
+                f"errors.{translation_key}", owner=translation_owner, params=params
+            )
             if localized is not None:
                 d["errors"][field_key] = localized
         return d
