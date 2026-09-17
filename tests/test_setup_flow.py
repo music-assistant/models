@@ -6,7 +6,7 @@ from typing import Any
 
 from music_assistant_models.config_entries import ConfigEntry
 from music_assistant_models.enums import ConfigEntryType, FlowStepType
-from music_assistant_models.setup_flow import SetupFlowStep
+from music_assistant_models.setup_flow import SetupFlowStep, TranslationRef
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
 
@@ -31,6 +31,17 @@ def test_flow_step_type_unknown_fallback() -> None:
     """A known FlowStepType value resolves; an unknown value falls back to UNKNOWN."""
     assert FlowStepType("form") is FlowStepType.FORM
     assert FlowStepType("does-not-exist") is FlowStepType.UNKNOWN
+
+
+def test_translation_ref_is_data_only_with_independent_args_defaults() -> None:
+    """TranslationRef groups metadata and does not share its default argument list."""
+    first = TranslationRef(key="first")
+    second = TranslationRef(key="second")
+    first.args.append("value")
+
+    assert first.to_dict() == {"key": "first", "args": ["value"], "owner": None}
+    assert second.args == []
+    assert second.owner is None
 
 
 def test_form_step_shape() -> None:
@@ -246,3 +257,165 @@ def test_errors_resolve_owner_first_and_keep_slug_when_unresolved() -> None:
     )
     with _resolver_active(catalog):
         assert common.to_dict()["errors"]["base"] == "Ongeldige login."
+
+
+def test_error_translation_metadata_is_field_specific_and_omitted() -> None:
+    """Each error can use its own key, owner and arguments without changing stored errors."""
+    errors = {
+        "username": "raw_username_error",
+        "password": "raw_password_error",
+        "base": "raw_base_error",
+    }
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="credentials",
+        type=FlowStepType.FORM,
+        errors=errors,
+        translation_owner="provider.default",
+        error_translations={
+            "username": TranslationRef(key="username_required", args=["Alice"]),
+            "password": TranslationRef(
+                key="password_invalid", args=["Bob", 3], owner="provider.special"
+            ),
+        },
+    )
+    catalog = {
+        "provider.default.errors.username_required": "Username for {0} is required",
+        "provider.special.errors.password_invalid": "Password for {0} has {1} errors",
+        "provider.default.errors.raw_base_error": "Base error",
+    }
+
+    with _resolver_active(catalog):
+        serialized = step.to_dict()
+
+    assert serialized["errors"] == {
+        "username": "Username for Alice is required",
+        "password": "Password for Bob has 3 errors",
+        "base": "Base error",
+    }
+    assert step.errors == errors
+    assert "error_translations" not in serialized
+
+
+def test_error_translation_resolver_binding_can_change_for_the_same_step() -> None:
+    """The same step resolves errors using whichever locale resolver is currently bound."""
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="credentials",
+        type=FlowStepType.FORM,
+        errors={"base": "invalid_auth"},
+        error_translations={"base": TranslationRef(key="login_failed")},
+    )
+
+    with _resolver_active({"errors.login_failed": "Invalid login."}):
+        assert step.to_dict()["errors"]["base"] == "Invalid login."
+    with _resolver_active({"errors.login_failed": "Ongeldige login."}):
+        assert step.to_dict()["errors"]["base"] == "Ongeldige login."
+
+
+def test_error_translation_missing_key_keeps_original_slug() -> None:
+    """An unknown per-field translation key leaves the original stored error value intact."""
+    errors = {"base": "raw_error"}
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="credentials",
+        type=FlowStepType.FORM,
+        errors=errors,
+        error_translations={"base": TranslationRef(key="missing_translation")},
+    )
+
+    with _resolver_active({}):
+        serialized = step.to_dict()
+
+    assert serialized["errors"] == errors
+    assert step.errors == errors
+
+
+def test_abort_reason_translation_metadata_localizes_without_mutation() -> None:
+    """An ABORT resolves an error key per locale without changing the step."""
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="failed",
+        type=FlowStepType.ABORT,
+        reason="raw_reason",
+        translation_owner="provider.default",
+        reason_translation=TranslationRef(key="connection_failed", args=["Speaker", 2]),
+    )
+
+    with _resolver_active(
+        {"provider.default.errors.connection_failed": "Verbinding met {0} mislukte ({1})."}
+    ):
+        dutch = step.to_dict()
+    with _resolver_active(
+        {"provider.default.errors.connection_failed": "Connection to {0} failed ({1})."}
+    ):
+        english = step.to_dict()
+
+    assert dutch["reason"] == "Verbinding met Speaker mislukte (2)."
+    assert english["reason"] == "Connection to Speaker failed (2)."
+    assert step.reason == "raw_reason"
+    assert step.reason_translation == TranslationRef(key="connection_failed", args=["Speaker", 2])
+
+
+def test_abort_reason_translation_owner_overrides_step_owner() -> None:
+    """An ABORT reason can use an owner different from the step's translation owner."""
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="failed",
+        type=FlowStepType.ABORT,
+        reason="raw_reason",
+        translation_owner="provider.step",
+        reason_translation=TranslationRef(key="connection_failed", owner="provider.reason"),
+    )
+    catalog = {
+        "provider.reason.errors.connection_failed": "Reason owner",
+        "provider.step.errors.connection_failed": "Step owner",
+    }
+
+    with _resolver_active(catalog):
+        assert step.to_dict()["reason"] == "Reason owner"
+
+
+def test_abort_reason_translation_missing_key_keeps_reason() -> None:
+    """An unresolved explicit ABORT translation key leaves the original reason intact."""
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="failed",
+        type=FlowStepType.ABORT,
+        reason="raw_reason",
+        reason_translation=TranslationRef(key="missing_reason"),
+    )
+
+    with _resolver_active({}):
+        assert step.to_dict()["reason"] == "raw_reason"
+
+
+def test_abort_reason_translation_metadata_is_omitted() -> None:
+    """ABORT translation metadata is internal and never appears in serialized output."""
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="failed",
+        type=FlowStepType.ABORT,
+        reason="raw_reason",
+        reason_translation=TranslationRef(
+            key="connection_failed", args=["Speaker"], owner="provider.demo"
+        ),
+    )
+
+    serialized = step.to_dict()
+
+    assert serialized["reason"] == "raw_reason"
+    assert "reason_translation" not in serialized
+
+
+def test_abort_reason_without_translation_key_keeps_legacy_slug_resolution() -> None:
+    """Without explicit metadata, ABORT continues using setup_flow.abort.<reason>."""
+    step = SetupFlowStep(
+        flow_id="f",
+        step_id="failed",
+        type=FlowStepType.ABORT,
+        reason="already_configured",
+    )
+
+    with _resolver_active({"setup_flow.abort.already_configured": "Already configured."}):
+        assert step.to_dict()["reason"] == "Already configured."
