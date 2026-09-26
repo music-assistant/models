@@ -228,7 +228,8 @@ class MediaItem(_MediaItemBase):
     provider_mappings: set[ProviderMapping]
     # optional fields below
     metadata: MediaItemMetadata = field(default_factory=MediaItemMetadata)
-    favorite: bool = False
+    # True is a like, False a dislike, None means the user expressed nothing
+    favorite: bool | None = None
     position: int | None = None  # required for playlist tracks, optional for all other
     date_added: datetime | None = None  # when item was added to library/collection
 

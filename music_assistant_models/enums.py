@@ -621,6 +621,9 @@ class EventType(StrEnum):
     MEDIA_ITEM_ADDED = "media_item_added"
     MEDIA_ITEM_UPDATED = "media_item_updated"
     MEDIA_ITEM_DELETED = "media_item_deleted"
+    # one user's like/dislike/unset on one item changed; data is a FavoriteUpdate,
+    # object_id is the item uri
+    FAVORITE_UPDATED = "favorite_updated"
     PLAYLOG_UPDATED = "playlog_updated"
     PROVIDERS_UPDATED = "providers_updated"
     # generic event emitted by a provider instance;
