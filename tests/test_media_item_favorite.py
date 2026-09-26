@@ -1,6 +1,7 @@
 """Tests for the favorite field on media items (like, dislike or unset)."""
 
-from music_assistant_models.enums import MediaType
+from music_assistant_models.enums import EventType, MediaType
+from music_assistant_models.event import MassEvent
 from music_assistant_models.favorite_update import FavoriteUpdate
 from music_assistant_models.media_items import Track
 
@@ -38,3 +39,25 @@ def test_favorite_update_roundtrip() -> None:
             user_id="user-1",
         )
         assert FavoriteUpdate.from_dict(update.to_dict()) == update
+
+
+def test_event_type_favorite_updated_roundtrips() -> None:
+    """EventType.FAVORITE_UPDATED is reachable and round-trips through StrEnum."""
+    assert EventType("favorite_updated") is EventType.FAVORITE_UPDATED
+    assert EventType.FAVORITE_UPDATED.value == "favorite_updated"
+
+
+def test_favorite_update_as_event_payload() -> None:
+    """A FavoriteUpdate serializes as the data of a MassEvent."""
+    update = FavoriteUpdate(
+        uri="library://album/7",
+        media_type=MediaType.ALBUM,
+        item_id="7",
+        favorite=False,
+        user_id="user-1",
+    )
+    event = MassEvent(event=EventType.FAVORITE_UPDATED, object_id=update.uri, data=update)
+    data = event.to_dict()
+    assert data["event"] == "favorite_updated"
+    assert data["object_id"] == "library://album/7"
+    assert data["data"] == update.to_dict()
