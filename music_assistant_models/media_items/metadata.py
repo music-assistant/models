@@ -214,6 +214,9 @@ class MediaItemMetadata(DataClassDictMixin):
     collections: UniqueList[MediaItemCollection] | None = None
     # last_refresh: timestamp the (full) metadata was last collected
     last_refresh: int | None = None
+    # last_musicbrainz_lookup: timestamp the item was last looked up on MusicBrainz,
+    # set on every attempt, so an item MusicBrainz does not know is not retried endlessly
+    last_musicbrainz_lookup: int | None = None
 
     def update(
         self,
@@ -243,13 +246,14 @@ class MediaItemMetadata(DataClassDictMixin):
             elif isinstance(cur_val, set) and isinstance(new_val, set | list | tuple):
                 cur_val.update(new_val)
             # some fields are always allowed to be overwritten
-            # (such as popularity and last_refresh)
+            # (such as popularity and the refresh/lookup timestamps)
             elif (
                 new_val
                 and fld.name
                 in (
                     "popularity",
                     "last_refresh",
+                    "last_musicbrainz_lookup",
                 )
             ) or cur_val is None:
                 setattr(self, fld.name, new_val)
