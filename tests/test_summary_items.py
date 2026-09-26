@@ -142,6 +142,34 @@ def test_radio_is_dynamic_roundtrip() -> None:
     assert Radio.from_dict(summary.to_dict()).is_dynamic is True
 
 
+def test_radio_is_endless_roundtrip() -> None:
+    """A finite station keeps its cleared endless flag across serialization."""
+    radio = Radio(
+        item_id="1",
+        provider="ai_radio",
+        name="show",
+        provider_mappings=set(),
+        is_endless=False,
+    )
+    assert radio.is_dynamic is False
+    assert Radio.from_dict(radio.to_dict()).is_endless is False
+    # a payload from an older server simply lacks the flag: every station so far is endless
+    payload = radio.to_dict()
+    payload.pop("is_endless")
+    assert Radio.from_dict(payload).is_endless is True
+
+
+def test_dynamic_radio_defaults_to_an_endless_feed() -> None:
+    """A dynamic station without the flag (an older Pandora payload) is an endless feed."""
+    radio = Radio(
+        item_id="1", provider="pandora", name="radio", provider_mappings=set(), is_dynamic=True
+    )
+    assert radio.is_endless is True
+    payload = radio.to_dict()
+    payload.pop("is_endless")
+    assert Radio.from_dict(payload).is_endless is True
+
+
 def test_radio_defaults_to_a_live_stream() -> None:
     """A station without the flag deserializes as a regular (live) radio station."""
     payload = {"item_id": "1", "provider": "tunein", "name": "radio", "provider_mappings": []}
