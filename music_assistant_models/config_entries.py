@@ -54,6 +54,7 @@ ConfigEntryTypeMap: dict[ConfigEntryType, type[ConfigValueType]] = {
     ConfigEntryType.STRING: str,
     ConfigEntryType.SECURE_STRING: str,
     ConfigEntryType.PAIRING_CODE: str,
+    ConfigEntryType.FOLDER: str,
     ConfigEntryType.INTEGER: int,
     ConfigEntryType.SPLITTED_STRING: str,
     ConfigEntryType.FLOAT: float,

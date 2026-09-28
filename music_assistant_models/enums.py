@@ -832,6 +832,9 @@ class ConfigEntryType(StrEnum):
     # pairing_code: a short code (PIN) shown on a device that the user copies over
     # during pairing; the entry's `format` field describes its shape
     PAIRING_CODE = "pairing_code"
+    # folder: a folder on the server, picked from the storage locations; the value is
+    # its absolute path. A client without a folder picker shows a text field
+    FOLDER = "folder"
     UNKNOWN = "unknown"
 
     @classmethod

@@ -316,6 +316,18 @@ def test_a_falsy_value_still_counts_as_a_value() -> None:
     assert _gated().parse_value("", allow_none=False) == ""
 
 
+def test_folder_entry_type_registered() -> None:
+    """FOLDER resolves, maps to str, is not UI-only and keeps its value."""
+    assert ConfigEntryType("folder") is ConfigEntryType.FOLDER
+    assert ConfigEntryTypeMap[ConfigEntryType.FOLDER] is str
+    assert ConfigEntryType.FOLDER not in UI_ONLY
+    entry = ConfigEntry(key="path", type=ConfigEntryType.FOLDER, required=True)
+    assert entry.parse_value("/media/music") == "/media/music"
+    restored = ConfigEntry.from_dict(entry.to_dict())
+    assert restored.type is ConfigEntryType.FOLDER
+    assert restored.value == "/media/music"
+
+
 def _pairing_entry(**overrides: Any) -> ConfigEntry:
     """Build a PAIRING_CODE entry, with no format unless overridden."""
     return ConfigEntry(key="pin", type=ConfigEntryType.PAIRING_CODE, **overrides)
