@@ -231,7 +231,7 @@ class MediaItem(_MediaItemBase):
     # True is a like, False a dislike, None means the user expressed nothing
     favorite: bool | None = None
     position: int | None = None  # required for playlist tracks, optional for all other
-    date_added: datetime | None = None  # when item was added to library/collection
+    date_added: datetime | None = None  # added to library, or to the playlist for playlist tracks
 
     def __hash__(self) -> int:
         """Return hash of MediaItem."""
