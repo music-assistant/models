@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from mashumaro import DataClassDictMixin
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from music_assistant_models.enums import CoreState
@@ -12,6 +13,16 @@ from music_assistant_models.enums import CoreState
 from .event import MassEvent
 from .helpers import get_serializable_value
 from .translations import resolve_translation, translations_active
+
+
+@dataclass
+class SortOptionInfo(DataClassDictMixin):
+    """Metadata for a sort option exposed by a library listing API."""
+
+    field: str
+    supports_direction: bool
+    default_direction: str | None = None
+    label_key: str | None = None
 
 
 @dataclass
