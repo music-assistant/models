@@ -15,6 +15,16 @@ from .translations import resolve_translation, translations_active
 
 
 @dataclass
+class SortOptionInfo(DataClassORJSONMixin):
+    """Metadata for a sort option exposed by a library listing API."""
+
+    field: str
+    supports_direction: bool
+    default_direction: str | None = None
+    label_key: str | None = None
+
+
+@dataclass
 class CommandMessage(DataClassORJSONMixin):
     """Model for a Message holding a command from server to client or client to server."""
 
