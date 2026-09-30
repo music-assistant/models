@@ -13,7 +13,7 @@ from .enums import TaskScheduleType, TaskStatus
 from .translations import resolve_translation, translations_active
 
 type TaskMetadataValue = (
-    None | bool | int | float | str | list[TaskMetadataValue] | dict[str, TaskMetadataValue]
+    bool | int | float | str | list[TaskMetadataValue] | dict[str, TaskMetadataValue] | None
 )
 type TaskMetadata = dict[str, TaskMetadataValue]
 
