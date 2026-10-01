@@ -4,7 +4,9 @@ from music_assistant_models.enums import MediaType
 from music_assistant_models.media_items import (
     Album,
     Artist,
+    Audiobook,
     ItemMapping,
+    MediaCollection,
     Playlist,
     ProviderMapping,
     RecommendationFolder,
@@ -52,6 +54,22 @@ def test_mixed_items_roundtrip_preserves_all_types() -> None:
                     provider_mappings=_make_provider_mapping("deezer", "pl_1"),
                     is_dynamic=True,
                 ),
+                MediaCollection(
+                    item_id="co_1",
+                    provider="library",
+                    name="Test Series",
+                    provider_mappings=set(),
+                    items=UniqueList(
+                        [
+                            Audiobook(
+                                item_id="ab_1",
+                                provider="deezer",
+                                name="Test Audiobook",
+                                provider_mappings=_make_provider_mapping("deezer", "ab_1"),
+                            )
+                        ]
+                    ),
+                ),
                 ItemMapping(
                     item_id="im_1",
                     provider="deezer",
@@ -64,11 +82,14 @@ def test_mixed_items_roundtrip_preserves_all_types() -> None:
 
     deserialized = RecommendationFolder.from_dict(folder.to_dict())
 
-    assert len(deserialized.items) == 5
+    assert len(deserialized.items) == 6
     assert [(type(i).__name__, i.media_type) for i in deserialized.items] == [
         ("Artist", MediaType.ARTIST),
         ("Album", MediaType.ALBUM),
         ("Track", MediaType.TRACK),
         ("Playlist", MediaType.PLAYLIST),
+        ("MediaCollection", MediaType.COLLECTION),
         ("ItemMapping", MediaType.TRACK),
     ]
+    (collection,) = [i for i in deserialized.items if isinstance(i, MediaCollection)]
+    assert [type(i).__name__ for i in collection.items] == ["Audiobook"]
