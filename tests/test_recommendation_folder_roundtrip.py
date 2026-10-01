@@ -91,4 +91,5 @@ def test_mixed_items_roundtrip_preserves_all_types() -> None:
         ("MediaCollection", MediaType.COLLECTION),
         ("ItemMapping", MediaType.TRACK),
     ]
-    assert [type(i).__name__ for i in deserialized.items[4].items] == ["Audiobook"]
+    (collection,) = [i for i in deserialized.items if isinstance(i, MediaCollection)]
+    assert [type(i).__name__ for i in collection.items] == ["Audiobook"]
