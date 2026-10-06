@@ -641,6 +641,7 @@ def _deserialize_recommendation_items(
         MediaType.PODCAST_EPISODE: PodcastEpisode,
         MediaType.GENRE: Genre,
         MediaType.AUDIO_SOURCE: AudioSource,
+        MediaType.COLLECTION: MediaCollection,
     }
     result: list[MediaItem | ItemMapping | BrowseFolder] = []
     for item in raw:
