@@ -7,7 +7,7 @@ from typing import Any
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from music_assistant_models.enums import CoreState
+from music_assistant_models.enums import CoreState, SortDirection, SortField
 
 from .event import MassEvent
 from .helpers import get_serializable_value
@@ -18,9 +18,9 @@ from .translations import resolve_translation, translations_active
 class SortOptionInfo(DataClassORJSONMixin):
     """Metadata for a sort option exposed by a library listing API."""
 
-    field: str
-    supports_direction: bool
-    default_direction: str | None = None
+    field: SortField
+    supports_direction: bool  # False for sort options such as random, which have no direction.
+    default_direction: SortDirection | None = None
     label_key: str | None = None
 
 
