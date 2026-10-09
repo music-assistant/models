@@ -52,8 +52,11 @@ class AudioFormat(DataClassDictMixin):
         # but prefer some codecs over others
         # calculate a rough score based on bit rate per channel
         bit_rate = self.bit_rate or 320
-        bit_rate_score = (bit_rate / max(self.channels, 1)) / 100
-        if self.content_type in (ContentType.AAC, ContentType.OGG):
+        bit_rate_score = (bit_rate / (self.channels or 2)) / 100
+        if (
+            self.content_type in (ContentType.AAC, ContentType.OGG)
+            or self.codec_type == ContentType.AAC
+        ):
             bit_rate_score += 1
         return int(bit_rate_score)
 

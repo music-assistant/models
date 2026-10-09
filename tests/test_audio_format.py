@@ -86,8 +86,14 @@ def test_lossless_codec_in_a_container_scores_as_lossless() -> None:
     assert aac.quality < alac.quality
 
 
-def test_lossy_format_without_channels_scores_as_mono() -> None:
-    """A lossy format with zero channels is scored as a mono one."""
+def test_aac_codec_in_a_container_scores_like_aac() -> None:
+    """AAC in an m4a container gets the same score as an AAC stream of the same bit rate."""
+    in_m4a = AudioFormat(content_type=ContentType.M4A, codec_type=ContentType.AAC, bit_rate=256)
+    assert in_m4a.quality == AudioFormat(content_type=ContentType.AAC, bit_rate=256).quality
+
+
+def test_lossy_format_without_channels_scores_as_stereo() -> None:
+    """A lossy format with zero channels is scored as a stereo one."""
     no_channels = AudioFormat(content_type=ContentType.MP3, bit_rate=320, channels=0)
-    mono = AudioFormat(content_type=ContentType.MP3, bit_rate=320, channels=1)
-    assert no_channels.quality == mono.quality
+    stereo = AudioFormat(content_type=ContentType.MP3, bit_rate=320, channels=2)
+    assert no_channels.quality == stereo.quality
