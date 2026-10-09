@@ -21,6 +21,16 @@ from .media_items import (
 from .streamdetails import StreamDetails
 
 
+@dataclass(kw_only=True)
+class QueueItemOrigin(DataClassDictMixin):
+    """Where a queue item was played from, and the copy that listing had for it."""
+
+    container: ItemMapping | None = None  # album, playlist, folder, podcast or audiobook
+    # the copy of the item in the container's listing, if known
+    provider_instance: str | None = None
+    item_id: str | None = None
+
+
 @dataclass
 class QueueItem(DataClassDictMixin):
     """Representation of a queue item."""
@@ -36,6 +46,7 @@ class QueueItem(DataClassDictMixin):
     index: int = 0
     # the available flag can be used to mark items that are not available/playable anymore
     available: bool = True
+    origin: QueueItemOrigin | None = None
 
     # extra_attributes: additional attributes for this QueueItem to store/forward
     # additional data that is not part of the standard model

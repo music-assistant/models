@@ -44,15 +44,19 @@ class AudioFormat(DataClassDictMixin):
     @property
     def quality(self) -> int:
         """Calculate quality score."""
-        if self.content_type.is_lossless():
+        # check the codec too: a container such as m4a holds either ALAC or AAC
+        if self.content_type.is_lossless() or self.codec_type.is_lossless():
             # lossless content is scored very high based on sample rate and bit depth
             return int(self.sample_rate / 1000) + self.bit_depth
         # lossy content, bit_rate is most important score
         # but prefer some codecs over others
         # calculate a rough score based on bit rate per channel
         bit_rate = self.bit_rate or 320
-        bit_rate_score = (bit_rate / self.channels) / 100
-        if self.content_type in (ContentType.AAC, ContentType.OGG):
+        bit_rate_score = (bit_rate / (self.channels or 2)) / 100
+        if (
+            self.content_type in (ContentType.AAC, ContentType.OGG)
+            or self.codec_type == ContentType.AAC
+        ):
             bit_rate_score += 1
         return int(bit_rate_score)
 
