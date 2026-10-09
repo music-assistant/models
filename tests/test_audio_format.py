@@ -76,3 +76,18 @@ def test_not_equal_to_other_types() -> None:
     audio_format = _pcm(ContentType.PCM_S16LE, bit_depth=16)
     assert audio_format != "pcm"
     assert audio_format == ANY
+
+
+def test_lossless_codec_in_a_container_scores_as_lossless() -> None:
+    """ALAC in an m4a container scores like FLAC of the same resolution, AAC stays lossy."""
+    alac = AudioFormat(content_type=ContentType.M4A, codec_type=ContentType.ALAC)
+    aac = AudioFormat(content_type=ContentType.M4A, codec_type=ContentType.AAC, bit_rate=256)
+    assert alac.quality == AudioFormat(content_type=ContentType.FLAC).quality
+    assert aac.quality < alac.quality
+
+
+def test_lossy_format_without_channels_scores_as_mono() -> None:
+    """A lossy format with zero channels is scored as a mono one."""
+    no_channels = AudioFormat(content_type=ContentType.MP3, bit_rate=320, channels=0)
+    mono = AudioFormat(content_type=ContentType.MP3, bit_rate=320, channels=1)
+    assert no_channels.quality == mono.quality
