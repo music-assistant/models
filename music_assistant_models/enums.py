@@ -1033,7 +1033,11 @@ class ProviderStatus(StrEnum):
 
 
 class SortField(StrEnum):
-    """Sort fields available for media listings."""
+    """
+    Sort fields available for media listings.
+
+    RANDOM, RANDOM_PLAY_COUNT and ORIGINAL carry no direction.
+    """
 
     NAME = "name"
     SORT_NAME = "sort_name"
@@ -1047,6 +1051,11 @@ class SortField(StrEnum):
     ARTIST_NAME = "artist_name"
     RANDOM = "random"
     RANDOM_PLAY_COUNT = "random_play_count"
+    TRACK_NUMBER = "track_number"  # disc number, then track number
+    ALBUM_NAME = "album_name"  # the album a track belongs to
+    PROVIDER = "provider"  # the provider the item comes from
+    FAVORITE_TIMESTAMP = "favorite_timestamp"  # when the calling user marked the item a favorite
+    ORIGINAL = "original"  # the order the source lists the items in
 
 
 class SortDirection(StrEnum):
@@ -1054,3 +1063,33 @@ class SortDirection(StrEnum):
 
     ASC = "asc"
     DESC = "desc"
+
+
+class ListingType(StrEnum):
+    """The listings a client can ask the sort options for (music/sort_options)."""
+
+    LIBRARY_ARTISTS = "library_artists"
+    LIBRARY_ALBUMS = "library_albums"
+    LIBRARY_TRACKS = "library_tracks"
+    LIBRARY_PLAYLISTS = "library_playlists"
+    LIBRARY_RADIOS = "library_radios"
+    LIBRARY_AUDIOBOOKS = "library_audiobooks"
+    LIBRARY_PODCASTS = "library_podcasts"
+    LIBRARY_GENRES = "library_genres"
+    ALBUM_TRACKS = "album_tracks"
+    ARTIST_ALBUMS = "artist_albums"
+    ARTIST_TRACKS = "artist_tracks"
+    ARTIST_APPEARS_ON = "artist_appears_on"  # albums the artist is on, but not as album artist
+    ARTIST_DISCOGRAPHY = "artist_discography"  # the complete discography of an artist
+    ARTIST_TOP_TRACKS = "artist_top_tracks"
+    ARTIST_TOP_ALBUMS = "artist_top_albums"
+    ARTIST_AUDIOBOOKS = "artist_audiobooks"
+    SIMILAR_ARTISTS = "similar_artists"
+    SIMILAR_TRACKS = "similar_tracks"
+    TRACK_ALBUMS = "track_albums"  # the albums a track appears on
+    VERSIONS = "versions"  # track, album, podcast, audiobook and radio versions (one option set)
+    PLAYLIST_TRACKS = "playlist_tracks"
+    PODCAST_EPISODES = "podcast_episodes"
+    GENRE_TRACKS = "genre_tracks"
+    GENRE_ALBUMS = "genre_albums"
+    BROWSE = "browse"  # a browse folder
