@@ -57,8 +57,8 @@ class TranslatableText:
     Text that reads in the language of the API client it is sent to.
 
     Use it as a translation argument of an error to name something with a translation of its
-    own, such as the label of a config entry. It is resolved when the error is sent to an API
-    client; anywhere else it reads as the fallback text.
+    own, such as the label of a config entry. Its str() reads in the language of the API client
+    the error is being sent to, and as the fallback text everywhere else.
     """
 
     key: str

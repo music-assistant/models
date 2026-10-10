@@ -376,12 +376,19 @@ class ConfigEntry(DataClassDictMixin):
                 raise self._invalid_value_error(f"{value} is not a valid value for {self.key}")
             value = self.default_value
 
-        if self.multi_value and value is not None:
-            value = cast("_ConfigValueTypeMulti", value)
-            value = [convert_value(x) for x in value]  # type: ignore[assignment]
-        elif value is not None:
-            value = cast("_ConfigValueTypeSingle", value)
-            value = convert_value(value)
+        try:
+            if self.multi_value and value is not None:
+                value = cast("_ConfigValueTypeMulti", value)
+                value = [convert_value(x) for x in value]  # type: ignore[assignment]
+            elif value is not None:
+                value = cast("_ConfigValueTypeSingle", value)
+                value = convert_value(value)
+        except (ValueError, OverflowError) as err:
+            if raise_on_error:
+                raise self._invalid_value_error(
+                    f"{value} is not a valid value for {self.key}"
+                ) from err
+            value = self.default_value
 
         self.value = value
         return self.value
