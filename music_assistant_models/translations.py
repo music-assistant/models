@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from contextvars import ContextVar
+from dataclasses import dataclass
 
 # ContextVar set by the Music Assistant server during outbound API serialization.
 # When set, model __post_serialize__ hooks use the resolver to replace human-readable
@@ -48,3 +49,23 @@ def resolve_translation(
         return resolver(key, owner=owner, params=params)
     except Exception:  # noqa: BLE001 - resolution must never break serialization
         return None
+
+
+@dataclass
+class TranslatableText:
+    """
+    Text that reads in the language of the API client it is sent to.
+
+    Use it as a translation argument of an error to name something with a translation of its
+    own, such as the label of a config entry. Its str() reads in the language of the API client
+    the error is being sent to, and as the fallback text everywhere else.
+    """
+
+    key: str
+    fallback: str
+    owner: str | None = None
+    params: list[str] | None = None
+
+    def __str__(self) -> str:
+        """Return the text in the language of the current API client, or the fallback text."""
+        return resolve_translation(self.key, owner=self.owner, params=self.params) or self.fallback

@@ -4,9 +4,15 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Any
 
+import pytest
+
 from music_assistant_models.api import ErrorResultMessage
+from music_assistant_models.config_entries import ConfigEntry, ProviderConfig
+from music_assistant_models.enums import ConfigEntryType, ProviderType
 from music_assistant_models.errors import (
     ERROR_MAP,
+    InvalidConfigValueError,
+    InvalidDataError,
     InvalidToken,
     MediaNotFoundError,
     MusicAssistantError,
@@ -23,6 +29,9 @@ _CATALOG = {
     "errors.media_count": "{0} items niet gevonden",
     "errors.login_failed": "Inloggen mislukt.",
     "provider.demo.errors.login_failed": "Demo-login mislukt.",
+    "errors.invalid_config_value": "De waarde voor {0} is ongeldig.",
+    "errors.config_value_required": "{0} is verplicht.",
+    "provider.demo.config_entries.proxy_url.label": "Proxyadres",
 }
 
 
@@ -148,3 +157,77 @@ def test_error_map_still_registers_all_subclasses() -> None:
     assert ERROR_MAP[1] is ProviderUnavailableError
     assert ERROR_MAP[25] is RateLimited
     assert ERROR_MAP[26] is UnsupportedSystemError
+
+
+def _rejected_config_value(value: str | None, **entry_kwargs: Any) -> InvalidConfigValueError:
+    """Return the error a demo provider config raises when its proxy_url entry rejects value."""
+    entry = ConfigEntry(key="proxy_url", type=ConfigEntryType.STRING, **entry_kwargs)
+    raw = {
+        "values": {},
+        "type": ProviderType.MUSIC.value,
+        "domain": "demo",
+        "instance_id": "demo--1",
+    }
+    conf = ProviderConfig.parse([entry], raw)
+
+    def save() -> None:
+        conf.update({"proxy_url": value})
+        conf.validate()
+
+    with pytest.raises(InvalidConfigValueError) as exc_info:
+        save()
+    return exc_info.value
+
+
+def _localized_details(err: InvalidConfigValueError) -> str | None:
+    """Return the details an API client receives for the error."""
+    msg = ErrorResultMessage(
+        "abc",
+        err.error_code,
+        str(err),
+        translation_key=err.translation_key,
+        translation_args=err.translation_args,
+        translation_owner=err.translation_owner,
+    )
+    with _resolver_active():
+        return msg.to_dict()["details"]
+
+
+def _only_proxy(value: Any) -> bool:
+    """Accept only the demo proxy address."""
+    return bool(value == "http://proxy")
+
+
+def test_rejected_config_value_is_a_value_error() -> None:
+    """A rejected config value is an InvalidDataError with its own code, and still a ValueError."""
+    err = _rejected_config_value("http://elsewhere", validate=_only_proxy)
+    assert isinstance(err, InvalidDataError)
+    assert isinstance(err, ValueError)
+    assert ERROR_MAP[28] is InvalidConfigValueError
+    assert ERROR_MAP[3] is InvalidDataError
+    # the English message is kept for logs and clients without translations
+    assert str(err) == "http://elsewhere is not a valid value for proxy_url"
+
+
+def test_rejected_config_value_names_the_entry_by_its_label() -> None:
+    """The client reads the label of the entry in its own language, resolved under the owner."""
+    err = _rejected_config_value("http://elsewhere", validate=_only_proxy)
+    assert _localized_details(err) == "De waarde voor Proxyadres is ongeldig."
+
+
+def test_rejected_config_value_falls_back_to_the_entry_label_or_key() -> None:
+    """Without a translation for the label, the entry is named by its in-code label or its key."""
+    err = _rejected_config_value("http://elsewhere", validate=_only_proxy)
+    # no resolver bound: the label reads as its fallback
+    assert str(err.translation_args[0]) == "proxy_url"
+    err = _rejected_config_value(
+        "http://elsewhere", validate=_only_proxy, label="Proxy URL", translation_key="other"
+    )
+    assert _localized_details(err) == "De waarde voor Proxy URL is ongeldig."
+
+
+def test_missing_required_config_value_reads_as_required() -> None:
+    """A required entry left empty is reported as required rather than invalid."""
+    err = _rejected_config_value(None, required=True)
+    assert err.translation_key == "config_value_required"
+    assert _localized_details(err) == "Proxyadres is verplicht."

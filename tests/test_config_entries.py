@@ -14,6 +14,7 @@ from music_assistant_models.config_entries import (
     ProviderConfig,
 )
 from music_assistant_models.enums import ConfigEntryType, ProviderType
+from music_assistant_models.errors import InvalidConfigValueError
 
 
 def _provider_raw(**overrides: Any) -> dict[str, Any]:
@@ -290,6 +291,21 @@ def test_a_supplied_value_still_has_to_match_the_entry_shape() -> None:
 
     with pytest.raises(ValueError, match="proxy_url must be a single value"):
         _gated().parse_value(["http://proxy", "http://elsewhere"])
+
+
+def test_a_value_that_does_not_convert_to_the_entry_type_is_rejected() -> None:
+    """Reject a value the entry type can not hold, or fall back to the default when parsing."""
+    port = ConfigEntry(key="port", type=ConfigEntryType.INTEGER, default_value=8095)
+    ports = ConfigEntry(
+        key="ports", type=ConfigEntryType.INTEGER, multi_value=True, default_value=[8095]
+    )
+
+    assert port.parse_value("8096") == 8096
+    with pytest.raises(InvalidConfigValueError, match=r"8095\.5 is not a valid value for port"):
+        port.parse_value("8095.5")
+    with pytest.raises(InvalidConfigValueError, match="is not a valid value for ports"):
+        ports.parse_value(["8096", "x"])
+    assert port.parse_value("abc", raise_on_error=False) == 8095
 
 
 def test_a_value_of_the_wrong_shape_does_not_reach_the_callback() -> None:

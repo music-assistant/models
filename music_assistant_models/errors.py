@@ -261,3 +261,14 @@ class UserNotFoundError(MusicAssistantError):
 
     error_code = 27
     translation_key = "user_not_found"
+
+
+class InvalidConfigValueError(InvalidDataError, ValueError):
+    """
+    Error raised when a config entry rejects a value.
+
+    It is also a ValueError, so callers may catch it as one.
+    """
+
+    error_code = 28
+    translation_key = "invalid_config_value"
