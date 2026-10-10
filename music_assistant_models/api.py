@@ -16,7 +16,7 @@ from .translations import resolve_translation, translations_active
 
 @dataclass
 class SortOptionInfo(DataClassORJSONMixin):
-    """Metadata for a sort option exposed by a library listing API."""
+    """Metadata for a sort option offered by a listing."""
 
     field: SortField
     supports_direction: bool  # False for sort options such as random, which have no direction.
