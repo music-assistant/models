@@ -1,8 +1,8 @@
 """Tests for the StreamDetails model."""
 
-from music_assistant_models.enums import ContentType, MediaType, StreamType
+from music_assistant_models.enums import ContentType, CrossfadeMode, MediaType, StreamType
 from music_assistant_models.media_items import AudioFormat
-from music_assistant_models.streamdetails import StreamDetails
+from music_assistant_models.streamdetails import StreamDetails, TailOverlap
 
 
 def _make_streamdetails(**overrides: object) -> StreamDetails:
@@ -65,6 +65,25 @@ def test_is_realtime_defaults_to_false() -> None:
 def test_is_realtime_is_not_serialized() -> None:
     """is_realtime is server-internal and must not be sent to clients."""
     assert "is_realtime" not in _make_streamdetails(is_realtime=True).to_dict()
+
+
+def test_tail_overlap_is_not_serialized() -> None:
+    """tail_overlap is server-internal and must not be sent to clients."""
+    sd = _make_streamdetails(tail_overlap=TailOverlap(duration=4.5, next_queue_item_id="qi-2"))
+    assert "tail_overlap" not in sd.to_dict()
+
+
+def test_tail_overlap_defaults_to_none_on_deserialize() -> None:
+    """A payload without tail_overlap deserializes to None and still round-trips equal."""
+    sd = _make_streamdetails()
+    restored = StreamDetails.from_dict(sd.to_dict())
+    assert restored.tail_overlap is None
+    assert restored == sd
+
+
+def test_crossfade_mode_voice_over() -> None:
+    """The voice_over crossfade mode deserializes to its own member."""
+    assert CrossfadeMode("voice_over") is CrossfadeMode.VOICE_OVER
 
 
 def test_queue_session_id_is_not_serialized() -> None:

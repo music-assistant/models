@@ -427,6 +427,8 @@ class CrossfadeMode(StrEnum):
 
     SMART_CROSSFADE = "smart_crossfade"  # Use smart crossfade with beat matching and EQ filters
     STANDARD_CROSSFADE = "standard_crossfade"  # Use standard crossfade only
+    # Applied by the server for an item that declares a tail overlap; never a user setting.
+    VOICE_OVER = "voice_over"  # Spoken tail over the next item's start, that item ducked under it
     DISABLED = "disabled"  # No crossfade
     # The source crossfades its own playback, so the server does not. Distinct
     # from DISABLED, which means nothing is crossfading at all.

@@ -61,6 +61,14 @@ class MultiPartPath:
     duration: float | None = None
 
 
+@dataclass
+class TailOverlap:
+    """How much of an item's tail may play over the start of the queue item after it."""
+
+    duration: float  # seconds of this item's tail that play over the next item's start
+    next_queue_item_id: str  # the queue item the overlap was planned against
+
+
 @dataclass(kw_only=True)
 class StreamDetails(DataClassDictMixin):
     """Model for streamdetails."""
@@ -176,6 +184,16 @@ class StreamDetails(DataClassDictMixin):
     # The server skips optimizations that assume a source can be read ahead of playback.
     is_realtime: bool = field(
         default=False,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
+    # tail_overlap: lets the tail of this item play over the start of the next queue item,
+    # with that item ducked under it (a DJ talking over a song's intro). Set by the provider
+    # that created the streamdetails; the server applies it at a flow stream boundary.
+    tail_overlap: TailOverlap | None = field(
+        default=None,
         compare=False,
         metadata=field_options(serialize="omit", deserialize=pass_through),
         repr=False,
