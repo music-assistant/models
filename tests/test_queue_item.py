@@ -5,9 +5,17 @@ from typing import Any
 
 import pytest
 
-from music_assistant_models.enums import MediaType
-from music_assistant_models.media_items import ItemMapping, ProviderMapping, Track
+from music_assistant_models.enums import ImageType, MediaType
+from music_assistant_models.media_items import (
+    Album,
+    ItemMapping,
+    MediaItemImage,
+    MediaItemMetadata,
+    ProviderMapping,
+    Track,
+)
 from music_assistant_models.queue_item import QueueItem, QueueItemOrigin
+from music_assistant_models.unique_list import UniqueList
 
 
 def _origin() -> QueueItemOrigin:
@@ -65,3 +73,24 @@ def test_payload_without_origin_key_deserializes(
     legacy = _queue_item().to_dict()
     legacy.pop("origin")
     assert load(legacy).origin is None
+
+
+def test_image_is_the_album_cover_of_a_track() -> None:
+    """A queue item of a track on an album shows the album cover over the track's own image."""
+    album_thumb = MediaItemImage(type=ImageType.THUMB, path="album.jpg", provider="tidal--a1")
+    track_thumb = MediaItemImage(type=ImageType.THUMB, path="track.jpg", provider="tidal--a1")
+    track = Track(
+        item_id="1",
+        provider="tidal--a1",
+        name="Track",
+        provider_mappings=set(),
+        album=Album(
+            item_id="2",
+            provider="tidal--a1",
+            name="Album",
+            provider_mappings=set(),
+            metadata=MediaItemMetadata(images=UniqueList([album_thumb])),
+        ),
+        metadata=MediaItemMetadata(images=UniqueList([track_thumb])),
+    )
+    assert QueueItem.from_media_item("q1", track).image == album_thumb
