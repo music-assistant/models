@@ -98,6 +98,7 @@ class ServerInfoMessage(DataClassORJSONMixin):
     internal_url: str | None = None  # added in schema version 32 (MA v2.10)
     external_url: str | None = None  # added in schema version 32 (MA v2.10)
     has_remote_access: bool = False  # added in schema version 32 (MA v2.10)
+    unsupported_install: bool = False  # added in schema version 87 (MA v2.11)
 
     @classmethod
     def __post_serialize__(cls, d: dict[str, Any]) -> dict[str, Any]:
