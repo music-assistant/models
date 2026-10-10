@@ -724,6 +724,7 @@ class ProviderFeature(StrEnum):
 
     # playlist-specific features
     PLAYLIST_TRACKS_EDIT = "playlist_tracks_edit"
+    PLAYLIST_TRACKS_MOVE = "playlist_tracks_move"  # tracks of a playlist can be reordered
     # PLAYLIST_CREATE is deprecated: replaced by PLAYLIST_CREATE_TRACKS (and others)
     # TODO: remove this after 2.8 release
     PLAYLIST_CREATE = "playlist_create"
