@@ -14,7 +14,8 @@ from mashumaro import DataClassDictMixin, field_options, pass_through
 from .access import ProviderAccess as ProviderAccess  # noqa: PLC0414
 from .constants import SECURE_STRING_SUBSTITUTE
 from .enums import ConfigEntryType, PlayerType, ProviderStatus, ProviderType
-from .translations import resolve_translation, translations_active
+from .errors import InvalidConfigValueError
+from .translations import TranslatableText, resolve_translation, translations_active
 
 LOGGER = logging.getLogger(__name__)
 
@@ -330,17 +331,19 @@ class ConfigEntry(DataClassDictMixin):
             # nothing to work with: the shape checks and the validate callback below all
             # describe a value that was actually given, so only the required check applies
             if self.required and not allow_none and raise_on_error:
-                raise ValueError(f"{self.key} is required")
+                raise self._invalid_value_error(
+                    f"{self.key} is required", translation_key="config_value_required"
+                )
             self.value = None
             return self.value
 
         if isinstance(value, list) and not self.multi_value:
             if raise_on_error:
-                raise ValueError(f"{self.key} must be a single value")
+                raise self._invalid_value_error(f"{self.key} must be a single value")
             value = self.default_value
         if self.multi_value and not isinstance(value, list):
             if raise_on_error:
-                raise ValueError(f"value for {self.key} must be a list")
+                raise self._invalid_value_error(f"value for {self.key} must be a list")
             value = self.default_value
 
         # (value can be None again here when a shape check above fell back to an empty default)
@@ -370,7 +373,7 @@ class ConfigEntry(DataClassDictMixin):
         # (value can be None again here when a shape check fell back to an empty default)
         if value is not None and self.validate is not None and not (self.validate(value)):
             if raise_on_error:
-                raise ValueError(f"{value} is not a valid value for {self.key}")
+                raise self._invalid_value_error(f"{value} is not a valid value for {self.key}")
             value = self.default_value
 
         if self.multi_value and value is not None:
@@ -402,14 +405,30 @@ class ConfigEntry(DataClassDictMixin):
             return code
         slots = [ch for ch in self.format if ch in "#X"]
         if len(code) != len(slots):
-            raise ValueError(f"{self.key} must be {len(slots)} characters")
+            raise self._invalid_value_error(f"{self.key} must be {len(slots)} characters")
         code = code.upper()
         for char, slot in zip(code, slots, strict=True):
             if slot == "#" and not (char.isascii() and char.isdigit()):
-                raise ValueError(f"{self.key} must contain only digits")
+                raise self._invalid_value_error(f"{self.key} must contain only digits")
             if slot == "X" and not (char.isascii() and char.isalnum()):
-                raise ValueError(f"{self.key} contains an invalid character: {char!r}")
+                raise self._invalid_value_error(
+                    f"{self.key} contains an invalid character: {char!r}"
+                )
         return code
+
+    def _invalid_value_error(
+        self, message: str, translation_key: str | None = None
+    ) -> InvalidConfigValueError:
+        """Return the error that rejects a value for this entry, naming it by its label."""
+        label = TranslatableText(
+            f"{_localized_base(self.translation_key, self.key, 'config_entries')}.label",
+            fallback=self.label or self.key,
+            owner=self.translation_owner,
+            params=self.translation_params,
+        )
+        return InvalidConfigValueError(
+            message, translation_key=translation_key, translation_args=[label]
+        )
 
 
 @dataclass(kw_only=True)
