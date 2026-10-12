@@ -21,6 +21,8 @@ class PlayLogEntry:
     queue_item_id: str
     duration: int | None = None
     seconds_streamed: float | None = None
+    # Captured media-time offset for this playback; None means it was not recorded.
+    seek_position: float | None = None
 
 
 @dataclass
