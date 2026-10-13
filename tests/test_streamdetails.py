@@ -67,6 +67,16 @@ def test_is_realtime_is_not_serialized() -> None:
     assert "is_realtime" not in _make_streamdetails(is_realtime=True).to_dict()
 
 
+def test_verify_ssl_defaults_to_true() -> None:
+    """verify_ssl defaults to True, so an https source is verified unless the provider opts out."""
+    assert _make_streamdetails().verify_ssl is True
+
+
+def test_verify_ssl_is_not_serialized() -> None:
+    """verify_ssl is server-internal and must not be sent to clients."""
+    assert "verify_ssl" not in _make_streamdetails(verify_ssl=False).to_dict()
+
+
 def test_tail_overlap_is_not_serialized() -> None:
     """tail_overlap is server-internal and must not be sent to clients."""
     sd = _make_streamdetails(tail_overlap=TailOverlap(duration=4.5, next_queue_item_id="qi-2"))
