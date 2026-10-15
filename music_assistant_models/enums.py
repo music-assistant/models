@@ -681,6 +681,10 @@ class ProviderFeature(StrEnum):
     AUTHOR_AUDIOBOOKS = "author_audiobooks"
     NARRATOR_AUDIOBOOKS = "narrator_audiobooks"
 
+    # audiobook bookmarks of the user: read, and add/rename/remove
+    AUDIOBOOK_BOOKMARKS = "audiobook_bookmarks"
+    AUDIOBOOK_BOOKMARKS_EDIT = "audiobook_bookmarks_edit"
+
     # if we can grab all albums for an artist from the music provider
     ARTIST_ALBUMS = "artist_albums"
 

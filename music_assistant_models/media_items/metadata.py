@@ -116,6 +116,15 @@ class MediaItemChapter(DataClassDictMixin):
 
 
 @dataclass(frozen=True, kw_only=True)
+class MediaItemBookmark(MediaItemChapter):
+    """Model for a user's bookmark on one provider copy of a MediaItem."""
+
+    provider_instance_id: str
+    provider_item_id: str
+    stored_by_music_assistant: bool = False
+
+
+@dataclass(frozen=True, kw_only=True)
 class MediaItemTranscriptCue(DataClassDictMixin):
     """Model for a single timed cue of a MediaItem's transcript."""
 
