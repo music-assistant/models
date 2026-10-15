@@ -116,9 +116,11 @@ class MediaItemChapter(DataClassDictMixin):
 
 
 @dataclass(frozen=True, kw_only=True)
-class MediaItemBookmark(MediaItemChapter):
+class MediaItemBookmark(DataClassDictMixin):
     """Model for a user's bookmark on one provider copy of a MediaItem."""
 
+    name: str
+    start: float
     provider_instance_id: str
     provider_item_id: str
     stored_by_music_assistant: bool = False

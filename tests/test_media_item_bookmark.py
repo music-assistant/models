@@ -7,7 +7,6 @@ def test_bookmark_roundtrip() -> None:
     """A bookmark read without the storage flag is provider-stored and round-trips as a dict."""
     bookmark = MediaItemBookmark.from_dict(
         {
-            "position": 1,
             "name": "Intro",
             "start": 12.5,
             "provider_instance_id": "abs",
