@@ -177,6 +177,16 @@ class StreamDetails(DataClassDictMixin):
         repr=False,
     )
 
+    # verify_ssl: bool to indicate that the certificate of an https source must be verified.
+    # A provider with a verify_ssl setting passes its value; the server then skips the
+    # certificate check in ffmpeg and ffprobe for this source when it is False.
+    verify_ssl: bool = field(
+        default=True,
+        compare=False,
+        metadata=field_options(serialize="omit", deserialize=pass_through),
+        repr=False,
+    )
+
     # is_realtime: bool to indicate that the source hands over its audio just-in-time,
     # at (about) playback pace, instead of delivering it as fast as the connection allows.
     # Radio streams and live audio sources are always realtime; a music provider should
