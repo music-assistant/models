@@ -96,6 +96,25 @@ def test_payload_without_private_key_deserializes() -> None:
     assert Player.from_dict(legacy).private is False
 
 
+def test_managed_externally_defaults_to_false() -> None:
+    """A player is only managed externally when its provider marks it as such."""
+    assert _player().managed_externally is False
+
+
+def test_managed_externally_serialize_roundtrip() -> None:
+    """A player managed externally keeps the flag across serialization."""
+    player = _player()
+    player.managed_externally = True
+    assert Player.from_dict(player.to_dict()).managed_externally is True
+
+
+def test_payload_without_managed_externally_key_deserializes() -> None:
+    """Payloads from older servers without the managed_externally key still deserialize."""
+    legacy = _player().to_dict()
+    legacy.pop("managed_externally", None)
+    assert Player.from_dict(legacy).managed_externally is False
+
+
 def test_active_source_audio_serializes_as_explicit_null() -> None:
     """A player without active source audio details serializes an explicit null.
 
