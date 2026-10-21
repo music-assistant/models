@@ -21,6 +21,10 @@ def _make_media_collection_audiobook() -> MediaCollection:
                 Audiobook(item_id="a2", provider="library", name="book 2", provider_mappings=set()),
             ]
         ),
+        total_items=3,
+        duration=36000,
+        fully_played=False,
+        in_progress=True,
     )
 
 

@@ -532,6 +532,12 @@ class MediaCollection[M](MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     items: UniqueListItems[M] = field(default_factory=UniqueListItems)
+    # computed over all items of the collection, also when items holds a filtered subset;
+    # None when unknown
+    total_items: int | None = None
+    duration: int | None = None
+    fully_played: bool | None = None
+    in_progress: bool | None = None
     media_type: MediaType = MediaType.COLLECTION
 
     class Config:
