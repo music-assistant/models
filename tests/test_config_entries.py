@@ -308,6 +308,39 @@ def test_a_value_that_does_not_convert_to_the_entry_type_is_rejected() -> None:
     assert port.parse_value("abc", raise_on_error=False) == 8095
 
 
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("true", True),
+        ("1", True),
+        ("on", True),
+        ("yes", True),
+        ("false", False),
+        ("0", False),
+        ("off", False),
+        ("no", False),
+        (" False ", False),
+        ("TRUE", True),
+        (0, False),
+        (1, True),
+    ],
+)
+def test_a_boolean_string_is_parsed_by_its_meaning(raw: ConfigValueType, expected: bool) -> None:
+    """Parse a stringified boolean by what it says."""
+    entry = ConfigEntry(key="enabled", type=ConfigEntryType.BOOLEAN, default_value=True)
+
+    assert entry.parse_value(raw) is expected
+
+
+def test_an_unknown_boolean_string_is_rejected() -> None:
+    """Reject a string that is no boolean, or fall back to the default when parsing."""
+    entry = ConfigEntry(key="enabled", type=ConfigEntryType.BOOLEAN, default_value=False)
+
+    with pytest.raises(InvalidConfigValueError, match="maybe is not a valid value for enabled"):
+        entry.parse_value("maybe")
+    assert entry.parse_value("maybe", raise_on_error=False) is False
+
+
 def test_a_value_of_the_wrong_shape_does_not_reach_the_callback() -> None:
     """Keep the callback out of the way when a value of the wrong shape is dropped."""
     seen: list[ConfigValueType] = []
