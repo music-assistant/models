@@ -365,7 +365,9 @@ class ConfigEntry(DataClassDictMixin):
                 return float(_value)
             if self.type == ConfigEntryType.INTEGER and isinstance(_value, float | str):
                 return int(_value)
-            if self.type == ConfigEntryType.BOOLEAN and isinstance(_value, int | str):
+            if self.type == ConfigEntryType.BOOLEAN and isinstance(_value, str):
+                return self._parse_bool_string(_value)
+            if self.type == ConfigEntryType.BOOLEAN and isinstance(_value, int):
                 return bool(_value)
             return _value
 
@@ -404,6 +406,16 @@ class ConfigEntry(DataClassDictMixin):
             return [tuple(x.split(MULTI_VALUE_SPLITTER, 1)) for x in value]
         assert isinstance(value, str)
         return tuple(value.split(MULTI_VALUE_SPLITTER, 1))
+
+    @staticmethod
+    def _parse_bool_string(value: str) -> bool:
+        """Map a stringified boolean (e.g. from an untyped API client) to its bool."""
+        normalized = value.strip().lower()
+        if normalized in ("true", "1", "on", "yes"):
+            return True
+        if normalized in ("false", "0", "off", "no"):
+            return False
+        raise ValueError(value)
 
     def _parse_pairing_code(self, value: str) -> str:
         """Strip separators and validate the code against `format`."""
