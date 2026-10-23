@@ -30,7 +30,7 @@ from music_assistant_models.helpers import (
 from music_assistant_models.translations import resolve_translation, translations_active
 from music_assistant_models.unique_list import UniqueList
 
-from .metadata import AudioMetadata, MediaItemImage, MediaItemMetadata
+from .metadata import AudioMetadata, MediaCollectionMetadata, MediaItemImage, MediaItemMetadata
 from .provider_mapping import ProviderMapping
 
 # The media types a playlist is allowed to hold.
@@ -532,6 +532,7 @@ class MediaCollection[M](MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     items: UniqueListItems[M] = field(default_factory=UniqueListItems)
+    metadata: MediaCollectionMetadata = field(default_factory=MediaCollectionMetadata)
     media_type: MediaType = MediaType.COLLECTION
 
     class Config:
