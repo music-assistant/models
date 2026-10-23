@@ -4,7 +4,13 @@ import orjson
 
 from music_assistant_models.enums import MediaType
 from music_assistant_models.helpers import get_serializable_value
-from music_assistant_models.media_items import Audiobook, MediaCollection, media_from_dict
+from music_assistant_models.media_items import (
+    Audiobook,
+    MediaCollection,
+    MediaCollectionMetadata,
+    MediaItemMetadata,
+    media_from_dict,
+)
 from music_assistant_models.media_items.media_item import ItemMapping
 from music_assistant_models.unique_list import UniqueList
 
@@ -21,10 +27,9 @@ def _make_media_collection_audiobook() -> MediaCollection:
                 Audiobook(item_id="a2", provider="library", name="book 2", provider_mappings=set()),
             ]
         ),
-        total_items=3,
-        duration=36000,
-        fully_played=False,
-        in_progress=True,
+        metadata=MediaCollectionMetadata(
+            total_items=3, duration=36000, fully_played=False, in_progress=True
+        ),
     )
 
 
@@ -53,6 +58,10 @@ def test_media_collection_serialize_roundtrip() -> None:
     data = original.to_dict()
     restored = MediaCollection.from_dict(data)
     assert restored.to_dict() == data
+    assert isinstance(restored.metadata, MediaCollectionMetadata)
+    assert restored.metadata.in_progress is True
+    # a client that only knows the plain metadata still reads it
+    assert MediaItemMetadata.from_dict(data["metadata"]).images is None
 
 
 def test_media_from_dict_returns_media_collection_audiobook() -> None:

@@ -265,3 +265,18 @@ class MediaItemMetadata(DataClassDictMixin):
         if not self.images:
             self.images = UniqueList()
         self.images.append(image)
+
+
+@dataclass(kw_only=True)
+class MediaCollectionMetadata(MediaItemMetadata):
+    """
+    Model for a MediaCollection's metadata.
+
+    Computed over all items of the collection, so it stays the same when the collection
+    holds a filtered subset of them. A field is None when unknown.
+    """
+
+    total_items: int | None = None
+    duration: int | None = None
+    fully_played: bool | None = None
+    in_progress: bool | None = None

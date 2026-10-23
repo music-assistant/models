@@ -30,7 +30,7 @@ from music_assistant_models.helpers import (
 from music_assistant_models.translations import resolve_translation, translations_active
 from music_assistant_models.unique_list import UniqueList
 
-from .metadata import AudioMetadata, MediaItemImage, MediaItemMetadata
+from .metadata import AudioMetadata, MediaCollectionMetadata, MediaItemImage, MediaItemMetadata
 from .provider_mapping import ProviderMapping
 
 # The media types a playlist is allowed to hold.
@@ -532,12 +532,7 @@ class MediaCollection[M](MediaItem):
     __eq__ = _MediaItemBase.__eq__
 
     items: UniqueListItems[M] = field(default_factory=UniqueListItems)
-    # computed over all items of the collection, also when items holds a filtered subset;
-    # None when unknown
-    total_items: int | None = None
-    duration: int | None = None
-    fully_played: bool | None = None
-    in_progress: bool | None = None
+    metadata: MediaCollectionMetadata = field(default_factory=MediaCollectionMetadata)
     media_type: MediaType = MediaType.COLLECTION
 
     class Config:
