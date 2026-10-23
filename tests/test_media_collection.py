@@ -64,6 +64,14 @@ def test_media_collection_serialize_roundtrip() -> None:
     assert MediaItemMetadata.from_dict(data["metadata"]).images is None
 
 
+def test_media_collection_metadata_takes_plain_metadata_updates() -> None:
+    """Plain metadata updates a collection's metadata and keeps its own fields."""
+    metadata = MediaCollectionMetadata(total_items=3)
+    metadata.update(MediaItemMetadata(description="A series"))
+    assert metadata.description == "A series"
+    assert metadata.total_items == 3
+
+
 def test_media_from_dict_returns_media_collection_audiobook() -> None:
     """media_from_dict deserializes media_collection payloads to MediaCollection."""
     result = media_from_dict(_make_media_collection_audiobook().to_dict())

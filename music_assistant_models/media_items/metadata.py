@@ -237,7 +237,8 @@ class MediaItemMetadata(DataClassDictMixin):
         for fld in fields(self):
             if fld.name in ("description", "description_language"):
                 continue
-            new_val = getattr(new_values, fld.name)
+            # a subclass, such as MediaCollectionMetadata, may have fields new_values lacks
+            new_val = getattr(new_values, fld.name, None)
             if new_val is None:
                 continue
             cur_val = getattr(self, fld.name)
