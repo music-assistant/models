@@ -36,6 +36,7 @@ from .media_item import (
 )
 from .metadata import (
     AudioMetadata,
+    MediaCollectionMetadata,
     MediaItemBookmark,
     MediaItemChapter,
     MediaItemCollection,
@@ -77,6 +78,7 @@ __all__ = [
     "ItemMapping",
     "ItemMappingSummary",
     "MediaCollection",
+    "MediaCollectionMetadata",
     "MediaItem",
     "MediaItemBookmark",
     "MediaItemChapter",
