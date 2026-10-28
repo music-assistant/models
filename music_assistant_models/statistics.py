@@ -86,3 +86,4 @@ class ListeningTimeItem(DataClassORJSONMixin):
 
     name: str
     minutes: float
+    item: ItemMapping | None = None  # the artist when grouped by artist, None for a genre
