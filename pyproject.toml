@@ -8,6 +8,7 @@ classifiers = [
   "Environment :: Console",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
 ]
 dependencies = ["orjson>=3.9", "mashumaro>=3.14", "anyascii==0.3.3"]
 description = "Music Assistant Base Models"
