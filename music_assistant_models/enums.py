@@ -626,8 +626,8 @@ class EventType(StrEnum):
     # one user's like/dislike/unset on one item changed; data is a FavoriteUpdate,
     # object_id is the item uri
     FAVORITE_UPDATED = "favorite_updated"
-    # one user's bookmarks of one copy changed; data is a BookmarksUpdate,
-    # object_id is the uri of the copy
+    # one user's bookmarks of one copy changed; object_id is the uri of the copy,
+    # data the id of the user
     BOOKMARKS_UPDATED = "bookmarks_updated"
     PLAYLOG_UPDATED = "playlog_updated"
     PROVIDERS_UPDATED = "providers_updated"
