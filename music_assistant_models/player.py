@@ -412,6 +412,12 @@ class Player(DataClassDictMixin):
     # or is an internal anchor. Not user configurable, unlike hide_in_ui.
     private: bool = False
 
+    # managed_externally: if the player is set up and kept in line outside of Music
+    # Assistant (e.g. a group formed from how the Apple Home app grouped the devices),
+    # so its name, settings and members can not be changed and it can not be removed
+    # here. Not user configurable.
+    managed_externally: bool = False
+
     # expose_to_ha: if the player should be exposed to Home Assistant
     # if set to False, the player will not be added to the HA integration
     expose_to_ha: bool = True
