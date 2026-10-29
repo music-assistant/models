@@ -18,6 +18,7 @@ from .enums import (
     PlayerFeature,
     PlayerType,
     RepeatMode,
+    SleepTimerMode,
 )
 from .media_items import MediaItemPalette
 from .translations import resolve_translation, translations_active
@@ -468,6 +469,10 @@ class Player(DataClassDictMixin):
     # sleep_timer_expires_at: unix (utc) timestamp at which the active sleep timer will
     # stop playback, or None if no sleep timer is currently set for this player
     sleep_timer_expires_at: float | None = None
+    # sleep_timer_mode: the point at which the active sleep timer stops playback, or None if
+    # no sleep timer is set. For a mode other than DURATION, sleep_timer_expires_at is an
+    # estimate while playing and None while paused.
+    sleep_timer_mode: SleepTimerMode | None = None
 
     # active_source_audio: effective audio details reported for the currently active
     # (external) source, or None if the active source is Music Assistant itself or no
