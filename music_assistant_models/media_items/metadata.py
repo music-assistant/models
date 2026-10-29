@@ -121,8 +121,8 @@ class MediaItemBookmark(DataClassDictMixin):
 
     name: str
     start: float
-    provider_instance_id: str
-    provider_item_id: str
+    provider_instance: str
+    item_id: str
     stored_by_music_assistant: bool = False
 
 

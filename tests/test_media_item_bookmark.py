@@ -9,8 +9,8 @@ def test_bookmark_roundtrip() -> None:
         {
             "name": "Intro",
             "start": 12.5,
-            "provider_instance_id": "abs",
-            "provider_item_id": "book1",
+            "provider_instance": "abs",
+            "item_id": "book1",
         }
     )
     assert bookmark.stored_by_music_assistant is False
