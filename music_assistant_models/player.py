@@ -467,7 +467,7 @@ class Player(DataClassDictMixin):
     has_setup_flow: bool = False
 
     # sleep_timer_expires_at: unix (utc) timestamp at which the active sleep timer will
-    # stop playback, or None if no sleep timer is currently set for this player
+    # stop playback, or None if it has none (see sleep_timer_mode for whether one is set)
     sleep_timer_expires_at: float | None = None
     # sleep_timer_mode: the point at which the active sleep timer stops playback, or None if
     # no sleep timer is set. For a mode other than DURATION, sleep_timer_expires_at is an
