@@ -7,6 +7,7 @@ from music_assistant_models.enums import (
     MediaType,
     PlayerType,
     RepeatMode,
+    SleepTimerMode,
 )
 from music_assistant_models.media_items import AudioFormat
 from music_assistant_models.player import DeviceInfo, Player, PlayerMedia, PlayerSource
@@ -127,6 +128,18 @@ def test_payload_without_active_source_audio_key_deserializes() -> None:
     legacy = _player().to_dict()
     legacy.pop("active_source_audio", None)
     assert Player.from_dict(legacy).active_source_audio is None
+
+
+def test_sleep_timer_mode_roundtrip_and_legacy_payload() -> None:
+    """The mode roundtrips, an unknown mode falls back and older payloads lack the key."""
+    player = _player()
+    player.sleep_timer_mode = SleepTimerMode.END_OF_CHAPTER
+    payload = player.to_dict()
+    assert Player.from_dict(payload).sleep_timer_mode is SleepTimerMode.END_OF_CHAPTER
+    payload["sleep_timer_mode"] = "end_of_universe"
+    assert Player.from_dict(payload).sleep_timer_mode is SleepTimerMode.UNKNOWN
+    payload.pop("sleep_timer_mode")
+    assert Player.from_dict(payload).sleep_timer_mode is None
 
 
 def test_player_source_ordering_defaults() -> None:

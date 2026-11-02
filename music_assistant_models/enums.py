@@ -465,6 +465,20 @@ class PlaybackState(StrEnum):
 PlayerState = PlaybackState
 
 
+class SleepTimerMode(StrEnum):
+    """Enum with the points at which a player's sleep timer stops playback."""
+
+    DURATION = "duration"
+    END_OF_ITEM = "end_of_item"
+    END_OF_CHAPTER = "end_of_chapter"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> SleepTimerMode:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class PlayerType(StrEnum):
     """Enum with possible Player Types.
 
