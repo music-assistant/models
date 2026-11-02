@@ -626,6 +626,9 @@ class EventType(StrEnum):
     # one user's like/dislike/unset on one item changed; data is a FavoriteUpdate,
     # object_id is the item uri
     FAVORITE_UPDATED = "favorite_updated"
+    # one user's bookmarks of one copy changed; object_id is the uri of the copy,
+    # data the id of the user
+    BOOKMARKS_UPDATED = "bookmarks_updated"
     PLAYLOG_UPDATED = "playlog_updated"
     PROVIDERS_UPDATED = "providers_updated"
     # generic event emitted by a provider instance;
@@ -680,6 +683,12 @@ class ProviderFeature(StrEnum):
     # additional library features
     AUTHOR_AUDIOBOOKS = "author_audiobooks"
     NARRATOR_AUDIOBOOKS = "narrator_audiobooks"
+
+    # bookmarks of the user per mediatype: read, and add/rename/remove
+    AUDIOBOOK_BOOKMARKS = "audiobook_bookmarks"
+    AUDIOBOOK_BOOKMARKS_EDIT = "audiobook_bookmarks_edit"
+    PODCAST_EPISODE_BOOKMARKS = "podcast_episode_bookmarks"
+    PODCAST_EPISODE_BOOKMARKS_EDIT = "podcast_episode_bookmarks_edit"
 
     # if we can grab all albums for an artist from the music provider
     ARTIST_ALBUMS = "artist_albums"
