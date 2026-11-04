@@ -1,6 +1,6 @@
 """Tests for ProviderManifest icon handling."""
 
-from music_assistant_models.enums import ProviderIconVariant, ProviderType
+from music_assistant_models.enums import ProviderIconVariant, ProviderTier, ProviderType
 from music_assistant_models.provider import ProviderManifest
 
 
@@ -86,3 +86,51 @@ def test_self_service_missing_key_backward_compatible() -> None:
         '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[]}'
     )
     assert restored.self_service is True
+
+
+def test_tier_values() -> None:
+    """Test ProviderTier enum values."""
+    assert ProviderTier.CORE == "core"
+    assert ProviderTier.COMMUNITY == "community"
+
+
+def test_tier_unknown_value_falls_back_to_community() -> None:
+    """Test that an unknown tier in a payload (newer server) never resolves to core."""
+    restored = ProviderManifest.from_json(
+        '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[],'
+        '"tier":"something_new"}'
+    )
+    assert restored.tier is ProviderTier.COMMUNITY
+
+
+def test_tier_defaults_community() -> None:
+    """Test that tier defaults to community."""
+    assert _manifest().tier is ProviderTier.COMMUNITY
+
+
+def test_tier_roundtrip() -> None:
+    """Test tier survives JSON roundtrip."""
+    manifest = _manifest(tier=ProviderTier.CORE)
+    restored = ProviderManifest.from_json(manifest.to_json())
+    assert restored.tier is ProviderTier.CORE
+
+
+def test_support_url_defaults_none() -> None:
+    """Test that support_url defaults to None."""
+    assert _manifest().support_url is None
+
+
+def test_support_url_roundtrip() -> None:
+    """Test support_url survives JSON roundtrip."""
+    manifest = _manifest(support_url="https://example.com/issues")
+    restored = ProviderManifest.from_json(manifest.to_json())
+    assert restored.support_url == "https://example.com/issues"
+
+
+def test_tier_and_support_url_missing_keys_backward_compatible() -> None:
+    """Test that JSON without tier and support_url (old server payload) uses the defaults."""
+    restored = ProviderManifest.from_json(
+        '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[]}'
+    )
+    assert restored.tier is ProviderTier.COMMUNITY
+    assert restored.support_url is None

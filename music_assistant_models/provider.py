@@ -9,7 +9,7 @@ from typing import Any
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from .enums import ProviderFeature, ProviderIconVariant, ProviderStage, ProviderType
+from .enums import ProviderFeature, ProviderIconVariant, ProviderStage, ProviderTier, ProviderType
 from .translations import resolve_translation
 
 
@@ -27,10 +27,15 @@ class ProviderManifest(DataClassORJSONMixin):
 
     # stage: the stage of the provider, used to determine if it is stable or experimental
     stage: ProviderStage = ProviderStage.STABLE
+    # tier: who maintains the provider, defaults to community so a missing value never claims core
+    tier: ProviderTier = ProviderTier.COMMUNITY
     # requirements: list of (pip style) python packages required for this provider
     requirements: list[str] = field(default_factory=list)
     # documentation: link/url to documentation.
     documentation: str | None = None
+    # support_url: where the maintainer takes bug reports and questions,
+    # when None reports go to the project's support repository
+    support_url: str | None = None
     # multi_instance: whether multiple instances of the same provider are allowed/possible
     multi_instance: bool = False
     # builtin: whether this provider is a system/builtin provider, loaded by default

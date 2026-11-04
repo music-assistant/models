@@ -1019,6 +1019,21 @@ class ProviderStage(StrEnum):
         return cls.STABLE
 
 
+class ProviderTier(StrEnum):
+    """Enum with possible Provider maintainer tiers."""
+
+    # core: built and maintained by the Music Assistant team
+    CORE = "core"
+
+    # community: built and maintained by a community member
+    COMMUNITY = "community"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ProviderTier:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.COMMUNITY
+
+
 class ProviderIconVariant(StrEnum):
     """Enum of provider icon variants that a provider can supply."""
 
