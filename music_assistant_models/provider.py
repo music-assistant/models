@@ -34,7 +34,7 @@ class ProviderManifest(DataClassORJSONMixin):
     # documentation: link/url to documentation.
     documentation: str | None = None
     # support_url: where the maintainer takes bug reports and questions,
-    # only needed when that is not the project's support repository
+    # when None reports go to the project's support repository
     support_url: str | None = None
     # multi_instance: whether multiple instances of the same provider are allowed/possible
     multi_instance: bool = False

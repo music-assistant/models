@@ -95,8 +95,12 @@ def test_tier_values() -> None:
 
 
 def test_tier_unknown_value_falls_back_to_community() -> None:
-    """Test that an unknown tier never resolves to core."""
-    assert ProviderTier("something_new") is ProviderTier.COMMUNITY
+    """Test that an unknown tier in a payload (newer server) never resolves to core."""
+    restored = ProviderManifest.from_json(
+        '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[],'
+        '"tier":"something_new"}'
+    )
+    assert restored.tier is ProviderTier.COMMUNITY
 
 
 def test_tier_defaults_community() -> None:
