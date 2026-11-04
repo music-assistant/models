@@ -61,6 +61,9 @@ class ErrorResultMessage(ResultMessageBase):
     translation_key: str | None = None
     translation_args: list[Any] = field(default_factory=list)
     translation_owner: str | None = None
+    # Structured details a client can act on without parsing `details`, such as the player
+    # holding a stream slot. The error type that sets them defines which keys are present.
+    data: dict[str, Any] | None = None
 
     def __post_serialize__(self, d: dict[str, Any]) -> dict[str, Any]:
         """Localize `details` from the translation_key when a resolver is active."""

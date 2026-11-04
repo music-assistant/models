@@ -16,6 +16,9 @@ class MusicAssistantError(Exception):
     # Owning namespace ("provider.<domain>"/"core.<domain>") whose strings.json is consulted before
     # falling back to common — set when a provider/controller defines its own message for the key.
     translation_owner: str | None = None
+    # Structured details a client can act on without parsing the message, such as the player
+    # holding a stream slot. The error type that sets them defines which keys are present.
+    data: dict[str, Any] | None = None
 
     def __init__(
         self,
@@ -23,6 +26,7 @@ class MusicAssistantError(Exception):
         translation_key: str | None = None,
         translation_args: list[Any] | None = None,
         translation_owner: str | None = None,
+        data: dict[str, Any] | None = None,
     ) -> None:
         """
         Initialize the error.
@@ -33,6 +37,8 @@ class MusicAssistantError(Exception):
             translated message.
         :param translation_owner: Optional owning namespace ("provider.<domain>"/"core.<domain>")
             consulted before common when resolving the key.
+        :param data: Optional structured details a client can act on, sent to API clients
+            next to the message.
         """
         super().__init__(*args)
         if translation_key is not None:
@@ -40,6 +46,8 @@ class MusicAssistantError(Exception):
         self.translation_args: list[Any] = translation_args or []
         if translation_owner is not None:
             self.translation_owner = translation_owner
+        if data is not None:
+            self.data = data
 
     def __init_subclass__(cls, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Register a subclass."""
@@ -272,3 +280,15 @@ class InvalidConfigValueError(InvalidDataError, ValueError):
 
     error_code = 28
     translation_key = "invalid_config_value"
+
+
+class ProviderStreamHeldError(AudioError):
+    """
+    Error raised when another player's playback holds the last stream slot of a music provider.
+
+    ``data`` names that playback: ``queue_id`` (the player holding the slot), ``player_name``
+    and ``provider_instance``.
+    """
+
+    error_code = 29
+    translation_key = "provider_stream_held"
