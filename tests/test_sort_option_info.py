@@ -37,3 +37,15 @@ def test_sort_option_info_serialization_roundtrip_with_none_defaults() -> None:
         "label_key": None,
     }
     assert SortOptionInfo.from_dict(data) == option
+
+
+def test_release_date_sort_roundtrip() -> None:
+    """Release-date sorting has a typed wire value and supports a direction."""
+    option = SortOptionInfo(
+        field=SortField.RELEASE_DATE,
+        supports_direction=True,
+        default_direction=SortDirection.DESC,
+        label_key="release_date",
+    )
+    assert option.to_dict()["field"] == "release_date"
+    assert SortOptionInfo.from_dict(option.to_dict()) == option

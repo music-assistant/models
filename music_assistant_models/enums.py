@@ -1082,6 +1082,7 @@ class SortField(StrEnum):
     PROVIDER = "provider"  # the provider the item comes from
     FAVORITE_TIMESTAMP = "favorite_timestamp"  # when the calling user liked the item
     ORIGINAL = "original"  # the order the source lists the items in
+    RELEASE_DATE = "release_date"  # full release date, falling back to the release year
 
 
 class SortDirection(StrEnum):
