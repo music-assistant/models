@@ -30,6 +30,7 @@ class AuthProviderType(StrEnum):
 
     BUILTIN = "builtin"
     HOME_ASSISTANT = "homeassistant"
+    OIDC = "oidc"
 
     @classmethod
     def _missing_(cls, value: object) -> AuthProviderType:  # noqa: ARG003

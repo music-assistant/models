@@ -7,6 +7,7 @@ from music_assistant_models.auth import (
     Role,
     Scope,
     User,
+    UserAuthProvider,
     UserRole,
     UserSummary,
 )
@@ -23,6 +24,18 @@ def test_auth_provider_type_missing() -> None:
     """Test that an unknown auth provider type falls back to BUILTIN."""
     assert AuthProviderType("some_future_provider") == AuthProviderType.BUILTIN
     assert AuthProviderType("homeassistant") == AuthProviderType.HOME_ASSISTANT
+    assert AuthProviderType("oidc") == AuthProviderType.OIDC
+
+
+def test_oidc_provider_link_round_trips() -> None:
+    """An OIDC identity keeps its provider type when a stored link is read."""
+    link = UserAuthProvider(
+        link_id="link",
+        user_id="user",
+        provider_type=AuthProviderType.OIDC,
+        provider_user_id="issuer-and-subject",
+    )
+    assert UserAuthProvider.from_dict(link.to_dict()) == link
 
 
 def test_scope_missing() -> None:
