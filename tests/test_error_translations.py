@@ -16,6 +16,7 @@ from music_assistant_models.errors import (
     InvalidToken,
     MediaNotFoundError,
     MusicAssistantError,
+    ProviderStreamHeldError,
     ProviderUnavailableError,
     RateLimited,
     ResourceTemporarilyUnavailable,
@@ -108,6 +109,29 @@ def test_error_result_message_localizes_details_and_strips_machinery() -> None:
     # machinery never reaches the client when a resolver is active
     assert "translation_key" not in d
     assert "translation_args" not in d
+
+
+def test_error_result_message_keeps_structured_data_next_to_the_details() -> None:
+    """Data a client acts on travels with the error result, whatever the resolver does."""
+    err = ProviderStreamHeldError(
+        "Spotify is already playing on Kitchen",
+        data={"queue_id": "kitchen", "player_name": "Kitchen", "provider_instance": "spotify--1"},
+    )
+    assert err.error_code == 29
+    assert ERROR_MAP[29] is ProviderStreamHeldError
+    msg = ErrorResultMessage(
+        "abc", err.error_code, str(err), translation_key=err.translation_key, data=err.data
+    )
+    with _resolver_active():
+        d = msg.to_dict()
+    assert d["data"] == err.data
+    assert d["details"] == "Spotify is already playing on Kitchen"
+
+
+def test_errors_carry_no_data_unless_given() -> None:
+    """The base error and a plain result message leave the data field empty."""
+    assert MusicAssistantError("x").data is None
+    assert ErrorResultMessage("abc", 0, "x").to_dict()["data"] is None
 
 
 def test_error_result_message_unknown_key_keeps_details() -> None:
