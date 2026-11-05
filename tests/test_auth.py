@@ -31,6 +31,17 @@ def test_scope_missing() -> None:
     assert Scope("library.read") == Scope.LIBRARY_READ
 
 
+def test_user_allow_explicit() -> None:
+    """Test that a user may get explicit content by default and round trips the setting."""
+    # a user from an older server, without the field, still deserializes
+    user = User.from_dict({"user_id": "abc123", "username": "testuser", "role": "user"})
+    assert user.allow_explicit is True
+
+    user.allow_explicit = False
+    assert user.to_dict()["allow_explicit"] is False
+    assert User.from_dict(user.to_dict()).allow_explicit is False
+
+
 def test_config_providers_own_scope() -> None:
     """Test that the scope for managing one's own provider configs resolves."""
     assert Scope("config.providers.own") is Scope.CONFIG_PROVIDERS_OWN
