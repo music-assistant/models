@@ -27,6 +27,24 @@ def test_play_history_item_roundtrip_and_item_mapping_compatibility() -> None:
     assert not item_mapping.available
 
 
+def test_play_history_item_preserves_uri_equality_and_hashing() -> None:
+    """History entries keep the media reference's URI-based identity."""
+    item = ItemMapping(
+        item_id="track-1", provider="test-provider", media_type=MediaType.TRACK, name="Track"
+    )
+    first = PlayHistoryItem.from_dict(
+        {**item.to_dict(), "event_id": 1, "played_at": 1_789_000_000.0}
+    )
+    second = PlayHistoryItem.from_dict(
+        {**item.to_dict(), "event_id": 2, "played_at": 1_789_000_100.0}
+    )
+    assert first == second
+    assert first == item
+    assert item == first
+    assert hash(first) == hash(second) == hash(item)
+    assert len({item, first, second}) == 1
+
+
 def test_listening_time_item_roundtrip_with_item() -> None:
     """A listening time row keeps its artist through serialization."""
     artist = ItemMapping(

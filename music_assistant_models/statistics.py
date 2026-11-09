@@ -9,12 +9,12 @@ from mashumaro.mixins.orjson import DataClassORJSONMixin
 from music_assistant_models.media_items import ItemMapping
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, eq=False)
 class PlayHistoryItem(ItemMapping):
     """A completed play with its media reference, event ID and Unix timestamp."""
 
     event_id: int
-    played_at: float
+    played_at: float  # Unix seconds
     artists: list[ItemMapping] = field(default_factory=list)
 
 
