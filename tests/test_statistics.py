@@ -2,7 +2,29 @@
 
 from music_assistant_models.enums import MediaType
 from music_assistant_models.media_items import ItemMapping
-from music_assistant_models.statistics import ListeningTimeItem
+from music_assistant_models.statistics import ListeningTimeItem, PlayHistoryItem
+
+
+def test_play_history_item_roundtrip_and_legacy_reader() -> None:
+    """Dated events retain all the fields expected by existing history readers."""
+    event = PlayHistoryItem(
+        item_id="track-1",
+        provider="test-provider",
+        media_type=MediaType.TRACK,
+        name="Test Track",
+        event_id=42,
+        played_at=1_789_000_000.5,
+        available=False,
+    )
+    payload = event.to_dict()
+    restored = PlayHistoryItem.from_dict(payload)
+    assert restored.event_id == 42
+    assert restored.played_at == 1_789_000_000.5
+    assert restored.to_dict() == payload
+    legacy = ItemMapping.from_dict(payload)
+    assert legacy.item_id == event.item_id
+    assert legacy.uri == event.uri
+    assert not legacy.available
 
 
 def test_listening_time_item_roundtrip_with_item() -> None:
