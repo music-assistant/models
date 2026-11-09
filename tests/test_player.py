@@ -4,13 +4,21 @@ from music_assistant_models.audio_processing import ActiveSourceAudioDetails, Au
 from music_assistant_models.enums import (
     ContentType,
     CrossfadeMode,
+    IdentifierType,
     MediaType,
     PlayerType,
+    ProtocolRole,
     RepeatMode,
     SleepTimerMode,
 )
 from music_assistant_models.media_items import AudioFormat
-from music_assistant_models.player import DeviceInfo, Player, PlayerMedia, PlayerSource
+from music_assistant_models.player import (
+    DeviceInfo,
+    Player,
+    PlayerMedia,
+    PlayerProtocolInfo,
+    PlayerSource,
+)
 
 
 def _media() -> PlayerMedia:
@@ -189,3 +197,74 @@ def test_player_source_payload_without_ordering_keys() -> None:
     assert restored.shuffle_enabled is None
     assert restored.repeat_mode is None
     assert restored.account_id is None
+
+
+def test_player_split_fields_serialize_with_defaults() -> None:
+    """A player serializes the player split keys with their defaults."""
+    serialized = _player().to_dict()
+    assert serialized["legacy_ids"] == []
+    assert serialized["last_seen"] is None
+    assert serialized["unavailable_since"] is None
+    assert serialized["protocols"] == []
+
+
+def test_player_split_fields_roundtrip() -> None:
+    """Legacy ids, timestamps and protocols survive a round-trip."""
+    player = _player()
+    player.legacy_ids = ["old_player_id"]
+    player.last_seen = 1700000000.0
+    player.unavailable_since = 1700000100.0
+    player.protocols = [
+        PlayerProtocolInfo(
+            protocol_id="airplay_aabbccddeeff",
+            domain="airplay",
+            provider="airplay--abc",
+            role=ProtocolRole.AUDIO,
+            available=False,
+            active=True,
+        )
+    ]
+
+    restored = Player.from_dict(player.to_dict())
+
+    assert restored.legacy_ids == ["old_player_id"]
+    assert restored.last_seen == 1700000000.0
+    assert restored.unavailable_since == 1700000100.0
+    assert restored.protocols == player.protocols
+    assert restored.protocols[0].role is ProtocolRole.AUDIO
+
+
+def test_payload_without_player_split_keys_deserializes() -> None:
+    """Payloads from older servers without the player split keys still deserialize."""
+    legacy = _player().to_dict()
+    for key in ("legacy_ids", "last_seen", "unavailable_since", "protocols"):
+        legacy.pop(key)
+    player = Player.from_dict(legacy)
+    assert player.legacy_ids == []
+    assert player.last_seen is None
+    assert player.unavailable_since is None
+    assert player.protocols == []
+
+
+def test_player_protocol_info_defaults_and_unknown_role() -> None:
+    """A protocol is available and inactive by default; an unknown role falls back."""
+    info = PlayerProtocolInfo.from_dict(
+        {
+            "protocol_id": "proto",
+            "domain": "dlna",
+            "provider": "dlna--abc",
+            "role": "does-not-exist",
+        }
+    )
+    assert info.available is True
+    assert info.active is False
+    assert info.role is ProtocolRole.UNKNOWN
+
+
+def test_identifier_type_zone_roundtrip() -> None:
+    """The ZONE identifier survives a round-trip through the device info."""
+    device_info = DeviceInfo()
+    device_info.add_identifier(IdentifierType.ZONE, "192.168.1.10:11000")
+    restored = DeviceInfo.from_dict(device_info.to_dict())
+    assert restored.identifiers == {IdentifierType.ZONE: "192.168.1.10:11000"}
+    assert IdentifierType("zone") is IdentifierType.ZONE

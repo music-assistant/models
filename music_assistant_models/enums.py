@@ -524,11 +524,33 @@ class IdentifierType(StrEnum):
     UUID = "uuid"  # Universal unique identifier
     CAST_UUID = "cast_uuid"  # Chromecast device UUID (for cross-protocol matching)
     AIRPLAY_ID = "airplay_id"  # AirPlay device identifier (for cross-protocol matching)
+    ZONE = "zone"  # Zone of a multi-zone device (keeps zones of one chassis apart)
     IP_ADDRESS = "ip_address"  # Less reliable (DHCP) but useful for fallback
     UNKNOWN = "unknown"
 
     @classmethod
     def _missing_(cls, value: object) -> IdentifierType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class ProtocolRole(StrEnum):
+    """Enum with the roles a protocol can have within a player.
+
+    native: The vendor-specific protocol of the device, with full control.
+    control: A protocol that controls the device (e.g. power, volume) but does not play audio.
+    audio: A generic protocol that plays audio on the device (e.g. AirPlay, Chromecast, DLNA).
+    virtual: A protocol without a physical device behind it (e.g. a group player).
+    """
+
+    NATIVE = "native"
+    CONTROL = "control"
+    AUDIO = "audio"
+    VIRTUAL = "virtual"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ProtocolRole:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
