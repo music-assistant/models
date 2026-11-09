@@ -5,7 +5,7 @@ from music_assistant_models.media_items import ItemMapping
 from music_assistant_models.statistics import ListeningTimeItem, PlayHistoryItem
 
 
-def test_play_history_item_roundtrip_and_legacy_reader() -> None:
+def test_play_history_item_roundtrip_and_item_mapping_compatibility() -> None:
     """Dated events retain all the fields expected by existing history readers."""
     event = PlayHistoryItem(
         item_id="track-1",
@@ -21,10 +21,10 @@ def test_play_history_item_roundtrip_and_legacy_reader() -> None:
     assert restored.event_id == 42
     assert restored.played_at == 1_789_000_000.5
     assert restored.to_dict() == payload
-    legacy = ItemMapping.from_dict(payload)
-    assert legacy.item_id == event.item_id
-    assert legacy.uri == event.uri
-    assert not legacy.available
+    item_mapping = ItemMapping.from_dict(payload)
+    assert item_mapping.item_id == event.item_id
+    assert item_mapping.uri == event.uri
+    assert not item_mapping.available
 
 
 def test_listening_time_item_roundtrip_with_item() -> None:
