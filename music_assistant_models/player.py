@@ -17,6 +17,7 @@ from .enums import (
     PlaybackState,
     PlayerFeature,
     PlayerType,
+    ProtocolRole,
     RepeatMode,
     SleepTimerMode,
 )
@@ -44,6 +45,23 @@ class OutputProtocol(DataClassDictMixin):
     priority: int = 100  # Lower = more preferred (native = 0 if supported)
     available: bool = True  # Whether this output protocol is currently available
     derived_from: str | None = None  # output_protocol_id of the base output, if derived
+
+
+@dataclass
+class PlayerProtocolInfo(DataClassDictMixin):
+    """
+    Represents a protocol attached to a player.
+
+    A player is made up of one or more protocols (e.g. the native protocol of the device
+    plus AirPlay and Chromecast), each with its own role within the player.
+    """
+
+    protocol_id: str  # Unique ID of the protocol (its own id, not the player id)
+    domain: str  # Domain of the protocol's provider, e.g. "airplay", "sonos"
+    provider: str  # instance_id of the protocol's provider
+    role: ProtocolRole
+    available: bool = True  # Whether this protocol is currently available
+    active: bool = False  # Whether this protocol is the player's current playback path
 
 
 @dataclass
@@ -478,6 +496,20 @@ class Player(DataClassDictMixin):
     # (external) source, or None if the active source is Music Assistant itself or no
     # details are available yet
     active_source_audio: ActiveSourceAudioDetails | None = None
+
+    # legacy_ids: former player id's of this player (e.g. of a player merged into it),
+    # which the server still resolves to this player
+    legacy_ids: list[str] = field(default_factory=list)
+
+    # last_seen: unix (utc) timestamp at which the player was last seen available
+    last_seen: float | None = None
+
+    # unavailable_since: unix (utc) timestamp since when the player has no available
+    # protocol, or None while it is available
+    unavailable_since: float | None = None
+
+    # protocols: the protocols this player is made up of, with their role and state
+    protocols: list[PlayerProtocolInfo] = field(default_factory=list)
 
     #############################################################################
     # helper methods and properties                                             #
