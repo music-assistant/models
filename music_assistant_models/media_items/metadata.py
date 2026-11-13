@@ -173,6 +173,7 @@ class AudioMetadata(DataClassDictMixin):
     bpm: float | None = None  # beats per minute
     musical_key: str | None = None  # pitch class plus mode, e.g. "F# minor"
     camelot_key: str | None = None  # Camelot wheel notation of musical_key, e.g. "11A"
+    energy_level: int | None = None  # perceived energy on a 1-10 scale
 
 
 @dataclass(frozen=True, kw_only=True)
