@@ -85,6 +85,7 @@ class User(DataClassORJSONMixin):
     preferences: dict[str, Any] = field(default_factory=dict)
     provider_filter: list[str] = field(default_factory=list)
     player_filter: list[str] = field(default_factory=list)
+    allow_explicit: bool = True
 
 
 @dataclass
