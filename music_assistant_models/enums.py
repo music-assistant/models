@@ -219,6 +219,11 @@ class ArtistType(StrEnum):
     NARRATOR = "narrator"  # narrator of an audiobook
     UNKNOWN = "unknown"
 
+    @classmethod
+    def _missing_(cls, value: object) -> ArtistType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
 
 class ArtistEntityType(StrEnum):
     """Enum for Artist entity type (mirrors MusicBrainz artist type)."""

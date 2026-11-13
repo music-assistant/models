@@ -9,7 +9,14 @@ from typing import Any
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from .enums import ProviderFeature, ProviderIconVariant, ProviderStage, ProviderTier, ProviderType
+from .enums import (
+    ArtistType,
+    ProviderFeature,
+    ProviderIconVariant,
+    ProviderStage,
+    ProviderTier,
+    ProviderType,
+)
 from .translations import resolve_translation
 
 
@@ -96,5 +103,6 @@ class ProviderInstance(DataClassORJSONMixin):
     supported_features: set[ProviderFeature]
     available: bool
     is_streaming_provider: bool | None = None  # music providers only
+    supported_artist_types: set[ArtistType] = field(default_factory=set)  # music providers only
     # lookup_key: kept for backwards compatibility; mirrors the server wire value (== instance_id)
     lookup_key: str | None = None
