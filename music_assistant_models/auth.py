@@ -85,8 +85,6 @@ class User(DataClassORJSONMixin):
     preferences: dict[str, Any] = field(default_factory=dict)
     provider_filter: list[str] = field(default_factory=list)
     player_filter: list[str] = field(default_factory=list)
-    # whether the user may see and play the content their music sources mark as explicit;
-    # set by an admin, the user can not change it
     allow_explicit: bool = True
 
 
