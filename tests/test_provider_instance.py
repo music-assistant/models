@@ -26,10 +26,11 @@ BASE_PAYLOAD: dict[str, Any] = {
             {"supported_artist_types": ["author", "narrator"]},
             {ArtistType.AUTHOR, ArtistType.NARRATOR},
         ),
+        ({"supported_artist_types": ["composer"]}, {ArtistType.UNKNOWN}),
         ({}, set()),
     ],
 )
 def test_supported_artist_types(extra: dict[str, Any], expected: set[ArtistType]) -> None:
-    """Supported artist types parse from the payload and default to none."""
+    """Supported artist types parse from the payload, unknown ones as UNKNOWN."""
     instance = ProviderInstance.from_dict({**BASE_PAYLOAD, **extra})
     assert instance.supported_artist_types == expected
