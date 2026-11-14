@@ -733,6 +733,9 @@ class ProviderFeature(StrEnum):
     PODCAST_EPISODE_BOOKMARKS = "podcast_episode_bookmarks"
     PODCAST_EPISODE_BOOKMARKS_EDIT = "podcast_episode_bookmarks_edit"
 
+    # public playlists created by an artist on the music provider
+    ARTIST_PLAYLISTS = "artist_playlists"
+
     # if we can grab all albums for an artist from the music provider
     ARTIST_ALBUMS = "artist_albums"
 
