@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
@@ -20,6 +21,42 @@ from .enums import (
     ProviderType,
 )
 from .translations import resolve_translation
+
+# the longest label of a menu action in a manifest
+MAX_MENU_ACTION_LABEL_LENGTH: Final = 40
+# the longest translated label of a menu action: texts grow in translation, and a translator
+# does not see the limit, so a translation gets more room than the English in the manifest
+MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH: Final = 80
+# what breaks a label out of its single line or reorders the text around it: control
+# characters, line and paragraph separators, and the bidirectional embeddings, overrides
+# and isolates
+_LABEL_FORBIDDEN_CATEGORIES: Final = frozenset({"Cc", "Zl", "Zp"})
+_LABEL_FORBIDDEN_CHARACTERS: Final = frozenset(
+    "\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069"
+)
+# letters, numbers, punctuation and symbols: the characters a reader can see
+_LABEL_VISIBLE_CATEGORY_GROUPS: Final = ("L", "N", "P", "S")
+
+
+def is_menu_action_label(text: str, max_length: int = MAX_MENU_ACTION_LABEL_LENGTH) -> bool:
+    """
+    Return whether a text can be shown as the label of a menu action.
+
+    A label is one line of at most ``max_length`` characters, with at least one character a
+    reader can see and none that breaks the line or reorders the text around it.
+
+    :param text: The text to check.
+    :param max_length: The most characters the label may have.
+    """
+    return (
+        len(text) <= max_length
+        and any(unicodedata.category(char)[0] in _LABEL_VISIBLE_CATEGORY_GROUPS for char in text)
+        and not any(
+            unicodedata.category(char) in _LABEL_FORBIDDEN_CATEGORIES
+            or char in _LABEL_FORBIDDEN_CHARACTERS
+            for char in text
+        )
+    )
 
 
 @dataclass
@@ -115,7 +152,10 @@ class ProviderManifest(DataClassORJSONMixin):
             d["description"] = value
         for action in d.get("menu_actions", []):
             key = f"{namespace}.{self.domain}.menu_actions.{action['id']}.label"
-            if (value := resolve_translation(key)) is not None:
+            value = resolve_translation(key)
+            if value is not None and is_menu_action_label(
+                value, MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH
+            ):
                 action["label"] = value
         return d
 

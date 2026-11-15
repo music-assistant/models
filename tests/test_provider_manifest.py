@@ -13,7 +13,13 @@ from music_assistant_models.enums import (
     ProviderTier,
     ProviderType,
 )
-from music_assistant_models.provider import ProviderManifest, ProviderMenuAction
+from music_assistant_models.provider import (
+    MAX_MENU_ACTION_LABEL_LENGTH,
+    MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH,
+    ProviderManifest,
+    ProviderMenuAction,
+    is_menu_action_label,
+)
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
 _MENU_ACTIONS_JSON = (
@@ -234,3 +240,78 @@ def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
 def test_menu_actions_last_field() -> None:
     """Test that menu_actions comes last, so positional construction keeps its order."""
     assert list(ProviderManifest.__dataclass_fields__)[-2:] == ["credits", "menu_actions"]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Show on the picture frame",
+        "x" * MAX_MENU_ACTION_LABEL_LENGTH,
+        "Op de fotolijst tonen",
+        "Показать на рамке",
+        "عرض على الإطار",
+        "フォトフレームに表示",
+        "می\u200cخواهم",  # noqa: RUF001 - Persian, with a zero width non-joiner
+        "Family \U0001f468\u200d\U0001f469\u200d\U0001f467",
+        "\U0001f5bc️",
+    ],
+)
+def test_menu_action_label_accepted(text: str) -> None:
+    """Test that one readable line of text in any script, emoji included, is a label."""
+    assert is_menu_action_label(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "",
+        "   ",
+        "\u200b",
+        "\ufeff",
+        "\u00ad",
+        "\u200b\u200d ",
+        "Show\non the frame",
+        "Show\ton the frame",
+        "Show\x00",
+        "Show\u2028on the frame",
+        "Show\u2029on the frame",
+        "Show\u202aon the frame",
+        "Show\u202eemarf eht no",
+        "Show\u2066on the frame",
+        "Show\u2069",
+        "x" * (MAX_MENU_ACTION_LABEL_LENGTH + 1),
+    ],
+)
+def test_menu_action_label_refused(text: str) -> None:
+    """Test that an invisible, multi-line, reordering or too long text is no label."""
+    assert not is_menu_action_label(text)
+
+
+def test_menu_action_label_longer_limit() -> None:
+    """Test that the limit can be raised, as for a translated label."""
+    text = "x" * MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH
+    assert is_menu_action_label(text, MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH)
+    assert not is_menu_action_label(text + "x", MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH)
+
+
+@pytest.mark.parametrize(
+    ("translation", "label"),
+    [
+        ("Toon op de fotolijst", "Toon op de fotolijst"),
+        ("y" * 41, "y" * 41),
+        (
+            "y" * MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH,
+            "y" * MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH,
+        ),
+        ("y" * (MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH + 1), "Show on the picture frame"),
+        ("Toon op\nde fotolijst", "Show on the picture frame"),
+        ("Toon \u202eop de fotolijst", "Show on the picture frame"),
+        ("\u200b\u200b", "Show on the picture frame"),
+    ],
+)
+def test_menu_action_translation_used_only_when_a_label(translation: str, label: str) -> None:
+    """Test that a translation that is no label leaves the label of the manifest in the output."""
+    manifest = ProviderManifest.from_json(_MENU_ACTIONS_JSON)
+    with _resolver({"provider.frame.menu_actions.send_to_frame.label": translation}):
+        labels = [action["label"] for action in manifest.to_dict()["menu_actions"]]
+    assert labels == [label, "Play on the picture frame"]
