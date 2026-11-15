@@ -11,6 +11,7 @@ from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from .enums import (
     ArtistType,
+    MediaType,
     ProviderFeature,
     ProviderIconVariant,
     ProviderStage,
@@ -18,6 +19,26 @@ from .enums import (
     ProviderType,
 )
 from .translations import resolve_translation
+
+
+@dataclass
+class ProviderMenuAction(DataClassORJSONMixin):
+    """An entry a provider adds to the menu of a media item."""
+
+    # id: names the action within its provider
+    id: str
+    # label: English text of the menu entry, translated from menu_actions.<id>.label
+    # in the texts of the provider
+    label: str
+    # media_types: the kinds of media item the entry is offered for
+    media_types: list[MediaType]
+    # command: the API command a client calls with the uri of the item when the entry is chosen
+    command: str
+    # icon: name of the material design icon (https://pictogrammers.com/library/mdi)
+    icon: str | None = None
+    # plays: whether the action plays the item; the client then offers it with the ways to
+    # play the item and also passes the player_id to play on
+    plays: bool = False
 
 
 @dataclass
@@ -67,6 +88,8 @@ class ProviderManifest(DataClassORJSONMixin):
     # provider as a music source of its own; when False, only a user who manages every
     # music source may set it up
     self_service: bool = True
+    # menu_actions: entries this provider adds to the menu of a media item
+    menu_actions: list[ProviderMenuAction] = field(default_factory=list)
 
     # credits: list of credits/attributions
     # e.g. for libraries used, icons, etc.
@@ -80,7 +103,7 @@ class ProviderManifest(DataClassORJSONMixin):
         return cls.from_json(file_contents)
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
-        """Localize name/description when a translation resolver is set (no-op otherwise)."""
+        """Localize name/description/menu action labels when a translation resolver is set."""
         # core controllers use the core.<domain> namespace, providers use provider.<domain>
         namespace = "core" if self.type == ProviderType.CORE else "provider"
         if (value := resolve_translation(f"{namespace}.{self.domain}.manifest.name")) is not None:
@@ -89,6 +112,10 @@ class ProviderManifest(DataClassORJSONMixin):
             value := resolve_translation(f"{namespace}.{self.domain}.manifest.description")
         ) is not None:
             d["description"] = value
+        for action in d.get("menu_actions", []):
+            key = f"{namespace}.{self.domain}.menu_actions.{action['id']}.label"
+            if (value := resolve_translation(key)) is not None:
+                action["label"] = value
         return d
 
 

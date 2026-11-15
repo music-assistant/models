@@ -1,7 +1,28 @@
 """Tests for ProviderManifest icon handling."""
 
-from music_assistant_models.enums import ProviderIconVariant, ProviderTier, ProviderType
-from music_assistant_models.provider import ProviderManifest
+from collections.abc import Iterator
+from contextlib import contextmanager
+
+import pytest
+from mashumaro.exceptions import InvalidFieldValue
+
+from music_assistant_models.enums import (
+    MediaType,
+    ProviderIconVariant,
+    ProviderTier,
+    ProviderType,
+)
+from music_assistant_models.provider import ProviderManifest, ProviderMenuAction
+from music_assistant_models.translations import TRANSLATION_RESOLVER
+
+_MENU_ACTIONS_JSON = (
+    '{"type":"plugin","domain":"frame","name":"N","description":"x","codeowners":[],'
+    '"menu_actions":[{"id":"send_to_frame","label":"Show on the picture frame",'
+    '"media_types":["album","playlist"],"icon":"mdi-image-frame",'
+    '"command":"frame/send_to_frame"},'
+    '{"id":"play_on_frame","label":"Play on the picture frame","media_types":["track"],'
+    '"command":"frame/play_on_frame","plays":true}]}'
+)
 
 
 def _manifest(**kwargs) -> ProviderManifest:
@@ -134,3 +155,77 @@ def test_tier_and_support_url_missing_keys_backward_compatible() -> None:
     )
     assert restored.tier is ProviderTier.COMMUNITY
     assert restored.support_url is None
+
+
+@contextmanager
+def _resolver(catalog: dict[str, str]) -> Iterator[None]:
+    """Bind a resolver that looks keys up in the given catalog for the duration of the block."""
+    token = TRANSLATION_RESOLVER.set(lambda key, **_: catalog.get(key))
+    try:
+        yield
+    finally:
+        TRANSLATION_RESOLVER.reset(token)
+
+
+def test_menu_actions_missing_key_defaults_empty() -> None:
+    """Test that a manifest without menu_actions has none."""
+    restored = ProviderManifest.from_json(
+        '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[]}'
+    )
+    assert restored.menu_actions == []
+
+
+def test_menu_actions_parsed() -> None:
+    """Test that declared menu actions parse with their defaults."""
+    manifest = ProviderManifest.from_json(_MENU_ACTIONS_JSON)
+    assert manifest.menu_actions == [
+        ProviderMenuAction(
+            id="send_to_frame",
+            label="Show on the picture frame",
+            media_types=[MediaType.ALBUM, MediaType.PLAYLIST],
+            command="frame/send_to_frame",
+            icon="mdi-image-frame",
+        ),
+        ProviderMenuAction(
+            id="play_on_frame",
+            label="Play on the picture frame",
+            media_types=[MediaType.TRACK],
+            command="frame/play_on_frame",
+            plays=True,
+        ),
+    ]
+    assert manifest.menu_actions[0].plays is False
+    assert manifest.menu_actions[1].icon is None
+    assert ProviderManifest.from_json(manifest.to_json()) == manifest
+
+
+def test_menu_action_label_translated() -> None:
+    """Test that a menu action label is translated from menu_actions.<id>.label of its provider."""
+    manifest = ProviderManifest.from_json(_MENU_ACTIONS_JSON)
+    with _resolver({"provider.frame.menu_actions.send_to_frame.label": "Toon op de fotolijst"}):
+        labels = [action["label"] for action in manifest.to_dict()["menu_actions"]]
+    assert labels == ["Toon op de fotolijst", "Play on the picture frame"]
+
+
+def test_menu_action_label_english_without_resolver() -> None:
+    """Test that a menu action keeps the English label of its manifest without a resolver."""
+    manifest = ProviderManifest.from_json(_MENU_ACTIONS_JSON)
+    labels = [action["label"] for action in manifest.to_dict()["menu_actions"]]
+    assert labels == ["Show on the picture frame", "Play on the picture frame"]
+
+
+@pytest.mark.parametrize(
+    "menu_actions",
+    [
+        '{"id":"a","label":"L","media_types":["album"],"command":"d/a"}',
+        '[{"id":"a","label":"L","media_types":["album"]}]',
+        '"d/a"',
+    ],
+)
+def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
+    """Test that menu actions of the wrong shape fail to parse the manifest."""
+    with pytest.raises(InvalidFieldValue):
+        ProviderManifest.from_json(
+            '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[],'
+            f'"menu_actions":{menu_actions}}}'
+        )
