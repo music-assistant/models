@@ -6,6 +6,7 @@ from contextlib import contextmanager
 import pytest
 from mashumaro.exceptions import InvalidFieldValue
 
+from music_assistant_models.auth import Scope
 from music_assistant_models.enums import (
     MediaType,
     ProviderIconVariant,
@@ -18,10 +19,9 @@ from music_assistant_models.translations import TRANSLATION_RESOLVER
 _MENU_ACTIONS_JSON = (
     '{"type":"plugin","domain":"frame","name":"N","description":"x","codeowners":[],'
     '"menu_actions":[{"id":"send_to_frame","label":"Show on the picture frame",'
-    '"media_types":["album","playlist"],"icon":"mdi-image-frame",'
-    '"command":"frame/send_to_frame"},'
+    '"media_types":["album","playlist"],"scope":"library.read","icon":"mdi-image-frame"},'
     '{"id":"play_on_frame","label":"Play on the picture frame","media_types":["track"],'
-    '"command":"frame/play_on_frame","plays":true}]}'
+    '"scope":"queues.control","requires_player":true}]}'
 )
 
 
@@ -183,18 +183,18 @@ def test_menu_actions_parsed() -> None:
             id="send_to_frame",
             label="Show on the picture frame",
             media_types=[MediaType.ALBUM, MediaType.PLAYLIST],
-            command="frame/send_to_frame",
+            scope=Scope.LIBRARY_READ,
             icon="mdi-image-frame",
         ),
         ProviderMenuAction(
             id="play_on_frame",
             label="Play on the picture frame",
             media_types=[MediaType.TRACK],
-            command="frame/play_on_frame",
-            plays=True,
+            scope=Scope.QUEUES_CONTROL,
+            requires_player=True,
         ),
     ]
-    assert manifest.menu_actions[0].plays is False
+    assert manifest.menu_actions[0].requires_player is False
     assert manifest.menu_actions[1].icon is None
     assert ProviderManifest.from_json(manifest.to_json()) == manifest
 
@@ -217,9 +217,9 @@ def test_menu_action_label_english_without_resolver() -> None:
 @pytest.mark.parametrize(
     "menu_actions",
     [
-        '{"id":"a","label":"L","media_types":["album"],"command":"d/a"}',
+        '{"id":"a","label":"L","media_types":["album"],"scope":"library.read"}',
         '[{"id":"a","label":"L","media_types":["album"]}]',
-        '"d/a"',
+        '"a"',
     ],
 )
 def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
@@ -229,3 +229,8 @@ def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
             '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[],'
             f'"menu_actions":{menu_actions}}}'
         )
+
+
+def test_menu_actions_last_field() -> None:
+    """Test that menu_actions comes last, so positional construction keeps its order."""
+    assert list(ProviderManifest.__dataclass_fields__)[-2:] == ["credits", "menu_actions"]

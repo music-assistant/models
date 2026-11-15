@@ -9,6 +9,7 @@ from typing import Any
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
+from .auth import Scope
 from .enums import (
     ArtistType,
     MediaType,
@@ -32,13 +33,13 @@ class ProviderMenuAction(DataClassORJSONMixin):
     label: str
     # media_types: the kinds of media item the entry is offered for
     media_types: list[MediaType]
-    # command: the API command a client calls with the uri of the item when the entry is chosen
-    command: str
+    # scope: what a user needs to use the action; a client does not show it to anyone without it
+    scope: Scope
     # icon: name of the material design icon (https://pictogrammers.com/library/mdi)
     icon: str | None = None
-    # plays: whether the action plays the item; the client then offers it with the ways to
-    # play the item and also passes the player_id to play on
-    plays: bool = False
+    # requires_player: whether the action acts on a player; the client then offers it with the
+    # ways to play the item and also passes the player to act on
+    requires_player: bool = False
 
 
 @dataclass
@@ -88,13 +89,13 @@ class ProviderManifest(DataClassORJSONMixin):
     # provider as a music source of its own; when False, only a user who manages every
     # music source may set it up
     self_service: bool = True
-    # menu_actions: entries this provider adds to the menu of a media item
-    menu_actions: list[ProviderMenuAction] = field(default_factory=list)
 
     # credits: list of credits/attributions
     # e.g. for libraries used, icons, etc.
     # accepts markdown formatting.
     credits: list[str] = field(default_factory=list)
+    # menu_actions: entries this provider adds to the menu of a media item
+    menu_actions: list[ProviderMenuAction] = field(default_factory=list)
 
     @classmethod
     async def parse(cls, manifest_file: str) -> ProviderManifest:
