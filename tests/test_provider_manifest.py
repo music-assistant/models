@@ -1,7 +1,34 @@
 """Tests for ProviderManifest icon handling."""
 
-from music_assistant_models.enums import ProviderIconVariant, ProviderTier, ProviderType
-from music_assistant_models.provider import ProviderManifest
+from collections.abc import Iterator
+from contextlib import contextmanager
+
+import pytest
+from mashumaro.exceptions import InvalidFieldValue
+
+from music_assistant_models.auth import Scope
+from music_assistant_models.enums import (
+    MediaType,
+    ProviderIconVariant,
+    ProviderTier,
+    ProviderType,
+)
+from music_assistant_models.provider import (
+    MAX_MENU_ACTION_LABEL_LENGTH,
+    MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH,
+    ProviderManifest,
+    ProviderMenuAction,
+    is_menu_action_label,
+)
+from music_assistant_models.translations import TRANSLATION_RESOLVER
+
+_MENU_ACTIONS_JSON = (
+    '{"type":"plugin","domain":"frame","name":"N","description":"x","codeowners":[],'
+    '"menu_actions":[{"id":"send_to_frame","label":"Show on the picture frame",'
+    '"media_types":["album","playlist"],"scope":"library.read","icon":"mdi-image-frame"},'
+    '{"id":"play_on_frame","label":"Play on the picture frame","media_types":["track"],'
+    '"scope":"queues.control","requires_player":true}]}'
+)
 
 
 def _manifest(**kwargs) -> ProviderManifest:
@@ -134,3 +161,157 @@ def test_tier_and_support_url_missing_keys_backward_compatible() -> None:
     )
     assert restored.tier is ProviderTier.COMMUNITY
     assert restored.support_url is None
+
+
+@contextmanager
+def _resolver(catalog: dict[str, str]) -> Iterator[None]:
+    """Bind a resolver that looks keys up in the given catalog for the duration of the block."""
+    token = TRANSLATION_RESOLVER.set(lambda key, **_: catalog.get(key))
+    try:
+        yield
+    finally:
+        TRANSLATION_RESOLVER.reset(token)
+
+
+def test_menu_actions_missing_key_defaults_empty() -> None:
+    """Test that a manifest without menu_actions has none."""
+    restored = ProviderManifest.from_json(
+        '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[]}'
+    )
+    assert restored.menu_actions == []
+
+
+def test_menu_actions_parsed() -> None:
+    """Test that declared menu actions parse with their defaults."""
+    manifest = ProviderManifest.from_json(_MENU_ACTIONS_JSON)
+    assert manifest.menu_actions == [
+        ProviderMenuAction(
+            id="send_to_frame",
+            label="Show on the picture frame",
+            media_types=[MediaType.ALBUM, MediaType.PLAYLIST],
+            scope=Scope.LIBRARY_READ,
+            icon="mdi-image-frame",
+        ),
+        ProviderMenuAction(
+            id="play_on_frame",
+            label="Play on the picture frame",
+            media_types=[MediaType.TRACK],
+            scope=Scope.QUEUES_CONTROL,
+            requires_player=True,
+        ),
+    ]
+    assert manifest.menu_actions[0].requires_player is False
+    assert manifest.menu_actions[1].icon is None
+    assert ProviderManifest.from_json(manifest.to_json()) == manifest
+
+
+def test_menu_action_label_translated() -> None:
+    """Test that a menu action label is translated from menu_actions.<id>.label of its provider."""
+    manifest = ProviderManifest.from_json(_MENU_ACTIONS_JSON)
+    with _resolver({"provider.frame.menu_actions.send_to_frame.label": "Toon op de fotolijst"}):
+        labels = [action["label"] for action in manifest.to_dict()["menu_actions"]]
+    assert labels == ["Toon op de fotolijst", "Play on the picture frame"]
+
+
+def test_menu_action_label_english_without_resolver() -> None:
+    """Test that a menu action keeps the English label of its manifest without a resolver."""
+    manifest = ProviderManifest.from_json(_MENU_ACTIONS_JSON)
+    labels = [action["label"] for action in manifest.to_dict()["menu_actions"]]
+    assert labels == ["Show on the picture frame", "Play on the picture frame"]
+
+
+@pytest.mark.parametrize(
+    "menu_actions",
+    [
+        '{"id":"a","label":"L","media_types":["album"],"scope":"library.read"}',
+        '[{"id":"a","label":"L","media_types":["album"]}]',
+        '"a"',
+    ],
+)
+def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
+    """Test that menu actions of the wrong shape fail to parse the manifest."""
+    with pytest.raises(InvalidFieldValue):
+        ProviderManifest.from_json(
+            '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[],'
+            f'"menu_actions":{menu_actions}}}'
+        )
+
+
+def test_menu_actions_last_field() -> None:
+    """Test that menu_actions comes last, so positional construction keeps its order."""
+    assert list(ProviderManifest.__dataclass_fields__)[-2:] == ["credits", "menu_actions"]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Show on the picture frame",
+        "x" * MAX_MENU_ACTION_LABEL_LENGTH,
+        "Op de fotolijst tonen",
+        "Показать на рамке",
+        "عرض على الإطار",
+        "フォトフレームに表示",
+        "می\u200cخواهم",  # noqa: RUF001 - Persian, with a zero width non-joiner
+        "Family \U0001f468\u200d\U0001f469\u200d\U0001f467",
+        "\U0001f5bc️",
+    ],
+)
+def test_menu_action_label_accepted(text: str) -> None:
+    """Test that one readable line of text in any script, emoji included, is a label."""
+    assert is_menu_action_label(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "",
+        "   ",
+        "\u200b",
+        "\ufeff",
+        "\u00ad",
+        "\u200b\u200d ",
+        "Show\non the frame",
+        "Show\ton the frame",
+        "Show\x00",
+        "Show\u2028on the frame",
+        "Show\u2029on the frame",
+        "Show\u202aon the frame",
+        "Show\u202eemarf eht no",
+        "Show\u2066on the frame",
+        "Show\u2069",
+        "x" * (MAX_MENU_ACTION_LABEL_LENGTH + 1),
+    ],
+)
+def test_menu_action_label_refused(text: str) -> None:
+    """Test that an invisible, multi-line, reordering or too long text is no label."""
+    assert not is_menu_action_label(text)
+
+
+def test_menu_action_label_longer_limit() -> None:
+    """Test that the limit can be raised, as for a translated label."""
+    text = "x" * MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH
+    assert is_menu_action_label(text, MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH)
+    assert not is_menu_action_label(text + "x", MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH)
+
+
+@pytest.mark.parametrize(
+    ("translation", "label"),
+    [
+        ("Toon op de fotolijst", "Toon op de fotolijst"),
+        ("y" * 41, "y" * 41),
+        (
+            "y" * MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH,
+            "y" * MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH,
+        ),
+        ("y" * (MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH + 1), "Show on the picture frame"),
+        ("Toon op\nde fotolijst", "Show on the picture frame"),
+        ("Toon \u202eop de fotolijst", "Show on the picture frame"),
+        ("\u200b\u200b", "Show on the picture frame"),
+    ],
+)
+def test_menu_action_translation_used_only_when_a_label(translation: str, label: str) -> None:
+    """Test that a translation that is no label leaves the label of the manifest in the output."""
+    manifest = ProviderManifest.from_json(_MENU_ACTIONS_JSON)
+    with _resolver({"provider.frame.menu_actions.send_to_frame.label": translation}):
+        labels = [action["label"] for action in manifest.to_dict()["menu_actions"]]
+    assert labels == [label, "Play on the picture frame"]
