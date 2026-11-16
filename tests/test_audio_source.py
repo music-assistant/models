@@ -59,6 +59,8 @@ def test_audio_source_defaults() -> None:
     # can_initiate defaults to False so passive sources don't accidentally
     # surface in user-initiated browse listings
     assert item.can_initiate is False
+    # analysis of a source is opt-in, so a streaming receiver is never analysed by default
+    assert item.allow_audio_analysis is False
     assert item.uri == "y://audio_source/x"
 
 
@@ -125,3 +127,18 @@ def test_audio_source_payload_without_ordering_keys() -> None:
     assert restored.can_shuffle is False
     assert restored.can_repeat is False
     assert restored.account_id is None
+
+
+def test_audio_source_allow_audio_analysis_roundtrip() -> None:
+    """allow_audio_analysis survives a serialize round-trip."""
+    original = _make_audio_source()
+    original.allow_audio_analysis = True
+    restored = AudioSource.from_dict(original.to_dict())
+    assert restored.allow_audio_analysis is True
+
+
+def test_audio_source_payload_without_allow_audio_analysis() -> None:
+    """Payloads from servers predating allow_audio_analysis still deserialize."""
+    data = _make_audio_source().to_dict()
+    data.pop("allow_audio_analysis", None)
+    assert AudioSource.from_dict(data).allow_audio_analysis is False

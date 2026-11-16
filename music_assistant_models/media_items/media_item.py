@@ -604,6 +604,11 @@ class AudioSource(MediaItem):
     # actually acquire the upstream producer.
     can_initiate: bool = False
 
+    # whether audio analysis providers may be offered the audio of this source
+    # True = a live input the user feeds in (e.g. a line-in or turntable)
+    # False (default) = e.g. what a streaming service delivers to a receiver
+    allow_audio_analysis: bool = False
+
     # the service account the session is paired to, once known/verified
     # (e.g. the Spotify user id); used to gate playback redirects
     account_id: str | None = None
