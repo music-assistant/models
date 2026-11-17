@@ -841,9 +841,14 @@ class ProviderFeature(StrEnum):
     LYRICS = "lyrics"  # lyrics support - can also be provided by a music provider
 
     #
+    # AUDIO SOURCE FEATURES (any provider type)
+    #
+    # provider delivers live audio sources (AudioSource items), such as a receiver or a line-in
+    AUDIO_SOURCE = "audio_source"
+
+    #
     # PLUGIN FEATURES
     #
-    AUDIO_SOURCE = "audio_source"
     # provider can enumerate sound effect items (live, not library-backed)
     SOUND_EFFECTS = "sound_effects"
     # provider records playback to an external listening history

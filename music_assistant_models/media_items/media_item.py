@@ -558,14 +558,14 @@ class SoundEffect(_LocalizableName, MediaItem):
 @dataclass(kw_only=True)
 class AudioSource(MediaItem):
     """
-    Model for a live audio source provided by a plugin.
+    Model for a live audio source, delivered by a provider with ProviderFeature.AUDIO_SOURCE.
 
     Examples include an AirPlay receiver, Spotify Connect device,
     DLNA renderer, VBAN receiver, or a hardware bridge favorite.
 
     Conceptually behaves like a live media item (similar to Radio):
     enqueued as a single queue item, streamed continuously, with
-    optional metadata updates pushed by the owning plugin.
+    optional metadata updates pushed by the owning provider.
     """
 
     __hash__ = _MediaItemBase.__hash__
