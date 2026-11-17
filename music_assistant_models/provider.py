@@ -80,6 +80,22 @@ class ProviderMenuAction(DataClassORJSONMixin):
 
 
 @dataclass
+class ProviderMCPTool(DataClassORJSONMixin):
+    """A tool a provider offers to AI assistants through the MCP server."""
+
+    # id: names the tool within its provider; the MCP name is "<domain>__<id>"
+    id: str
+    # description: English, read by a language model; not translated
+    description: str
+    # scope: what a user needs to call the tool
+    scope: Scope
+    # input_schema: JSON schema (object) of the arguments
+    input_schema: dict[str, Any] = field(default_factory=dict)
+    # requires_player: the server adds a "player" argument and passes the checked player
+    requires_player: bool = False
+
+
+@dataclass
 class ProviderManifest(DataClassORJSONMixin):
     """ProviderManifest, details of a provider."""
 
@@ -133,6 +149,8 @@ class ProviderManifest(DataClassORJSONMixin):
     credits: list[str] = field(default_factory=list)
     # menu_actions: entries this provider adds to the menu of a media item
     menu_actions: list[ProviderMenuAction] = field(default_factory=list)
+    # mcp_tools: tools this provider offers to AI assistants through the MCP server
+    mcp_tools: list[ProviderMCPTool] = field(default_factory=list)
 
     @classmethod
     async def parse(cls, manifest_file: str) -> ProviderManifest:
