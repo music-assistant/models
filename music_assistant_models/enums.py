@@ -488,7 +488,10 @@ class PlayerType(StrEnum):
     """Enum with possible Player Types.
 
     player: A regular player with native (vendor-specific) support.
-    stereo_pair: Same as player but a dedicated stereo pair of 2 speakers.
+    multi_channel: One player made of several speakers that play as one
+                   (e.g. a stereo pair or a home theater set).
+    stereo_pair: A stereo pair as an older server reports it;
+                 a current server sends multi_channel.
     group: A (dedicated) (sync)group player or (universal) playergroup.
     protocol: A generic protocol player (e.g. AirPlay/Chromecast/DLNA) without native support.
               These are wrapped by a Universal Player and hidden from the UI.
@@ -501,6 +504,7 @@ class PlayerType(StrEnum):
     """
 
     PLAYER = "player"
+    MULTI_CHANNEL = "multi_channel"
     STEREO_PAIR = "stereo_pair"
     GROUP = "group"
     PROTOCOL = "protocol"
@@ -512,6 +516,32 @@ class PlayerType(StrEnum):
 
     @classmethod
     def _missing_(cls, value: object) -> PlayerType:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
+class ChannelLayout(StrEnum):
+    """
+    Enum with the speaker layouts of a multi-channel player.
+
+    A layout names the number of full-range speakers and of subwoofers of the set,
+    in the notation of home theater sets (5.1); a set of two speakers is stereo.
+    """
+
+    STEREO = "stereo"
+    LAYOUT_1_1 = "1.1"
+    LAYOUT_2_1 = "2.1"
+    LAYOUT_3_0 = "3.0"
+    LAYOUT_3_1 = "3.1"
+    LAYOUT_4_0 = "4.0"
+    LAYOUT_4_1 = "4.1"
+    LAYOUT_5_0 = "5.0"
+    LAYOUT_5_1 = "5.1"
+    LAYOUT_7_1 = "7.1"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ChannelLayout:  # noqa: ARG003
         """Set default enum member if an unknown value is provided."""
         return cls.UNKNOWN
 
