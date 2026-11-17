@@ -31,6 +31,8 @@ class AuthProviderType(StrEnum):
     BUILTIN = "builtin"
     HOME_ASSISTANT = "homeassistant"
     OIDC = "oidc"
+    APPLE = "apple"
+    GOOGLE = "google"
 
     # fallback
     UNKNOWN = "unknown"

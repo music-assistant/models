@@ -27,6 +27,8 @@ def test_auth_provider_type_missing() -> None:
     assert AuthProviderType("some_future_provider") == AuthProviderType.UNKNOWN
     assert AuthProviderType("homeassistant") == AuthProviderType.HOME_ASSISTANT
     assert AuthProviderType("oidc") == AuthProviderType.OIDC
+    assert AuthProviderType("apple") == AuthProviderType.APPLE
+    assert AuthProviderType("google") == AuthProviderType.GOOGLE
 
 
 def test_auth_provider_type_enum() -> None:
