@@ -717,6 +717,8 @@ class EventType(StrEnum):
     DASHBOARD_SESSIONS_UPDATED = "dashboard_sessions_updated"
     MUSIC_SYNC_COMPLETED = "music_sync_completed"
     AUTH_SESSION = "auth_session"
+    # auth_signin_methods_updated: the sign-in methods the login page can offer changed
+    AUTH_SIGNIN_METHODS_UPDATED = "auth_signin_methods_updated"
     CORE_STATE_UPDATED = "core_state_updated"
     # community_catalog_updated: the community catalog, or what is installed from it, changed
     COMMUNITY_CATALOG_UPDATED = "community_catalog_updated"
@@ -889,6 +891,7 @@ class ProviderType(StrEnum):
     PLUGIN = "plugin"
     CORE = "core"
     AUDIO_ANALYSIS = "audio_analysis"
+    AUTH = "auth"
 
     # fallback
     UNKNOWN = "unknown"

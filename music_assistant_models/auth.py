@@ -30,11 +30,22 @@ class AuthProviderType(StrEnum):
 
     BUILTIN = "builtin"
     HOME_ASSISTANT = "homeassistant"
+    OIDC = "oidc"
+    APPLE = "apple"
+    GOOGLE = "google"
+
+    # fallback
+    UNKNOWN = "unknown"
 
     @classmethod
     def _missing_(cls, value: object) -> AuthProviderType:  # noqa: ARG003
-        """Return BUILTIN if an unknown value is provided."""
-        return cls.BUILTIN
+        """
+        Return UNKNOWN if an unknown value is provided.
+
+        An unknown value must never read as BUILTIN: that would present an identity
+        from a newer sign-in method as a password account.
+        """
+        return cls.UNKNOWN
 
 
 class Scope(StrEnum):
@@ -128,6 +139,36 @@ class UserAuthProvider(DataClassORJSONMixin):
     provider_type: AuthProviderType
     provider_user_id: str  # The user ID from the provider (e.g., HA user ID)
     created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+
+
+@dataclass
+class SignInMethod(DataClassORJSONMixin):
+    """A way to sign in that the login page can offer next to the password form."""
+
+    # "homeassistant" or the instance id of an auth provider
+    provider_id: str
+    # a plain string on purpose: an older client must never coerce a newer type
+    provider_type: str
+    # label of the sign-in button
+    name: str
+    # icon name or a preset slug, never a URL
+    icon: str
+    requires_redirect: bool = True
+    available: bool = True
+    # translation key that tells why the method is not available right now
+    unavailable_reason: str | None = None
+    # the method also works for the remote app (app.music-assistant.io)
+    supports_remote_app: bool = False
+
+
+@dataclass
+class SignInOptions(DataClassORJSONMixin):
+    """Everything a client needs to render the login page."""
+
+    methods: list[SignInMethod] = field(default_factory=list)
+    password_enabled: bool = True
+    # sign-in method to start right away instead of showing the login page
+    auto_launch_provider_id: str | None = None
 
 
 @dataclass

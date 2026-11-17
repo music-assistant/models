@@ -6,10 +6,13 @@ from music_assistant_models.auth import (
     AuthProviderType,
     Role,
     Scope,
+    SignInMethod,
+    SignInOptions,
     User,
     UserRole,
     UserSummary,
 )
+from music_assistant_models.enums import ProviderType
 
 
 def test_user_role_validation() -> None:
@@ -20,9 +23,60 @@ def test_user_role_validation() -> None:
 
 
 def test_auth_provider_type_missing() -> None:
-    """Test that an unknown auth provider type falls back to BUILTIN."""
-    assert AuthProviderType("some_future_provider") == AuthProviderType.BUILTIN
+    """Test that an unknown auth provider type falls back to UNKNOWN, never to BUILTIN."""
+    assert AuthProviderType("some_future_provider") == AuthProviderType.UNKNOWN
     assert AuthProviderType("homeassistant") == AuthProviderType.HOME_ASSISTANT
+    assert AuthProviderType("oidc") == AuthProviderType.OIDC
+    assert AuthProviderType("apple") == AuthProviderType.APPLE
+    assert AuthProviderType("google") == AuthProviderType.GOOGLE
+
+
+def test_auth_provider_type_enum() -> None:
+    """Test that auth is a provider type of its own."""
+    assert ProviderType("auth") == ProviderType.AUTH
+
+
+def test_sign_in_method_defaults_and_roundtrip() -> None:
+    """Test the defaults of a sign-in method and that it round trips."""
+    method = SignInMethod.from_dict(
+        {
+            "provider_id": "oidc--abc123",
+            "provider_type": "some_future_type",
+            "name": "Company login",
+            "icon": "mdi-key",
+        }
+    )
+    # the type stays the plain string the server sent
+    assert method.provider_type == "some_future_type"
+    assert method.requires_redirect is True
+    assert method.available is True
+    assert method.unavailable_reason is None
+    assert method.supports_remote_app is False
+    assert SignInMethod.from_dict(method.to_dict()) == method
+
+
+def test_sign_in_options_defaults_and_roundtrip() -> None:
+    """Test that sign-in options default to the password form only and round trip."""
+    options = SignInOptions.from_dict({})
+    assert options.methods == []
+    assert options.password_enabled is True
+    assert options.auto_launch_provider_id is None
+
+    options = SignInOptions(
+        methods=[
+            SignInMethod(
+                provider_id="homeassistant",
+                provider_type="homeassistant",
+                name="Home Assistant",
+                icon="mdi-home-assistant",
+                available=False,
+                unavailable_reason="provider_unavailable",
+            )
+        ],
+        password_enabled=False,
+        auto_launch_provider_id="homeassistant",
+    )
+    assert SignInOptions.from_dict(options.to_dict()) == options
 
 
 def test_scope_missing() -> None:
