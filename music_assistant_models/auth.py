@@ -151,7 +151,7 @@ class SignInMethod(DataClassORJSONMixin):
     provider_type: str
     # label of the sign-in button
     name: str
-    # mdi icon name ("mdi-...") or a preset slug, never a URL
+    # icon name or a preset slug, never a URL
     icon: str
     requires_redirect: bool = True
     available: bool = True
