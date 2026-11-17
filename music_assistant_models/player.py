@@ -12,6 +12,7 @@ from mashumaro import DataClassDictMixin, field_options
 from .audio_processing import ActiveSourceAudioDetails
 from .constants import EXTRA_ATTRIBUTES_TYPES, PLAYER_CONTROL_NONE
 from .enums import (
+    ChannelLayout,
     IdentifierType,
     MediaType,
     PlaybackState,
@@ -510,6 +511,10 @@ class Player(DataClassDictMixin):
 
     # protocols: the protocols this player is made up of, with their role and state
     protocols: list[PlayerProtocolInfo] = field(default_factory=list)
+
+    # channel_layout: how the speakers of a multi-channel player are laid out,
+    # None for a player that is no set of speakers or whose layout is not known
+    channel_layout: ChannelLayout | None = None
 
     #############################################################################
     # helper methods and properties                                             #
