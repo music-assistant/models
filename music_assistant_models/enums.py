@@ -524,7 +524,8 @@ class ChannelLayout(StrEnum):
     """
     Enum with the speaker layouts of a multi-channel player.
 
-    The values are the names FFmpeg gives a channel layout, where it has one.
+    A layout names the number of full-range speakers and of subwoofers of the set,
+    in the notation of home theater sets (5.1); a set of two speakers is stereo.
     """
 
     STEREO = "stereo"
@@ -532,6 +533,8 @@ class ChannelLayout(StrEnum):
     LAYOUT_2_1 = "2.1"
     LAYOUT_3_0 = "3.0"
     LAYOUT_3_1 = "3.1"
+    LAYOUT_4_0 = "4.0"
+    LAYOUT_4_1 = "4.1"
     LAYOUT_5_0 = "5.0"
     LAYOUT_5_1 = "5.1"
     LAYOUT_7_1 = "7.1"
