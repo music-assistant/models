@@ -151,6 +151,9 @@ class ProviderManifest(DataClassORJSONMixin):
     menu_actions: list[ProviderMenuAction] = field(default_factory=list)
     # mcp_tools: tools this provider offers to AI assistants through the MCP server
     mcp_tools: list[ProviderMCPTool] = field(default_factory=list)
+    # features: the features this provider offers whatever its config, known before it is
+    # loaded; the loaded provider may offer more (see ProviderInstance.supported_features)
+    features: set[ProviderFeature] = field(default_factory=set)
 
     @classmethod
     async def parse(cls, manifest_file: str) -> ProviderManifest:

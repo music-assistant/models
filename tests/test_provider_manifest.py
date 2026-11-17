@@ -9,6 +9,7 @@ from mashumaro.exceptions import InvalidFieldValue
 from music_assistant_models.auth import Scope
 from music_assistant_models.enums import (
     MediaType,
+    ProviderFeature,
     ProviderIconVariant,
     ProviderTier,
     ProviderType,
@@ -248,12 +249,32 @@ def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
 
 
 def test_menu_actions_last_field() -> None:
-    """Test that menu_actions and mcp_tools come last, so positional construction keeps order."""
-    assert list(ProviderManifest.__dataclass_fields__)[-3:] == [
+    """Test that the newer fields come last, so positional construction keeps order."""
+    assert list(ProviderManifest.__dataclass_fields__)[-4:] == [
         "credits",
         "menu_actions",
         "mcp_tools",
+        "features",
     ]
+
+
+def test_features_missing_key_defaults_empty() -> None:
+    """Test that a manifest without features declares none."""
+    restored = ProviderManifest.from_json(
+        '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[]}'
+    )
+    assert restored.features == set()
+
+
+def test_features_parsed() -> None:
+    """Test that declared features parse and survive a roundtrip, an unknown one as UNKNOWN."""
+    restored = ProviderManifest.from_json(
+        '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[],'
+        '"features":["audio_source","not_a_feature"]}'
+    )
+    assert restored.features == {ProviderFeature.AUDIO_SOURCE, ProviderFeature.UNKNOWN}
+    manifest = _manifest(features={ProviderFeature.AUDIO_SOURCE})
+    assert ProviderManifest.from_json(manifest.to_json()).features == {ProviderFeature.AUDIO_SOURCE}
 
 
 def test_mcp_tools_missing_key_defaults_empty() -> None:
