@@ -17,6 +17,7 @@ from music_assistant_models.provider import (
     MAX_MENU_ACTION_LABEL_LENGTH,
     MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH,
     ProviderManifest,
+    ProviderMCPTool,
     ProviderMenuAction,
     is_menu_action_label,
 )
@@ -28,6 +29,15 @@ _MENU_ACTIONS_JSON = (
     '"media_types":["album","playlist"],"scope":"library.read","icon":"mdi-image-frame"},'
     '{"id":"play_on_frame","label":"Play on the picture frame","media_types":["track"],'
     '"scope":"queues.control","requires_player":true}]}'
+)
+
+_MCP_TOOLS_JSON = (
+    '{"type":"music","domain":"radio","name":"N","description":"x","codeowners":[],'
+    '"mcp_tools":[{"id":"play_station","description":"Play a saved station on a player.",'
+    '"scope":"queues.control","requires_player":true,"input_schema":{"type":"object",'
+    '"properties":{"station":{"type":"string","description":"The name of the station."}},'
+    '"required":["station"]}},'
+    '{"id":"list_stations","description":"List the saved stations.","scope":"library.read"}]}'
 )
 
 
@@ -238,8 +248,74 @@ def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
 
 
 def test_menu_actions_last_field() -> None:
-    """Test that menu_actions comes last, so positional construction keeps its order."""
-    assert list(ProviderManifest.__dataclass_fields__)[-2:] == ["credits", "menu_actions"]
+    """Test that menu_actions and mcp_tools come last, so positional construction keeps order."""
+    assert list(ProviderManifest.__dataclass_fields__)[-3:] == [
+        "credits",
+        "menu_actions",
+        "mcp_tools",
+    ]
+
+
+def test_mcp_tools_missing_key_defaults_empty() -> None:
+    """Test that a manifest without mcp_tools has none."""
+    restored = ProviderManifest.from_json(
+        '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[]}'
+    )
+    assert restored.mcp_tools == []
+
+
+def test_mcp_tools_parsed() -> None:
+    """Test that declared tools parse with their defaults and survive a round trip."""
+    manifest = ProviderManifest.from_json(_MCP_TOOLS_JSON)
+    assert manifest.mcp_tools == [
+        ProviderMCPTool(
+            id="play_station",
+            description="Play a saved station on a player.",
+            scope=Scope.QUEUES_CONTROL,
+            input_schema={
+                "type": "object",
+                "properties": {
+                    "station": {"type": "string", "description": "The name of the station."}
+                },
+                "required": ["station"],
+            },
+            requires_player=True,
+        ),
+        ProviderMCPTool(
+            id="list_stations",
+            description="List the saved stations.",
+            scope=Scope.LIBRARY_READ,
+        ),
+    ]
+    assert manifest.mcp_tools[1].input_schema == {}
+    assert manifest.mcp_tools[1].requires_player is False
+    assert ProviderManifest.from_json(manifest.to_json()) == manifest
+    assert ProviderManifest.from_dict(manifest.to_dict()) == manifest
+
+
+def test_mcp_tool_unknown_scope_and_keys() -> None:
+    """Test that an unknown scope parses as UNKNOWN and unknown keys are ignored."""
+    tool = ProviderMCPTool.from_dict(
+        {"id": "a", "description": "D", "scope": "future.scope", "extra": True}
+    )
+    assert tool == ProviderMCPTool(id="a", description="D", scope=Scope.UNKNOWN)
+
+
+@pytest.mark.parametrize(
+    "mcp_tools",
+    [
+        '{"id":"a","description":"D","scope":"library.read"}',
+        '[{"id":"a","description":"D"}]',
+        '"a"',
+    ],
+)
+def test_mcp_tools_wrong_type_fails(mcp_tools: str) -> None:
+    """Test that tools of the wrong shape fail to parse the manifest."""
+    with pytest.raises(InvalidFieldValue):
+        ProviderManifest.from_json(
+            '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[],'
+            f'"mcp_tools":{mcp_tools}}}'
+        )
 
 
 @pytest.mark.parametrize(
