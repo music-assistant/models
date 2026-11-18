@@ -11,6 +11,7 @@ from music_assistant_models.enums import (
     ProtocolRole,
     RepeatMode,
     SleepTimerMode,
+    SpeakerChannel,
 )
 from music_assistant_models.media_items import AudioFormat
 from music_assistant_models.player import (
@@ -61,6 +62,14 @@ def test_channel_layout_roundtrip_and_legacy_payload() -> None:
     assert Player.from_dict(payload).channel_layout is ChannelLayout.UNKNOWN
     payload.pop("channel_layout")
     assert Player.from_dict(payload).channel_layout is None
+
+
+def test_speaker_channel_names_and_unknown() -> None:
+    """A speaker channel uses the spec's name, and an unknown name falls back."""
+    assert SpeakerChannel("front_left") is SpeakerChannel.FRONT_LEFT
+    assert SpeakerChannel("lfe") is SpeakerChannel.LFE
+    assert SpeakerChannel("top_rear_right") is SpeakerChannel.TOP_REAR_RIGHT
+    assert SpeakerChannel("wide_left") is SpeakerChannel.UNKNOWN
 
 
 def test_stream_duration_defaults_to_none() -> None:

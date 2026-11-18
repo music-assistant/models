@@ -546,6 +546,40 @@ class ChannelLayout(StrEnum):
         return cls.UNKNOWN
 
 
+class SpeakerChannel(StrEnum):
+    """
+    Enum with the channel a speaker of a multi-channel player plays.
+
+    The names are the speaker positions of the FLAC channel mask (RFC 9639), as the
+    Sendspin specification uses them.
+    """
+
+    FRONT_LEFT = "front_left"
+    FRONT_RIGHT = "front_right"
+    FRONT_CENTER = "front_center"
+    LFE = "lfe"
+    BACK_LEFT = "back_left"
+    BACK_RIGHT = "back_right"
+    FRONT_LEFT_OF_CENTER = "front_left_of_center"
+    FRONT_RIGHT_OF_CENTER = "front_right_of_center"
+    BACK_CENTER = "back_center"
+    SIDE_LEFT = "side_left"
+    SIDE_RIGHT = "side_right"
+    TOP_CENTER = "top_center"
+    TOP_FRONT_LEFT = "top_front_left"
+    TOP_FRONT_CENTER = "top_front_center"
+    TOP_FRONT_RIGHT = "top_front_right"
+    TOP_REAR_LEFT = "top_rear_left"
+    TOP_REAR_CENTER = "top_rear_center"
+    TOP_REAR_RIGHT = "top_rear_right"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> SpeakerChannel:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class IdentifierType(StrEnum):
     """
     Types of identifiers/connections for a device.
@@ -830,6 +864,7 @@ class ProviderFeature(StrEnum):
     REMOVE_PLAYER = "remove_player"
     CREATE_GROUP_PLAYER = "create_group_player"
     REMOVE_GROUP_PLAYER = "remove_group_player"
+    CREATE_MULTI_CHANNEL_PLAYER = "create_multi_channel_player"
 
     #
     # METADATAPROVIDER FEATURES
