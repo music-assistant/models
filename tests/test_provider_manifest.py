@@ -9,7 +9,6 @@ from mashumaro.exceptions import InvalidFieldValue
 from music_assistant_models.auth import Scope
 from music_assistant_models.enums import (
     MediaType,
-    ProviderFeature,
     ProviderIconVariant,
     ProviderTier,
     ProviderType,
@@ -256,11 +255,10 @@ def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
 
 def test_menu_actions_last_field() -> None:
     """Test that the newer fields come last, so positional construction keeps order."""
-    assert list(ProviderManifest.__dataclass_fields__)[-6:] == [
+    assert list(ProviderManifest.__dataclass_fields__)[-5:] == [
         "credits",
         "menu_actions",
         "mcp_tools",
-        "features",
         "page",
         "media_types",
     ]
@@ -315,25 +313,6 @@ def test_page_wrong_type_fails(page: str) -> None:
         )
 
 
-def test_features_missing_key_defaults_empty() -> None:
-    """Test that a manifest without features declares none."""
-    restored = ProviderManifest.from_json(
-        '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[]}'
-    )
-    assert restored.features == set()
-
-
-def test_features_parsed() -> None:
-    """Test that declared features parse and survive a roundtrip, an unknown one as UNKNOWN."""
-    restored = ProviderManifest.from_json(
-        '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[],'
-        '"features":["audio_source","not_a_feature"]}'
-    )
-    assert restored.features == {ProviderFeature.AUDIO_SOURCE, ProviderFeature.UNKNOWN}
-    manifest = _manifest(features={ProviderFeature.AUDIO_SOURCE})
-    assert ProviderManifest.from_json(manifest.to_json()).features == {ProviderFeature.AUDIO_SOURCE}
-
-
 def test_media_types_missing_key_defaults_empty() -> None:
     """Test that a manifest without media_types declares none."""
     restored = ProviderManifest.from_json(
@@ -346,9 +325,9 @@ def test_media_types_parsed() -> None:
     """Test that declared media types parse and survive a roundtrip, an unknown one as UNKNOWN."""
     restored = ProviderManifest.from_json(
         '{"type":"music","domain":"d","name":"N","description":"x","codeowners":[],'
-        '"media_types":["radio","podcast","not_a_media_type"]}'
+        '"media_types":["radio","audio_source","not_a_media_type"]}'
     )
-    assert restored.media_types == {MediaType.RADIO, MediaType.PODCAST, MediaType.UNKNOWN}
+    assert restored.media_types == {MediaType.RADIO, MediaType.AUDIO_SOURCE, MediaType.UNKNOWN}
     manifest = _manifest(media_types={MediaType.RADIO})
     assert ProviderManifest.from_json(manifest.to_json()).media_types == {MediaType.RADIO}
     assert manifest.to_dict()["media_types"] == ["radio"]
