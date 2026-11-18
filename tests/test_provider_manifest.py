@@ -20,6 +20,7 @@ from music_assistant_models.provider import (
     ProviderManifest,
     ProviderMCPTool,
     ProviderMenuAction,
+    ProviderPage,
     is_menu_action_label,
 )
 from music_assistant_models.translations import TRANSLATION_RESOLVER
@@ -30,6 +31,11 @@ _MENU_ACTIONS_JSON = (
     '"media_types":["album","playlist"],"scope":"library.read","icon":"mdi-image-frame"},'
     '{"id":"play_on_frame","label":"Play on the picture frame","media_types":["track"],'
     '"scope":"queues.control","requires_player":true}]}'
+)
+
+_PAGE_JSON = (
+    '{"type":"plugin","domain":"frame","name":"N","description":"x","codeowners":[],'
+    '"page":{"label":"Picture frame","scope":"library.read","icon":"mdi-image-frame"}}'
 )
 
 _MCP_TOOLS_JSON = (
@@ -250,12 +256,62 @@ def test_menu_actions_wrong_type_fails(menu_actions: str) -> None:
 
 def test_menu_actions_last_field() -> None:
     """Test that the newer fields come last, so positional construction keeps order."""
-    assert list(ProviderManifest.__dataclass_fields__)[-4:] == [
+    assert list(ProviderManifest.__dataclass_fields__)[-5:] == [
         "credits",
         "menu_actions",
         "mcp_tools",
         "features",
+        "page",
     ]
+
+
+def test_page_missing_key_defaults_none() -> None:
+    """Test that a manifest without a page declares none."""
+    restored = ProviderManifest.from_json(
+        '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[]}'
+    )
+    assert restored.page is None
+    assert restored.to_dict()["page"] is None
+
+
+def test_page_parsed() -> None:
+    """Test that a declared page parses, without an icon by default, and round-trips."""
+    manifest = ProviderManifest.from_json(_PAGE_JSON)
+    assert manifest.page == ProviderPage(
+        label="Picture frame", scope=Scope.LIBRARY_READ, icon="mdi-image-frame"
+    )
+    assert ProviderPage.from_dict({"label": "L", "scope": "library.read"}).icon is None
+    assert ProviderManifest.from_json(manifest.to_json()) == manifest
+
+
+def test_page_label_translated() -> None:
+    """Test that the label of a page is translated from page.label of its provider."""
+    manifest = ProviderManifest.from_json(_PAGE_JSON)
+    with _resolver({"provider.frame.page.label": "Fotolijstje"}):
+        assert manifest.to_dict()["page"]["label"] == "Fotolijstje"
+    assert manifest.to_dict()["page"]["label"] == "Picture frame"
+
+
+def test_page_label_translation_refused() -> None:
+    """Test that a translated page label that is not one readable line keeps the English."""
+    manifest = ProviderManifest.from_json(_PAGE_JSON)
+    too_long = "x" * (MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH + 1)
+    for value in ("Picture\nframe", too_long):
+        with _resolver({"provider.frame.page.label": value}):
+            assert manifest.to_dict()["page"]["label"] == "Picture frame"
+
+
+@pytest.mark.parametrize(
+    "page",
+    ['{"label":"L"}', '[{"label":"L","scope":"library.read"}]', '"a"'],
+)
+def test_page_wrong_type_fails(page: str) -> None:
+    """Test that a page of the wrong shape fails to parse the manifest."""
+    with pytest.raises(InvalidFieldValue):
+        ProviderManifest.from_json(
+            '{"type":"plugin","domain":"d","name":"N","description":"x","codeowners":[],'
+            f'"page":{page}}}'
+        )
 
 
 def test_features_missing_key_defaults_empty() -> None:

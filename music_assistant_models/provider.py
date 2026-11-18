@@ -96,6 +96,19 @@ class ProviderMCPTool(DataClassORJSONMixin):
 
 
 @dataclass
+class ProviderPage(DataClassORJSONMixin):
+    """A page a provider serves, which a client offers in its main menu."""
+
+    # label: English text of the menu entry, translated from page.label in the texts of the
+    # provider; the same rules apply as to the label of a menu action
+    label: str
+    # scope: what a user needs to open the page; a client does not show it to anyone without it
+    scope: Scope
+    # icon: name of the material design icon (https://pictogrammers.com/library/mdi)
+    icon: str | None = None
+
+
+@dataclass
 class ProviderManifest(DataClassORJSONMixin):
     """ProviderManifest, details of a provider."""
 
@@ -154,6 +167,8 @@ class ProviderManifest(DataClassORJSONMixin):
     # features: the features this provider offers whatever its config, known before it is
     # loaded; the loaded provider may offer more (see ProviderInstance.supported_features)
     features: set[ProviderFeature] = field(default_factory=set)
+    # page: the page this provider serves, offered as an entry of its own in the main menu
+    page: ProviderPage | None = None
 
     @classmethod
     async def parse(cls, manifest_file: str) -> ProviderManifest:
@@ -162,7 +177,7 @@ class ProviderManifest(DataClassORJSONMixin):
         return cls.from_json(file_contents)
 
     def __post_serialize__(self, d: dict[Any, Any]) -> dict[Any, Any]:
-        """Localize name/description/menu action labels when a translation resolver is set."""
+        """Localize name, description, menu action and page labels when a resolver is set."""
         # core controllers use the core.<domain> namespace, providers use provider.<domain>
         namespace = "core" if self.type == ProviderType.CORE else "provider"
         if (value := resolve_translation(f"{namespace}.{self.domain}.manifest.name")) is not None:
@@ -178,6 +193,12 @@ class ProviderManifest(DataClassORJSONMixin):
                 value, MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH
             ):
                 action["label"] = value
+        if d.get("page"):
+            value = resolve_translation(f"{namespace}.{self.domain}.page.label")
+            if value is not None and is_menu_action_label(
+                value, MAX_TRANSLATED_MENU_ACTION_LABEL_LENGTH
+            ):
+                d["page"]["label"] = value
         return d
 
 
