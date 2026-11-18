@@ -34,6 +34,7 @@ def test_empty_result_serializes_without_a_message_or_url() -> None:
 
     assert payload["message"] is None
     assert payload["open_url"] is None
+    assert payload["open_page"] is None
 
 
 def test_plain_message_is_served_as_is() -> None:
@@ -94,7 +95,7 @@ def test_translation_machinery_is_stripped_from_the_api_payload() -> None:
     with _resolver_active({"core.cache.config_actions.clear_cache.result": "Geleegd"}):
         payload = result.to_dict()
 
-    assert payload == {"message": "Geleegd", "open_url": None}
+    assert payload == {"message": "Geleegd", "open_url": None, "open_page": None}
 
 
 def test_translation_machinery_is_kept_without_a_resolver() -> None:
@@ -114,11 +115,20 @@ def test_open_url_survives_serialization() -> None:
     assert payload["message"] is None
 
 
+def test_open_page_survives_serialization() -> None:
+    """A page-only result serializes its relative page path for the server to rewrite."""
+    payload = ConfigActionResult(open_page="stats?range=week").to_dict()
+
+    assert payload["open_page"] == "stats?range=week"
+    assert payload["open_url"] is None
+
+
 def test_result_roundtrips() -> None:
     """A result survives a to_dict/from_dict round-trip with its machinery intact."""
     result = ConfigActionResult(
         message="cleared",
         open_url="https://example.org/connect",
+        open_page="stats",
         translation_key="clear_cache.result",
         translation_args=["1"],
         translation_owner="core.cache",

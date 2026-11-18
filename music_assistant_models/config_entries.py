@@ -456,9 +456,9 @@ class ConfigActionResult(DataClassDictMixin):
     Outcome of a one-shot config action button press.
 
     Returned by ``handle_config_action`` to report what the action did: a message to show the
-    user and/or a url for the client to open once. It never carries config entries - an action
-    is a one-off side effect, so the config form it was pressed from is left as it is. Raise
-    from the handler instead to report that the action failed.
+    user and/or a url or provider page for the client to open once. It never carries config
+    entries - an action is a one-off side effect, so the config form it was pressed from is left
+    as it is. Raise from the handler instead to report that the action failed.
     """
 
     # message: human-readable outcome to show the user, and the English fallback whenever
@@ -468,6 +468,10 @@ class ConfigActionResult(DataClassDictMixin):
     # open_url: http(s) url the client opens once when it handles this result; a client ignores
     # any other scheme
     open_url: str | None = None
+    # open_page: relative path inside the provider's own page; the server replaces it with the
+    # page's short-lived address (relative to the server's base url), which the client opens once
+    # in a new tab
+    open_page: str | None = None
     # translation_key: optional bare slug to localize the message; __post_serialize__ derives the
     # config_actions.<slug> group and resolves it owner-first then common (mirrors ProviderError)
     translation_key: str | None = None
