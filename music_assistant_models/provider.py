@@ -164,11 +164,12 @@ class ProviderManifest(DataClassORJSONMixin):
     menu_actions: list[ProviderMenuAction] = field(default_factory=list)
     # mcp_tools: tools this provider offers to AI assistants through the MCP server
     mcp_tools: list[ProviderMCPTool] = field(default_factory=list)
-    # features: the features this provider offers whatever its config, known before it is
-    # loaded; the loaded provider may offer more (see ProviderInstance.supported_features)
-    features: set[ProviderFeature] = field(default_factory=set)
     # page: the page this provider serves, offered as an entry of its own in the main menu
     page: ProviderPage | None = None
+    # media_types: optional metadata for discovery only, such as in the Marketplace: the media
+    # types this provider offers whatever its config (audio_source for a provider that plays
+    # audio into Music Assistant), known before it is loaded
+    media_types: set[MediaType] = field(default_factory=set)
 
     @classmethod
     async def parse(cls, manifest_file: str) -> ProviderManifest:
