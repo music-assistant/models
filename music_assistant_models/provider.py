@@ -169,6 +169,9 @@ class ProviderManifest(DataClassORJSONMixin):
     features: set[ProviderFeature] = field(default_factory=set)
     # page: the page this provider serves, offered as an entry of its own in the main menu
     page: ProviderPage | None = None
+    # media_types: the media types this music provider offers, from its library, search or
+    # browse, whatever its config; known before it is loaded
+    media_types: set[MediaType] = field(default_factory=set)
 
     @classmethod
     async def parse(cls, manifest_file: str) -> ProviderManifest:
