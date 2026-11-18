@@ -692,6 +692,8 @@ class RecommendationFolder(BrowseFolder):
     enabled_by_default: bool = True
     # whether this row's items endpoint accepts a source-provider filter
     supports_provider_filter: bool = False
+    # whether this row's items endpoint can leave out fully played items
+    supports_hide_played: bool = False
 
     @property
     def _translation_group(self) -> str:
