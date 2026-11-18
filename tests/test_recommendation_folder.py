@@ -68,3 +68,37 @@ def test_recommendation_folder_supports_provider_filter_backwards_compatible() -
     del data["supports_provider_filter"]
     restored = RecommendationFolder.from_dict(data)
     assert restored.supports_provider_filter is False
+
+
+def test_recommendation_folder_supports_hide_played_roundtrip() -> None:
+    """supports_hide_played defaults to False and roundtrips when explicitly True."""
+    folder = RecommendationFolder(
+        item_id="latest_episodes",
+        provider="library",
+        name="Latest podcast episodes",
+    )
+    assert folder.supports_hide_played is False
+
+    folder = RecommendationFolder(
+        item_id="latest_episodes",
+        provider="library",
+        name="Latest podcast episodes",
+        supports_hide_played=True,
+    )
+    data = folder.to_dict()
+    assert data["supports_hide_played"] is True
+    restored = RecommendationFolder.from_dict(data)
+    assert restored.supports_hide_played is True
+
+
+def test_recommendation_folder_supports_hide_played_backwards_compatible() -> None:
+    """Payloads without supports_hide_played still deserialize, defaulting to False."""
+    folder = RecommendationFolder(
+        item_id="latest_episodes",
+        provider="library",
+        name="Latest podcast episodes",
+    )
+    data = folder.to_dict()
+    del data["supports_hide_played"]
+    restored = RecommendationFolder.from_dict(data)
+    assert restored.supports_hide_played is False
