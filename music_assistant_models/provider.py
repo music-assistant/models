@@ -16,6 +16,7 @@ from .enums import (
     MediaType,
     ProviderFeature,
     ProviderIconVariant,
+    ProviderOffering,
     ProviderStage,
     ProviderTier,
     ProviderType,
@@ -166,10 +167,10 @@ class ProviderManifest(DataClassORJSONMixin):
     mcp_tools: list[ProviderMCPTool] = field(default_factory=list)
     # page: the page this provider serves, offered as an entry of its own in the main menu
     page: ProviderPage | None = None
-    # media_types: optional metadata for discovery only, such as in the Marketplace: the media
-    # types this provider offers whatever its config (audio_source for a provider that plays
-    # audio into Music Assistant), known before it is loaded
-    media_types: set[MediaType] = field(default_factory=set)
+    # provides: optional metadata for discovery only, such as the Marketplace filters: the media
+    # types a music provider offers or the main features a plugin delivers, whatever its config,
+    # known before it is loaded
+    provides: set[ProviderOffering] = field(default_factory=set)
 
     @classmethod
     async def parse(cls, manifest_file: str) -> ProviderManifest:

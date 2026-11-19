@@ -1150,6 +1150,45 @@ class ProviderIconVariant(StrEnum):
     MONOCHROME = "monochrome"
 
 
+class ProviderOffering(StrEnum):
+    """Enum of what a provider offers, as declared in its manifest for discovery."""
+
+    # the media types a music provider offers in every config, the same values as MediaType
+    ARTIST = "artist"
+    ALBUM = "album"
+    TRACK = "track"
+    PLAYLIST = "playlist"
+    RADIO = "radio"
+    PODCAST = "podcast"
+    AUDIOBOOK = "audiobook"
+    SOUND_EFFECT = "sound_effect"
+
+    # audio_source: plays audio into Music Assistant as a live source in every config
+    AUDIO_SOURCE = "audio_source"
+    # ai: provides AI engines (text, plus image where the service has image models)
+    AI = "ai"
+    # tts: provides speech engines
+    TTS = "tts"
+    # scrobble: records what is played to an outside listening history
+    SCROBBLE = "scrobble"
+    # assistant: lets an AI or voice assistant find music and control players
+    ASSISTANT = "assistant"
+    # visualizer: turns music into light effects or visuals
+    VISUALIZER = "visualizer"
+    # recommendations: builds playlists, mixes or recommendations from your music
+    RECOMMENDATIONS = "recommendations"
+    # fun: party modes and games for guests
+    FUN = "fun"
+
+    # fallback
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ProviderOffering:  # noqa: ARG003
+        """Set default enum member if an unknown value is provided."""
+        return cls.UNKNOWN
+
+
 class CoreState(StrEnum):
     """Enum representing the core state of the Music Assistant server."""
 
