@@ -501,6 +501,8 @@ class PlayerType(StrEnum):
     light: A device that visualizes music through lighting (e.g. Hue sync, WLED).
     source: A capture-only device that provides audio input (e.g. a line-in client)
             but does not render audio itself.
+    controller: A device that only controls playback (e.g. a remote or a volume knob)
+                but does not play audio.
     """
 
     PLAYER = "player"
@@ -512,6 +514,7 @@ class PlayerType(StrEnum):
     VISUALIZER = "visualizer"
     LIGHT = "light"
     SOURCE = "source"
+    CONTROLLER = "controller"
     UNKNOWN = "unknown"
 
     @classmethod
