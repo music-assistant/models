@@ -44,6 +44,11 @@ def test_player_type_source_resolves() -> None:
     assert PlayerType("does-not-exist") is PlayerType.UNKNOWN
 
 
+def test_player_type_controller_resolves() -> None:
+    """The CONTROLLER member resolves."""
+    assert PlayerType("controller") is PlayerType.CONTROLLER
+
+
 def test_player_type_multi_channel_resolves() -> None:
     """The MULTI_CHANNEL member resolves, and so does the STEREO_PAIR of an older server."""
     assert PlayerType("multi_channel") is PlayerType.MULTI_CHANNEL
