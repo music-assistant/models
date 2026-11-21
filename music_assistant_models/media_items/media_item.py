@@ -613,6 +613,12 @@ class AudioSource(MediaItem):
     # (e.g. the Spotify user id); used to gate playback redirects
     account_id: str | None = None
 
+    # the player this source belongs to, such as the player whose input it is or
+    # the player a receiver runs for; None = it belongs to no player.
+    # A provider may give the id of one of the player's protocols; the server
+    # resolves it to the player before it sends the source to a client.
+    owner_player_id: str | None = None
+
 
 @dataclass(kw_only=True)
 class BrowseFolder(_LocalizableTitle, _MediaItemBase):
