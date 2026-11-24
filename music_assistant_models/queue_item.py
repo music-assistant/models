@@ -47,6 +47,8 @@ class QueueItem(DataClassDictMixin):
     # the available flag can be used to mark items that are not available/playable anymore
     available: bool = True
     origin: QueueItemOrigin | None = None
+    # the user whose progress and play history a play of this item counts for
+    userid: str | None = None
 
     # extra_attributes: additional attributes for this QueueItem to store/forward
     # additional data that is not part of the standard model

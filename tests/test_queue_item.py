@@ -42,37 +42,45 @@ def _queue_item() -> QueueItem:
     return QueueItem.from_media_item("q1", track)
 
 
-def test_origin_defaults_to_none() -> None:
-    """A queue item has no origin unless one is given."""
-    assert _queue_item().origin is None
+def test_origin_and_userid_default_to_none() -> None:
+    """A queue item has no origin and no user unless one is given."""
+    queue_item = _queue_item()
+    assert queue_item.origin is None
+    assert queue_item.userid is None
 
 
-def test_origin_serialize_roundtrip() -> None:
-    """An origin survives a to_dict -> from_dict round-trip."""
+@pytest.mark.parametrize(
+    ("dump", "load"),
+    [
+        (QueueItem.to_dict, QueueItem.from_dict),
+        (QueueItem.to_cache, QueueItem.from_cache),
+    ],
+)
+def test_origin_and_userid_roundtrip(
+    dump: Callable[[QueueItem], dict[str, Any]],
+    load: Callable[[dict[str, Any]], QueueItem],
+) -> None:
+    """An origin and a user survive a serialize round-trip."""
     queue_item = _queue_item()
     queue_item.origin = _origin()
-    restored = QueueItem.from_dict(queue_item.to_dict())
+    queue_item.userid = "user_1"
+    restored = load(dump(queue_item))
     assert restored.origin is not None
     assert restored.origin.to_dict() == _origin().to_dict()
-
-
-def test_origin_cache_roundtrip() -> None:
-    """An origin survives a to_cache -> from_cache round-trip."""
-    queue_item = _queue_item()
-    queue_item.origin = _origin()
-    restored = QueueItem.from_cache(queue_item.to_cache())
-    assert restored.origin is not None
-    assert restored.origin.to_dict() == _origin().to_dict()
+    assert restored.userid == "user_1"
 
 
 @pytest.mark.parametrize("load", [QueueItem.from_dict, QueueItem.from_cache])
-def test_payload_without_origin_key_deserializes(
+def test_payload_without_origin_and_userid_keys_deserializes(
     load: Callable[[dict[str, Any]], QueueItem],
 ) -> None:
-    """Payloads and queue caches from older servers without the origin key still load."""
+    """Payloads and queue caches from older servers without origin and userid still load."""
     legacy = _queue_item().to_dict()
     legacy.pop("origin")
-    assert load(legacy).origin is None
+    legacy.pop("userid")
+    restored = load(legacy)
+    assert restored.origin is None
+    assert restored.userid is None
 
 
 def test_image_is_the_album_cover_of_a_track() -> None:
