@@ -5,7 +5,12 @@ from contextlib import contextmanager
 from typing import Any
 
 from music_assistant_models.config_entries import ProviderAccess, ProviderConfig, ProviderError
-from music_assistant_models.enums import ProviderSharing, ProviderStatus, ProviderType
+from music_assistant_models.enums import (
+    ProviderSharing,
+    ProviderStatus,
+    ProviderType,
+    SharedPlayback,
+)
 from music_assistant_models.translations import TRANSLATION_RESOLVER
 
 
@@ -105,6 +110,27 @@ def test_access_sharing_defaults_to_private() -> None:
     """A record without an explicit sharing mode is private."""
     assert ProviderAccess(owner="user-1").sharing is ProviderSharing.PRIVATE
     assert ProviderAccess.from_dict({"owner": "user-1"}).sharing is ProviderSharing.PRIVATE
+
+
+def test_shared_playback_is_persisted_and_served() -> None:
+    """The moment others may play from an account survives storage and the api payload."""
+    access = ProviderAccess(owner="user-1", shared_playback=SharedPlayback.WHEN_BUSY)
+    conf = ProviderConfig.from_dict(_raw(access=access.to_dict()))
+    assert conf.access == access
+    assert conf.to_raw()["access"]["shared_playback"] == "when_busy"
+    assert conf.to_dict()["access"]["shared_playback"] == "when_busy"
+
+
+def test_shared_playback_defaults_to_users_without_an_account_of_their_own() -> None:
+    """A record stored before the field existed keeps serving who it served."""
+    access = ProviderAccess.from_dict({"owner": "user-1", "sharing": "everyone"})
+    assert access.shared_playback is SharedPlayback.WITHOUT_OWN
+
+
+def test_unknown_shared_playback_falls_back_to_never() -> None:
+    """An unknown mode falls back to NEVER, so access is never widened by accident."""
+    access = ProviderAccess.from_dict({"shared_playback": "future_mode"})
+    assert access.shared_playback is SharedPlayback.NEVER
 
 
 def test_last_error_localized_on_serialize_with_resolver() -> None:
