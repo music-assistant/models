@@ -925,6 +925,23 @@ class ProviderSharing(StrEnum):
         return cls.PRIVATE
 
 
+class SharedPlayback(StrEnum):
+    """When a shared account of a streaming service plays for others than its owner."""
+
+    # only its owner plays from it
+    NEVER = "never"
+    # a user it is shared with who has no account of the service closer to them: one of
+    # their own comes before one shared with them by name, and that before one shared with all
+    WITHOUT_OWN = "without_own"
+    # as above, and also a user whose closer accounts are all busy
+    WHEN_BUSY = "when_busy"
+
+    @classmethod
+    def _missing_(cls, value: object) -> SharedPlayback:  # noqa: ARG003
+        """Fall back to NEVER (the safest value) for an unknown mode."""
+        return cls.NEVER
+
+
 class ProviderType(StrEnum):
     """Enum with supported provider types."""
 
